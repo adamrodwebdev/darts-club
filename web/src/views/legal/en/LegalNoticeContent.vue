@@ -8,7 +8,7 @@
   <h2>Publisher</h2>
   <p>
     Skull Darts 71, non-profit association governed by the French law of 1 July 1901.<br />
-    Registered office: [registered office address]<br />
+    Registered office: Bellevesvre (Saône-et-Loire, France)<br />
     RNA: [W… number] · SIRET: [if applicable]<br />
     Contact: [contact email address]
   </p>

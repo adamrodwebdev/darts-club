@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest'
 // Fichiers lus bruts : l'import JSON passe par la précompilation des messages
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'locales')
 const read = (locale: string): unknown =>
-  Object.assign({}, ...readdirSync(join(LOCALES_DIR, locale)).map((file) => JSON.parse(readFileSync(join(LOCALES_DIR, locale, file), 'utf8'))))
+  Object.assign({}, ...readdirSync(join(LOCALES_DIR, locale)).filter((file) => file.endsWith('.json')).map((file) => JSON.parse(readFileSync(join(LOCALES_DIR, locale, file), 'utf8'))))
 const fr = read('fr')
 const en = read('en')
 

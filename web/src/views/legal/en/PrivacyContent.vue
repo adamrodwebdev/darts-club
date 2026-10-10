@@ -6,7 +6,7 @@
   </p>
 
   <h2>Data controller</h2>
-  <p>Skull Darts 71, [registered office address], represented by [president]. Contact: [email].</p>
+  <p>Skull Darts 71, Bellevesvre (Saône-et-Loire, France), represented by [president]. Contact: [email].</p>
 
   <h2>Data collected and purposes</h2>
   <ul>
