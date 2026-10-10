@@ -3,6 +3,10 @@
 namespace App\Entity;
 
 use App\Enum\Role;
+use App\Event\DomainEventsTrait;
+use App\Event\RecordsDomainEvents;
+use App\Event\UserRegistered;
+use App\Notification\NotificationPreferences;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\PhoneNumber;
@@ -15,8 +19,10 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents
 {
+    use DomainEventsTrait;
+
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
     private Uuid $id;
@@ -47,6 +53,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    /** @var array<string, list<string>> */
+    #[ORM\Column(type: Types::JSON)]
+    private array $notificationPreferences = [];
+
     private function __construct(EmailAddress $email)
     {
         $this->id = Uuid::v7();
@@ -60,6 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $user = new self($email);
         $user->password = $hashedPassword;
         $user->phone = $phone?->e164;
+        $user->recordThat(new UserRegistered($user->id));
 
         return $user;
     }
@@ -69,6 +80,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $user = new self($email);
         $user->verified = true;
+        $user->recordThat(new UserRegistered($user->id, viaOAuth: true));
 
         return $user;
     }
@@ -148,6 +160,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->createdAt;
     }
 
+    public function notificationPreferences(): NotificationPreferences
+    {
+        return NotificationPreferences::fromArray($this->notificationPreferences);
+    }
+
+    public function changeNotificationPreferences(NotificationPreferences $preferences): void
+    {
+        $this->notificationPreferences = $preferences->toArray();
+    }
+
     /**
      * Ne stocke jamais le hash en session : seule une empreinte sert à
      * détecter un changement de mot de passe (Symfony 7.3+).
@@ -160,6 +182,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         foreach ((array) $this as $key => $value) {
             $data[(string) $key] = $value;
         }
+        unset($data["\0".self::class."\0domainEvents"]);
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 
         return $data;

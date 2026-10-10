@@ -25,6 +25,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['email' => $email->value]);
     }
 
+    /** @return list<string> identifiants RFC 4122 des comptes vérifiés */
+    public function findVerifiedIds(): array
+    {
+        /** @var list<array{id: \Symfony\Component\Uid\Uuid}> $rows */
+        $rows = $this->createQueryBuilder('u')
+            ->select('u.id')
+            ->andWhere('u.verified = true')
+            ->getQuery()
+            ->getResult();
+
+        return array_map(static fn (array $row): string => $row['id']->toRfc4122(), $rows);
+    }
+
     /** Re-hash automatique quand l'algorithme ou son coût évolue. */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {

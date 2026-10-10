@@ -1,0 +1,18 @@
+mercure:
+    hubs:
+        default:
+            url: '%env(MERCURE_URL)%'
+            public_url: '%env(MERCURE_PUBLIC_URL)%'
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                publish: ['*']
+                claims:
+                    iss: darts-club-api
+                    sub: darts-club-api
+                    client_id: darts-club-api
+
+when@test:
+    mercure:
+        hubs:
+            default:
+                http_client: App\Tests\Double\MercureRecorder

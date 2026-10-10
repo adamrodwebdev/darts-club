@@ -91,6 +91,18 @@
     "odolbeau/phone-number-bundle": {
         "version": "v4.2.5"
     },
+    "php-http/discovery": {
+        "version": "1.20",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.18",
+            "ref": "f45b5dd173a27873ab19f5e3180b2f661c21de02"
+        },
+        "files": [
+            "./config/packages/http_discovery.yaml"
+        ]
+    },
     "phpstan/phpstan": {
         "version": "2.3.1"
     },
@@ -176,6 +188,18 @@
         },
         "files": [
             "./config/packages/mailer.yaml"
+        ]
+    },
+    "symfony/mercure-bundle": {
+        "version": "0.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.4",
+            "ref": "b141b8c8f13bc8c31d718a5488039b712c0d3592"
+        },
+        "files": [
+            "./config/packages/mercure.yaml"
         ]
     },
     "symfony/messenger": {

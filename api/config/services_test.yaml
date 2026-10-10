@@ -1,0 +1,13 @@
+# Doubles de test : aucune requête réseau (hub Mercure, Web Push)
+services:
+    _defaults:
+        autowire: true
+        public: true
+
+    App\Tests\Double\:
+        resource: '../tests/Double/'
+
+    App\Notification\Push\PushSender: '@App\Tests\Double\FakePushSender'
+
+    # Pas encore utilisé par un contrôleur (diffusions du président : étape 7)
+    App\Notification\MemberNotifier: ~

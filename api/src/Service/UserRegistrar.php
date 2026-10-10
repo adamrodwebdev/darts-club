@@ -4,13 +4,11 @@ namespace App\Service;
 
 use App\Dto\Registration;
 use App\Entity\User;
-use App\Event\UserRegistered;
 use App\Message\SendAccountExistsEmail;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\PhoneNumber;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
@@ -20,7 +18,6 @@ final class UserRegistrar
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $em,
         private readonly PasswordHasherFactoryInterface $hashers,
-        private readonly EventDispatcherInterface $dispatcher,
         private readonly MessageBusInterface $bus,
     ) {
     }
@@ -46,9 +43,8 @@ final class UserRegistrar
             null !== $registration->phone && '' !== trim($registration->phone) ? PhoneNumber::fromInput($registration->phone) : null,
         );
 
+        // UserRegistered est publié après le flush (DomainEventPublisher)
         $this->em->persist($user);
         $this->em->flush();
-
-        $this->dispatcher->dispatch(new UserRegistered($user->getId()));
     }
 }

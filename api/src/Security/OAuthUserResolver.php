@@ -4,12 +4,10 @@ namespace App\Security;
 
 use App\Entity\OAuthIdentity;
 use App\Entity\User;
-use App\Event\UserRegistered;
 use App\Repository\OAuthIdentityRepository;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
 /**
@@ -22,7 +20,6 @@ final class OAuthUserResolver
         private readonly OAuthIdentityRepository $identities,
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $em,
-        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -45,9 +42,9 @@ final class OAuthUserResolver
         }
 
         $user = $this->users->findOneByEmail($address);
-        $isNew = null === $user;
 
         if (null === $user) {
+            // Enregistre UserRegistered(viaOAuth), publié après le flush
             $user = User::registerViaOAuth($address);
             $this->em->persist($user);
         } else {
@@ -57,10 +54,6 @@ final class OAuthUserResolver
 
         $this->em->persist(new OAuthIdentity($user, $provider, $subject));
         $this->em->flush();
-
-        if ($isNew) {
-            $this->dispatcher->dispatch(new UserRegistered($user->getId(), viaOAuth: true));
-        }
 
         return $user;
     }

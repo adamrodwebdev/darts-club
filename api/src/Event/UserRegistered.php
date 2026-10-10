@@ -4,13 +4,13 @@ namespace App\Event;
 
 use Symfony\Component\Uid\Uuid;
 
-/** Événement de domaine : un compte vient d'être créé. */
-final class UserRegistered
+/** Un compte vient d'être créé. */
+final readonly class UserRegistered implements DomainEvent
 {
     public function __construct(
-        public readonly Uuid $userId,
+        public Uuid $userId,
         /** Email déjà vérifié par le fournisseur OAuth */
-        public readonly bool $viaOAuth = false,
+        public bool $viaOAuth = false,
     ) {
     }
 }
