@@ -16,7 +16,7 @@ function directions(key: InstrumentalKey): string[] {
   <section id="hymne" class="song" aria-labelledby="song-title">
     <div class="song__intro" data-reveal>
       <p class="kicker">{{ t('song.kicker') }}</p>
-      <SplitText id="song-title" tag="h2" class="metal-title" :text="SONG.title" />
+      <SplitText id="song-title" tag="h2" class="metal-title levitate" :text="SONG.title" />
       <p class="muted">{{ t('song.subtitle') }} · {{ SONG.tempo }} BPM · {{ SONG.tuning }}</p>
       <p>{{ t('song.mood') }}</p>
       <RiffPlayer />

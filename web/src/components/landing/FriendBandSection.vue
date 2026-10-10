@@ -10,7 +10,7 @@ const band = LANDING.friendBand
 <template>
   <section class="friend" aria-labelledby="friend-title" data-reveal>
     <p class="kicker">{{ t('landing.friend.kicker') }}</p>
-    <SplitText id="friend-title" tag="h2" class="metal-title" :text="band.name" />
+    <SplitText id="friend-title" tag="h2" class="metal-title levitate" :text="band.name" />
     <p class="friend__text">{{ t('landing.friend.text') }}</p>
     <a :href="band.url" target="_blank" rel="noopener noreferrer external" class="friend__link">
       {{ t('landing.friend.link') }} <span aria-hidden="true">↗</span>

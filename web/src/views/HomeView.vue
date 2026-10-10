@@ -28,7 +28,7 @@ const ICONS: Record<string, string> = {
     <section class="hero">
       <div class="hero__text">
         <p class="kicker">{{ t('landing.kicker') }}</p>
-        <SplitText tag="h1" class="metal-title hero__title" :text="LANDING.name" rise />
+        <SplitText tag="h1" class="metal-title hero__title levitate" :text="LANDING.name" rise />
         <SplitText tag="p" class="hero__tagline" :text="t('landing.tagline')" rise />
         <p class="hero__intro">{{ t('landing.intro') }}</p>
         <div class="hero__cta">
@@ -53,7 +53,7 @@ const ICONS: Record<string, string> = {
         <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
           <path :d="ICONS[pillar.icon]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <h2>{{ t(`landing.pillars.${pillar.key}.title`) }}</h2>
+        <SplitText tag="h2" class="levitate" :text="t(`landing.pillars.${pillar.key}.title`)" />
         <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
       </article>
     </section>
@@ -63,7 +63,7 @@ const ICONS: Record<string, string> = {
     <FriendBandSection />
 
     <section class="join" data-reveal aria-labelledby="join-title">
-      <SplitText id="join-title" tag="h2" class="metal-title" :text="t('landing.cta.title')" />
+      <SplitText id="join-title" tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
       <p>{{ t('landing.cta.text') }}</p>
       <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
         <template #link>
