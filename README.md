@@ -7,7 +7,7 @@ Voir [ROADMAP.md](ROADMAP.md).
 
 ```bash
 docker compose up -d --build        # API https://localhost, Mailpit http://localhost:8025
-cd web && npm install && npm run dev
+cd web && npm install && npm run dev   # http://localhost:5173, /api proxifié vers https://localhost (VITE_API_PROXY)
 ```
 
 ## Qualité
