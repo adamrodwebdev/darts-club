@@ -1,0 +1,19 @@
+# Développement uniquement
+services:
+  php:
+    build:
+      target: dev
+    volumes:
+      - ./api:/app
+    environment:
+      APP_ENV: dev
+
+  database:
+    ports:
+      - "5432:5432"
+
+  mailer:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"

@@ -1,0 +1,15 @@
+# Dossier partagé avec d'autres projets : on n'inclut que ce dépôt
+/*
+!/.github/
+!/api/
+!/web/
+!/docker/
+!/.gitignore
+!/.editorconfig
+!/compose.yaml
+!/compose.override.yaml
+!/lighthouserc.json
+!/README.md
+!/ROADMAP.md
+!/SECURITY.md
+!/.gitattributes
