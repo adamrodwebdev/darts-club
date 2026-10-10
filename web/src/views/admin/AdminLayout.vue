@@ -1,20 +1,23 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView } from 'vue-router'
 
+const { t } = useI18n()
+
 const tabs = [
-  { to: '/admin', label: 'Membres' },
-  { to: '/admin/diffusion', label: 'Diffusion' },
-  { to: '/admin/annonces', label: 'Annonces' },
-  { to: '/admin/journal', label: 'Journal' },
-]
+  { to: '/admin', label: 'routes.adminMembers' },
+  { to: '/admin/diffusion', label: 'routes.adminBroadcast' },
+  { to: '/admin/annonces', label: 'routes.adminAnnouncements' },
+  { to: '/admin/journal', label: 'routes.adminAudit' },
+] as const
 </script>
 
 <template>
   <section class="page">
-    <h1>Présidence</h1>
-    <nav class="tabs" aria-label="Sections de la présidence">
+    <h1>{{ t('nav.president') }}</h1>
+    <nav class="tabs" :aria-label="t('admin.layout.nav')">
       <RouterLink v-for="tab in tabs" :key="tab.to" :to="tab.to" class="tabs__link" exact-active-class="tabs__link--active">
-        {{ tab.label }}
+        {{ t(tab.label) }}
       </RouterLink>
     </nav>
     <RouterView />

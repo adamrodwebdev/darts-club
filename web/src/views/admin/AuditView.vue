@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { auditLabel, type AuditEntry } from '@/models/Admin'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const entries = ref<AuditEntry[]>([])
 const load = useAsyncAction()
 
@@ -15,20 +17,20 @@ onMounted(async () => {
 
 function details(entry: AuditEntry): string {
   return Object.entries(entry.details)
-    .map(([key, value]) => `${key} : ${String(value ?? '—')}`)
+    .map(([key, value]) => t('admin.audit.detail', { key, value: String(value ?? '—') }))
     .join(' · ')
 }
 </script>
 
 <template>
   <div class="stack">
-    <p class="muted">Toutes les actions de la présidence et de l’administration sont enregistrées ici, sans possibilité de modification.</p>
+    <p class="muted">{{ t('admin.audit.intro') }}</p>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
     <ol class="log">
       <li v-for="e in entries" :key="e.id">
         <RelativeTime class="muted" :date="e.at" />
         <span><strong>{{ auditLabel(e.action) }}</strong><template v-if="e.target"> · {{ e.target }}</template></span>
-        <span class="muted">par {{ e.actor }}<template v-if="details(e)"> · {{ details(e) }}</template></span>
+        <span class="muted">{{ t('admin.audit.by', { actor: e.actor }) }}<template v-if="details(e)"> · {{ details(e) }}</template></span>
       </li>
     </ol>
   </div>

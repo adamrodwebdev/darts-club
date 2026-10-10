@@ -91,7 +91,14 @@
   "errors": {
     "fields": "Please check the highlighted fields.",
     "unexpected": "An unexpected error occurred.",
-    "network": "Unable to connect, please check your network."
+    "network": "Unable to connect, please check your network.",
+    "tooManyRequests": "Too many attempts, please try again in a few minutes.",
+    "server": "The server is having trouble, please try again later.",
+    "requestFailed": "The request failed.",
+    "invalidResponse": "Unexpected response from the server ({what}).",
+    "invalidQrCode": "Invalid QR code.",
+    "pushUnavailable": "Push notifications are not set up on the server yet.",
+    "pushDenied": "Allow notifications in your browser to receive them."
   },
   "landing": {
     "kicker": "Darts club",

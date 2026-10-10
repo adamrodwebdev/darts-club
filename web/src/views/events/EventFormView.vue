@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
@@ -10,6 +11,7 @@ import { services } from '@/services'
 /** Création (sans id) ou modification d'un événement — organisateurs uniquement. */
 const props = defineProps<{ id?: string }>()
 const router = useRouter()
+const { t } = useI18n()
 
 const title = ref('')
 const description = ref('')
@@ -49,23 +51,23 @@ async function submit(): Promise<void> {
 
 <template>
   <section class="page page--form stack">
-    <h1>{{ id ? 'Modifier l’événement' : 'Nouvel événement' }}</h1>
+    <h1>{{ id ? t('events.form.editTitle') : t('events.form.createTitle') }}</h1>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
     <p class="muted">
-      {{ id ? 'Un changement de date prévient les inscrits.' : 'Tous les adhérents seront prévenus, puis relancés à J-7 ; les inscrits à J-1.' }}
+      {{ id ? t('events.form.editHint') : t('events.form.createHint') }}
     </p>
 
     <form class="stack" novalidate @submit.prevent="submit">
-      <BaseField v-model="title" label="Titre" required :maxlength="120" />
-      <BaseField v-model="location" label="Lieu" required :maxlength="160" />
+      <BaseField v-model="title" :label="t('events.form.title')" required :maxlength="120" />
+      <BaseField v-model="location" :label="t('events.form.location')" required :maxlength="160" />
       <div class="dates">
-        <BaseField v-model="startsAt" label="Début" type="datetime-local" required />
-        <BaseField v-model="endsAt" label="Fin" type="datetime-local" required />
+        <BaseField v-model="startsAt" :label="t('events.form.startsAt')" type="datetime-local" required />
+        <BaseField v-model="endsAt" :label="t('events.form.endsAt')" type="datetime-local" required />
       </div>
-      <BaseField v-model="capacity" label="Nombre de places (vide = illimité)" type="number" />
-      <BaseField v-model="description" label="Présentation" multiline :maxlength="5000" />
+      <BaseField v-model="capacity" :label="t('events.form.capacity')" type="number" />
+      <BaseField v-model="description" :label="t('events.form.description')" multiline :maxlength="5000" />
       <p v-if="save.error.value" class="notice notice--error" role="alert">{{ save.error.value }}</p>
-      <BaseButton type="submit" :pending="save.pending.value">{{ id ? 'Enregistrer' : 'Publier l’événement' }}</BaseButton>
+      <BaseButton type="submit" :pending="save.pending.value">{{ id ? t('common.save') : t('events.form.publish') }}</BaseButton>
     </form>
   </section>
 </template>

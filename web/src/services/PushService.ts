@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import type { ApiClient } from '@/api/ApiClient'
 import { obj, optStr } from '@/models/guards'
 
@@ -19,11 +20,11 @@ export class PushService {
   async subscribe(): Promise<void> {
     const key = optStr(obj(await this.api.get('/api/push/public-key')).publicKey)
     if (key === null) {
-      throw new Error('Les notifications push ne sont pas encore configurées sur le serveur.')
+      throw new Error(i18n.global.t('errors.pushUnavailable'))
     }
 
     if ((await Notification.requestPermission()) !== 'granted') {
-      throw new Error('Autorise les notifications dans ton navigateur pour les recevoir.')
+      throw new Error(i18n.global.t('errors.pushDenied'))
     }
 
     const registration = await navigator.serviceWorker.register(this.scriptUrl)

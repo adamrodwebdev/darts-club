@@ -1,1 +1,83 @@
-{ "events": {} }
+{
+  "events": {
+    "list": {
+      "title": "Événements",
+      "create": "Nouvel événement",
+      "periodLabel": "Période",
+      "upcoming": "À venir",
+      "past": "Archives",
+      "season": "Saison",
+      "allSeasons": "Toutes",
+      "search": "Rechercher (titre, lieu)",
+      "emptyUpcoming": "Aucun événement prévu pour le moment.",
+      "emptyPast": "Aucune archive pour ces critères."
+    },
+    "detail": {
+      "back": "← Événements",
+      "meta": "Saison {season} · organisé par {organizer}",
+      "cancelled": "Annulé : {reason}",
+      "unregister": "Me désinscrire",
+      "full": "Complet",
+      "register": "M’inscrire",
+      "addToCalendar": "Ajouter à mon agenda",
+      "registered": "aucun inscrit | {n} inscrit | {n} inscrits",
+      "registeredOf": "aucun inscrit sur {capacity} | {n} inscrit sur {capacity} | {n} inscrits sur {capacity}",
+      "description": "Présentation",
+      "summary": "Résumé",
+      "editSummary": "Modifier le résumé",
+      "writeSummary": "Rédiger le résumé",
+      "posts": "Souvenirs des adhérents",
+      "sharePost": "Partager un souvenir",
+      "publish": "Publier",
+      "manage": "Organisation",
+      "cancelEvent": "Annuler l’événement",
+      "participants": "Inscrits ({count})",
+      "cancelNotice": "Tous les adhérents seront prévenus, avec le motif.",
+      "cancelReason": "Motif",
+      "dismiss": "Retour",
+      "summaryDialog": "Résumé de l’événement",
+      "summaryLabel": "Résumé (résultats, moments forts…)"
+    },
+    "form": {
+      "editTitle": "Modifier l’événement",
+      "createTitle": "Nouvel événement",
+      "editHint": "Un changement de date prévient les inscrits.",
+      "createHint": "Tous les adhérents seront prévenus, puis relancés à J-7 ; les inscrits à J-1.",
+      "title": "Titre",
+      "location": "Lieu",
+      "startsAt": "Début",
+      "endsAt": "Fin",
+      "capacity": "Nombre de places (vide = illimité)",
+      "description": "Présentation",
+      "publish": "Publier l’événement"
+    },
+    "card": {
+      "registered": "Inscrit(e)",
+      "full": "Complet",
+      "placesLeft": "plus de place | {n} place | {n} places",
+      "summary": "Résumé"
+    },
+    "calendar": {
+      "title": "Calendrier du club dans mon agenda",
+      "intro": "Abonne ton agenda (Google, Apple, Outlook…) aux événements du club : il se met à jour tout seul. Le lien est personnel : ne le partage pas. En générer un nouveau désactive l’ancien.",
+      "copied": "Lien copié ✓",
+      "copy": "Copier le lien",
+      "open": "Ouvrir dans mon agenda",
+      "regenerate": "Générer un nouveau lien",
+      "create": "Obtenir mon lien d’abonnement",
+      "revoke": "Désactiver mon lien"
+    },
+    "gallery": {
+      "title": "Photos",
+      "uploading": "Envoi…",
+      "upload": "Ajouter des photos",
+      "empty": "Pas encore de photo.",
+      "enlarge": "Agrandir la photo {index} sur {total}",
+      "photoBy": "Photo de {name}",
+      "position": "Photo {index} / {total}",
+      "addedBy": "Ajoutée par {name}",
+      "previous": "← Précédente",
+      "next": "Suivante →"
+    }
+  }
+}

@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import CalendarSubscription from '@/components/events/CalendarSubscription.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CATEGORIES, type OptionalChannel, type Preferences } from '@/models/Notification'
 import { services } from '@/services'
 
-const CHANNELS: { id: OptionalChannel; label: string }[] = [
-  { id: 'email', label: 'Email' },
-  { id: 'push', label: 'Push' },
-]
+const { t } = useI18n()
+
+const CHANNELS: readonly OptionalChannel[] = ['email', 'push']
+
+function channelLabel(channel: OptionalChannel): string {
+  return t(`account.notificationSettings.channels.${channel}`)
+}
 
 const preferences = ref<Preferences>({})
 const saved = ref(false)
@@ -56,48 +60,48 @@ async function togglePush(): Promise<void> {
   <div class="stack">
     <CalendarSubscription />
     <section class="card" aria-labelledby="push-title">
-      <h2 id="push-title">Notifications push sur cet appareil</h2>
+      <h2 id="push-title">{{ t('account.notificationSettings.pushTitle') }}</h2>
       <template v-if="pushSupported">
-        <p class="muted">{{ pushEnabled ? 'Activées sur ce navigateur.' : 'Désactivées sur ce navigateur.' }}</p>
+        <p class="muted">{{ pushEnabled ? t('account.notificationSettings.pushOn') : t('account.notificationSettings.pushOff') }}</p>
         <BaseButton :variant="pushEnabled ? 'ghost' : 'primary'" :pending="push.pending.value" @click="togglePush">
-          {{ pushEnabled ? 'Désactiver' : 'Activer' }}
+          {{ pushEnabled ? t('account.notificationSettings.disable') : t('account.notificationSettings.enable') }}
         </BaseButton>
         <p v-if="push.error.value" class="notice notice--error" role="alert">{{ push.error.value }}</p>
       </template>
-      <p v-else class="muted">Ce navigateur ne gère pas les notifications push. Sur iPhone, ajoute d’abord le site à l’écran d’accueil.</p>
+      <p v-else class="muted">{{ t('account.notificationSettings.pushUnsupported') }}</p>
     </section>
 
     <section class="card" aria-labelledby="prefs-title">
-      <h2 id="prefs-title">Que recevoir, et où ?</h2>
-      <p class="muted">Le centre de notifications du site reçoit toujours tout.</p>
+      <h2 id="prefs-title">{{ t('account.notificationSettings.prefsTitle') }}</h2>
+      <p class="muted">{{ t('account.notificationSettings.prefsIntro') }}</p>
       <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
       <form @submit.prevent="submit">
         <table class="prefs">
-          <caption class="visually-hidden">Canaux activés par catégorie</caption>
+          <caption class="visually-hidden">{{ t('account.notificationSettings.caption') }}</caption>
           <thead>
             <tr>
-              <th scope="col">Catégorie</th>
-              <th v-for="c in CHANNELS" :key="c.id" scope="col">{{ c.label }}</th>
+              <th scope="col">{{ t('account.notificationSettings.category') }}</th>
+              <th v-for="c in CHANNELS" :key="c" scope="col">{{ channelLabel(c) }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="category in CATEGORIES" :key="category.id">
               <th scope="row">{{ category.label }}</th>
-              <td v-for="c in CHANNELS" :key="c.id">
+              <td v-for="c in CHANNELS" :key="c">
                 <input
                   type="checkbox"
-                  :checked="isOn(category.id, c.id)"
-                  :aria-label="`${category.label} par ${c.label}`"
-                  @change="toggle(category.id, c.id, ($event.target as HTMLInputElement).checked)"
+                  :checked="isOn(category.id, c)"
+                  :aria-label="t('account.notificationSettings.toggle', { category: category.label, channel: channelLabel(c) })"
+                  @change="toggle(category.id, c, ($event.target as HTMLInputElement).checked)"
                 />
               </td>
             </tr>
           </tbody>
         </table>
         <p v-if="save.error.value" class="notice notice--error" role="alert">{{ save.error.value }}</p>
-        <p v-if="saved" class="notice notice--success" role="status">Préférences enregistrées.</p>
-        <BaseButton type="submit" :pending="save.pending.value">Enregistrer</BaseButton>
+        <p v-if="saved" class="notice notice--success" role="status">{{ t('account.notificationSettings.saved') }}</p>
+        <BaseButton type="submit" :pending="save.pending.value">{{ t('common.save') }}</BaseButton>
       </form>
     </section>
   </div>

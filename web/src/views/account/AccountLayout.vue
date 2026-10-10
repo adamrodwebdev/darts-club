@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const tabs = [
-  { to: '/compte', label: 'Profil' },
-  { to: '/compte/cotisation', label: 'Cotisation' },
-  { to: '/compte/notifications', label: 'Notifications' },
-  { to: '/compte/securite', label: 'Sécurité' },
-]
+  { to: '/compte', key: 'profile' },
+  { to: '/compte/cotisation', key: 'membership' },
+  { to: '/compte/notifications', key: 'notifications' },
+  { to: '/compte/securite', key: 'security' },
+] as const
 
 async function logout(): Promise<void> {
   await auth.logout()
@@ -22,19 +24,19 @@ async function logout(): Promise<void> {
 <template>
   <section class="page">
     <div class="account__head">
-      <h1>Mon compte</h1>
-      <BaseButton variant="ghost" @click="logout">Se déconnecter</BaseButton>
+      <h1>{{ t('account.layout.title') }}</h1>
+      <BaseButton variant="ghost" @click="logout">{{ t('account.layout.logout') }}</BaseButton>
     </div>
 
     <!-- Accès bureau (sur mobile, ces liens ne sont pas dans l'en-tête) -->
-    <nav v-if="auth.user?.canAdminister || auth.user?.canManageTreasury" class="board-links" aria-label="Espace bureau">
-      <RouterLink v-if="auth.user?.canAdminister" to="/admin">Présidence →</RouterLink>
-      <RouterLink v-if="auth.user?.canManageTreasury" to="/tresorerie">Trésorerie →</RouterLink>
+    <nav v-if="auth.user?.canAdminister || auth.user?.canManageTreasury" class="board-links" :aria-label="t('account.layout.boardNav')">
+      <RouterLink v-if="auth.user?.canAdminister" to="/admin">{{ t('account.layout.president') }}</RouterLink>
+      <RouterLink v-if="auth.user?.canManageTreasury" to="/tresorerie">{{ t('account.layout.treasury') }}</RouterLink>
     </nav>
 
-    <nav class="tabs" aria-label="Sections du compte">
+    <nav class="tabs" :aria-label="t('account.layout.sectionsNav')">
       <RouterLink v-for="tab in tabs" :key="tab.to" :to="tab.to" class="tabs__link" exact-active-class="tabs__link--active">
-        {{ tab.label }}
+        {{ t(`account.layout.tabs.${tab.key}`) }}
       </RouterLink>
     </nav>
 

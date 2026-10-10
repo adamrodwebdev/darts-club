@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { labelled } from '@/i18n/labels'
 import type { AdminMember, BroadcastRecord } from '@/models/Admin'
 import { services } from '@/services'
 
-const LABELS = [
-  { id: 'cotisation', label: 'Cotisation' },
-  { id: 'evenement', label: 'Événement' },
-  { id: 'reunion', label: 'Réunion' },
-  { id: 'annulation', label: 'Annulation' },
-]
+const { t } = useI18n()
+
+const LABELS = (['cotisation', 'evenement', 'reunion', 'annulation'] as const).map((id) => labelled('category', id))
 
 const label = ref('evenement')
 const title = ref('')
@@ -47,7 +46,7 @@ async function submit(): Promise<void> {
     }),
   )
   if (result) {
-    sent.value = `Message envoyé à ${result.recipientCount} adhérent(s).`
+    sent.value = t('admin.broadcast.sent', result.recipientCount)
     history.value = [result, ...history.value]
     title.value = body.value = ''
     selected.value = []
@@ -58,27 +57,27 @@ async function submit(): Promise<void> {
 <template>
   <div class="stack">
     <form class="card stack" novalidate @submit.prevent="submit">
-      <h2>Nouveau message</h2>
+      <h2>{{ t('admin.broadcast.title') }}</h2>
 
       <fieldset class="choices">
-        <legend>Label</legend>
+        <legend>{{ t('admin.broadcast.label') }}</legend>
         <label v-for="l in LABELS" :key="l.id" class="chip" :class="{ 'chip--on': label === l.id, 'chip--danger': l.id === 'annulation' }">
           <input v-model="label" type="radio" name="label" :value="l.id" class="visually-hidden" /> {{ l.label }}
         </label>
       </fieldset>
 
-      <BaseField v-model="title" label="Titre" required :maxlength="120" />
-      <BaseField v-model="body" label="Message" multiline required :maxlength="2000" />
+      <BaseField v-model="title" :label="t('admin.broadcast.subject')" required :maxlength="120" />
+      <BaseField v-model="body" :label="t('admin.broadcast.body')" multiline required :maxlength="2000" />
 
       <fieldset class="choices">
-        <legend>Destinataires</legend>
-        <label><input v-model="audience" type="radio" value="all" /> Tous les adhérents</label>
-        <label><input v-model="audience" type="radio" value="selection" /> Une sélection</label>
+        <legend>{{ t('admin.broadcast.recipients') }}</legend>
+        <label><input v-model="audience" type="radio" value="all" /> {{ t('admin.broadcast.allMembers') }}</label>
+        <label><input v-model="audience" type="radio" value="selection" /> {{ t('admin.broadcast.selection') }}</label>
       </fieldset>
 
       <div v-if="audience === 'selection'" class="selection">
-        <BaseField v-model="filter" label="Filtrer les adhérents" />
-        <p class="muted">{{ selected.length }} sélectionné(s)</p>
+        <BaseField v-model="filter" :label="t('admin.broadcast.filter')" />
+        <p class="muted">{{ t('admin.broadcast.selected', selected.length) }}</p>
         <ul class="picker">
           <li v-for="m in visibleMembers" :key="m.id">
             <label><input v-model="selected" type="checkbox" :value="m.id" /> {{ m.displayName }}</label>
@@ -86,21 +85,21 @@ async function submit(): Promise<void> {
         </ul>
       </div>
 
-      <p class="muted">Livré dans le centre de notifications de chacun, et par email / push selon ses préférences.</p>
+      <p class="muted">{{ t('admin.broadcast.delivery') }}</p>
       <p v-if="send.error.value" class="notice notice--error" role="alert">{{ send.error.value }}</p>
       <p v-if="sent" class="notice notice--success" role="status">{{ sent }}</p>
       <BaseButton type="submit" :pending="send.pending.value" :disabled="!title.trim() || !body.trim() || (audience === 'selection' && !selected.length)">
-        Envoyer
+        {{ t('admin.broadcast.send') }}
       </BaseButton>
     </form>
 
     <section v-if="history.length" class="card" aria-labelledby="history-title">
-      <h2 id="history-title">Messages envoyés</h2>
+      <h2 id="history-title">{{ t('admin.broadcast.history') }}</h2>
       <ul class="history">
         <li v-for="b in history" :key="b.id">
           <strong>[{{ b.labelText }}] {{ b.title }}</strong>
           <span class="muted">
-            {{ b.toAllMembers ? 'Tous' : `${b.recipientCount} adhérent(s)` }} · {{ b.author }} · <RelativeTime :date="b.sentAt" />
+            {{ b.toAllMembers ? t('admin.broadcast.toAll') : t('admin.broadcast.recipientCount', b.recipientCount) }} · {{ b.author }} · <RelativeTime :date="b.sentAt" />
           </span>
         </li>
       </ul>

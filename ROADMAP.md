@@ -82,7 +82,10 @@ Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace
 - ✅ SEO (a) : accueil FR sur `/`, EN sur `/en` (`en.html` généré au build avec titre, description, Open Graph et JSON-LD traduits), `lang` dynamique, `hreflang` + URL canonique
 - ✅ Pages publiques traduites (a) : accueil, hymne (paroles chantées gardées en français), connexion, inscription, mentions légales et confidentialité (le français fait foi), 404
 - ✅ Tests (a) : parité des clés FR/EN, des variables et des pluriels (Vitest, en CI) ; Playwright dans les deux thèmes et les deux langues
-- À faire (b) : espace adhérent et bureau traduits ; dates, nombres et montants formatés selon la langue (`Intl`)
+- ✅ Espace adhérent et bureau traduits (b) : compte, notifications, cotisation, événements, messagerie, trésorerie, présidence ; un fichier de traduction par domaine (`locales/<langue>/<domaine>.json`)
+- ✅ Libellés des énumérations de l'API (rôles, badges, statuts, moyens de paiement, boîtes, catégories, journal) traduits côté front, repli sur le libellé de l'API (b)
+- ✅ Dates, nombres et montants formatés selon la langue (`Intl`, module `i18n/format`) (b)
+- ✅ Garde-fou CI (b) : règle ESLint `@intlify/vue-i18n/no-raw-text`, aucun texte en dur dans les gabarits ; parcours adhérent audité en anglais
 - À faire (c) : messages d'erreur, validations et emails traduits côté API (Symfony Translation, `Accept-Language` puis langue enregistrée sur le compte) ; thème et langue enregistrés sur le compte
 - À faire (étape 11) : rendu complet du contenu au build (SSG) et `hreflang` en dur une fois le domaine connu
 

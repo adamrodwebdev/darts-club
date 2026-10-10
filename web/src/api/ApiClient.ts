@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import { ApiError } from './ApiError'
 
 type Body = Record<string, unknown> | FormData | undefined
@@ -54,7 +55,7 @@ export class ApiClient {
         credentials: 'same-origin',
       })
     } catch {
-      throw new ApiError(0, 'Connexion impossible, vérifie ton réseau.')
+      throw new ApiError(0, i18n.global.t('errors.network'))
     }
 
     const data = await ApiClient.readJson(response)

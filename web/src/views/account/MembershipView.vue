@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MembershipStatusPill from '@/components/MembershipStatusPill.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { enumLabel } from '@/i18n'
+import { formatDate } from '@/i18n/format'
 import { formatEuro, type MembershipRecord } from '@/models/Membership'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const season = ref('')
 const current = ref<MembershipRecord | null>(null)
 const history = ref<MembershipRecord[]>([])
 const load = useAsyncAction()
-const dateFormat = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' })
 
 onMounted(async () => {
   const data = await load.run(() => services.treasury.mine())
@@ -26,33 +29,35 @@ onMounted(async () => {
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <section v-if="!load.pending.value" class="card stack" aria-labelledby="current-title">
-      <h2 id="current-title">Saison {{ season }}</h2>
+      <h2 id="current-title">{{ t('account.membership.season', { season }) }}</h2>
 
       <template v-if="current">
         <MembershipStatusPill :membership="current" />
         <dl class="figures">
-          <div><dt>Montant</dt><dd>{{ formatEuro(current.amountDue) }}</dd></div>
-          <div><dt>Réglé</dt><dd>{{ formatEuro(current.paid) }}</dd></div>
-          <div><dt>Reste</dt><dd>{{ formatEuro(current.remaining) }}</dd></div>
-          <div><dt>Échéance</dt><dd>{{ dateFormat.format(new Date(current.dueDate)) }}</dd></div>
+          <div><dt>{{ t('account.membership.amount') }}</dt><dd>{{ formatEuro(current.amountDue) }}</dd></div>
+          <div><dt>{{ t('account.membership.paid') }}</dt><dd>{{ formatEuro(current.paid) }}</dd></div>
+          <div><dt>{{ t('account.membership.remaining') }}</dt><dd>{{ formatEuro(current.remaining) }}</dd></div>
+          <div><dt>{{ t('account.membership.dueDate') }}</dt><dd>{{ formatDate(new Date(current.dueDate)) }}</dd></div>
         </dl>
-        <p v-if="current.status.id === 'payee'" class="notice notice--success">Merci ! Ton badge « Cotisant » est visible des autres adhérents.</p>
-        <p v-else class="muted">Règle ta cotisation auprès du trésorier (espèces, chèque ou virement). Tu peux lui écrire depuis la messagerie, boîte « Trésorerie ».</p>
+        <p v-if="current.status.id === 'payee'" class="notice notice--success">
+          {{ t('account.membership.thanks', { badge: enumLabel('badge', 'cotisant') }) }}
+        </p>
+        <p v-else class="muted">{{ t('account.membership.howToPay') }}</p>
 
-        <h3>Paiements</h3>
-        <p v-if="!current.payments.length" class="muted">Aucun paiement enregistré.</p>
+        <h3>{{ t('account.membership.payments') }}</h3>
+        <p v-if="!current.payments.length" class="muted">{{ t('account.membership.noPayments') }}</p>
         <ul v-else class="payments">
           <li v-for="p in current.payments" :key="p.id" :class="{ cancelled: p.cancelled }">
-            {{ dateFormat.format(new Date(p.paidAt)) }} · {{ p.method.label }} · <strong>{{ formatEuro(p.amount) }}</strong>
-            <span v-if="p.cancelled"> (annulé)</span>
+            {{ formatDate(new Date(p.paidAt)) }} · {{ p.method.label }} · <strong>{{ formatEuro(p.amount) }}</strong>
+            <span v-if="p.cancelled"> {{ t('account.membership.cancelled') }}</span>
           </li>
         </ul>
       </template>
-      <p v-else class="muted">La cotisation de cette saison n’est pas encore ouverte.</p>
+      <p v-else class="muted">{{ t('account.membership.notOpen') }}</p>
     </section>
 
     <section v-if="history.length" class="card" aria-labelledby="history-title">
-      <h2 id="history-title">Saisons précédentes</h2>
+      <h2 id="history-title">{{ t('account.membership.history') }}</h2>
       <ul class="payments">
         <li v-for="m in history" :key="m.id">
           {{ m.season }} · {{ formatEuro(m.amountDue) }} · <MembershipStatusPill :membership="{ status: m.status, overdue: false }" />

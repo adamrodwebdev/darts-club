@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -8,6 +9,7 @@ import { services } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const setup = ref<TwoFactorSetup | null>(null)
 const code = ref('')
@@ -48,9 +50,9 @@ async function deactivate(): Promise<void> {
 }
 
 function downloadCodes(): void {
-  const blob = new Blob([`Codes de secours Skull Darts 71\n\n${backupCodes.value.join('\n')}\n`], { type: 'text/plain' })
+  const blob = new Blob([`${t('account.twoFactor.fileHeader')}\n\n${backupCodes.value.join('\n')}\n`], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
-  const link = Object.assign(document.createElement('a'), { href: url, download: 'skull-darts-71-codes-de-secours.txt' })
+  const link = Object.assign(document.createElement('a'), { href: url, download: `${t('account.twoFactor.fileName')}.txt` })
   link.click()
   URL.revokeObjectURL(url)
 }
@@ -58,54 +60,56 @@ function downloadCodes(): void {
 
 <template>
   <section class="card stack" aria-labelledby="tfa-title">
-    <h2 id="tfa-title">Double authentification</h2>
+    <h2 id="tfa-title">{{ t('account.twoFactor.title') }}</h2>
 
     <p v-if="auth.user?.twoFactorSetupRequired" class="notice notice--error" role="alert">
-      Obligatoire pour les membres du bureau : active-la pour accéder aux fonctions du club.
+      {{ t('account.twoFactor.required') }}
     </p>
 
     <!-- Codes de secours affichés une seule fois -->
     <div v-if="backupCodes.length" class="notice notice--success stack" role="status">
-      <p><strong>Double authentification activée.</strong> Garde ces codes de secours en lieu sûr : chacun ne sert qu’une fois.</p>
+      <p>
+        <strong>{{ t('account.twoFactor.enabled') }}</strong> {{ t('account.twoFactor.backupIntro') }}
+      </p>
       <ul class="codes">
         <li v-for="c in backupCodes" :key="c"><code>{{ c }}</code></li>
       </ul>
       <div class="actions">
-        <BaseButton variant="ghost" @click="downloadCodes">Télécharger</BaseButton>
-        <BaseButton variant="ghost" @click="backupCodes = []">J’ai noté mes codes</BaseButton>
+        <BaseButton variant="ghost" @click="downloadCodes">{{ t('account.twoFactor.download') }}</BaseButton>
+        <BaseButton variant="ghost" @click="backupCodes = []">{{ t('account.twoFactor.codesNoted') }}</BaseButton>
       </div>
     </div>
 
     <template v-else-if="auth.user?.twoFactorEnabled">
-      <p class="muted">Active : un code de ton application est demandé à chaque connexion.</p>
+      <p class="muted">{{ t('account.twoFactor.active') }}</p>
       <form class="stack" novalidate @submit.prevent="deactivate">
-        <BaseField v-model="disableCode" label="Code actuel ou code de secours" autocomplete="one-time-code" :maxlength="20" />
+        <BaseField v-model="disableCode" :label="t('account.twoFactor.disableCode')" autocomplete="one-time-code" :maxlength="20" />
         <p v-if="disable.error.value" class="notice notice--error" role="alert">{{ disable.error.value }}</p>
-        <BaseButton type="submit" variant="danger" :pending="disable.pending.value" :disabled="!disableCode">Désactiver</BaseButton>
+        <BaseButton type="submit" variant="danger" :pending="disable.pending.value" :disabled="!disableCode">{{ t('account.twoFactor.disable') }}</BaseButton>
       </form>
     </template>
 
     <template v-else-if="setup">
       <ol class="steps">
-        <li>Scanne ce QR code avec une application d’authentification (Aegis, 2FAS, Google Authenticator…).</li>
-        <li>Saisis le code à 6 chiffres affiché.</li>
+        <li>{{ t('account.twoFactor.stepScan') }}</li>
+        <li>{{ t('account.twoFactor.stepCode') }}</li>
       </ol>
-      <img class="qr" :src="setup.qrCode" alt="QR code de configuration de la double authentification" width="240" height="240" />
+      <img class="qr" :src="setup.qrCode" :alt="t('account.twoFactor.qrAlt')" width="240" height="240" />
       <details>
-        <summary>Saisie manuelle</summary>
+        <summary>{{ t('account.twoFactor.manualEntry') }}</summary>
         <p class="secret"><code>{{ setup.secret }}</code></p>
       </details>
       <form class="stack" novalidate @submit.prevent="activate">
-        <BaseField v-model="code" label="Code à 6 chiffres" autocomplete="one-time-code" :maxlength="6" required />
+        <BaseField v-model="code" :label="t('account.twoFactor.codeLabel')" autocomplete="one-time-code" :maxlength="6" required />
         <p v-if="confirm.error.value" class="notice notice--error" role="alert">{{ confirm.error.value }}</p>
-        <BaseButton type="submit" :pending="confirm.pending.value">Activer</BaseButton>
+        <BaseButton type="submit" :pending="confirm.pending.value">{{ t('account.twoFactor.activate') }}</BaseButton>
       </form>
     </template>
 
     <template v-else>
-      <p class="muted">Protège ton compte avec un code temporaire en plus du mot de passe.</p>
+      <p class="muted">{{ t('account.twoFactor.intro') }}</p>
       <p v-if="start.error.value" class="notice notice--error" role="alert">{{ start.error.value }}</p>
-      <BaseButton :pending="start.pending.value" @click="begin">Configurer</BaseButton>
+      <BaseButton :pending="start.pending.value" @click="begin">{{ t('account.twoFactor.configure') }}</BaseButton>
     </template>
   </section>
 </template>

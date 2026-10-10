@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { formatDate } from '@/i18n/format'
 import { formatEuro, type MembershipRecord, type PaymentRecord } from '@/models/Membership'
 import { services } from '@/services'
 
 const props = defineProps<{ payment: PaymentRecord }>()
 const emit = defineEmits<{ saved: [MembershipRecord]; close: [] }>()
+const { t } = useI18n()
 
 const reason = ref('')
 const { pending, error, run } = useAsyncAction()
@@ -24,16 +27,16 @@ async function submit(): Promise<void> {
 <template>
   <dialog ref="dialog" class="dialog" aria-labelledby="cancel-title" @close="emit('close')">
     <form class="stack" novalidate @submit.prevent="submit">
-      <h2 id="cancel-title">Annuler un paiement</h2>
+      <h2 id="cancel-title">{{ t('treasury.cancelDialog.title') }}</h2>
       <p class="muted">
-        {{ formatEuro(payment.amount) }} · {{ payment.method.label }} du {{ new Date(payment.paidAt).toLocaleDateString('fr-FR') }}.
-        Le paiement reste visible dans l’historique, barré, avec son motif.
+        {{ t('treasury.cancelDialog.summary', { amount: formatEuro(payment.amount), method: payment.method.label, date: formatDate(new Date(payment.paidAt), { dateStyle: 'short' }) }) }}
+        {{ t('treasury.cancelDialog.history') }}
       </p>
-      <BaseField v-model="reason" label="Motif" required :maxlength="200" />
+      <BaseField v-model="reason" :label="t('treasury.cancelDialog.reason')" required :maxlength="200" />
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
       <div class="buttons">
-        <BaseButton variant="ghost" @click="dialog?.close()">Retour</BaseButton>
-        <BaseButton type="submit" variant="danger" :pending="pending" :disabled="!reason.trim()">Annuler le paiement</BaseButton>
+        <BaseButton variant="ghost" @click="dialog?.close()">{{ t('treasury.cancelDialog.back') }}</BaseButton>
+        <BaseButton type="submit" variant="danger" :pending="pending" :disabled="!reason.trim()">{{ t('treasury.cancelDialog.submit') }}</BaseButton>
       </div>
     </form>
   </dialog>

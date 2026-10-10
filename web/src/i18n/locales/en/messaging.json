@@ -1,1 +1,32 @@
-{ "messaging": {} }
+{
+  "messaging": {
+    "inbox": {
+      "title": "Messages",
+      "newMessage": "New message",
+      "empty": "No conversations yet. Write to a member or to the board!",
+      "unread": "unread"
+    },
+    "compose": {
+      "recipient": "Recipient",
+      "toMember": "A member",
+      "toBoard": "The board",
+      "change": "Change",
+      "search": "Search for a member",
+      "searchHint": "At least 2 letters",
+      "results": "Members found",
+      "mailbox": "Board mailbox",
+      "subject": "Subject (optional)",
+      "body": "Message",
+      "send": "Send"
+    },
+    "conversation": {
+      "back": "Back to conversations",
+      "fallbackTitle": "Conversation",
+      "thread": "Messages",
+      "older": "Earlier messages",
+      "draftLabel": "Your message",
+      "draftPlaceholder": "Write your message…",
+      "send": "Send"
+    }
+  }
+}

@@ -1,1 +1,111 @@
-{ "account": {} }
+{
+  "account": {
+    "layout": {
+      "title": "Mon compte",
+      "logout": "Se déconnecter",
+      "boardNav": "Espace bureau",
+      "president": "Présidence →",
+      "treasury": "Trésorerie →",
+      "sectionsNav": "Sections du compte",
+      "tabs": {
+        "profile": "Profil",
+        "membership": "Cotisation",
+        "notifications": "Notifications",
+        "security": "Sécurité"
+      }
+    },
+    "profile": {
+      "avatarTitle": "Avatar",
+      "uploading": "Envoi…",
+      "change": "Changer",
+      "remove": "Retirer",
+      "avatarHint": "JPEG, PNG ou WebP, 2 Mo max. L’image est recadrée et nettoyée de ses métadonnées.",
+      "infoTitle": "Informations",
+      "emailHint": "Identifiant de connexion, visible du seul bureau.",
+      "displayName": "Pseudo",
+      "displayNameHint": "Affiché aux autres adhérents.",
+      "phone": "Téléphone",
+      "phoneHint": "Laisser vide pour le retirer.",
+      "saved": "Profil enregistré."
+    },
+    "security": {
+      "currentPassword": "Mot de passe actuel",
+      "newPassword": "Nouveau mot de passe",
+      "newPasswordHint": "12 caractères minimum.",
+      "passwordChanged": "Mot de passe modifié. Tes autres appareils ont été déconnectés.",
+      "dataTitle": "Mes données",
+      "dataText": "Télécharge une copie de toutes les données que le club conserve sur toi (format JSON).",
+      "dataDownload": "Télécharger mes données",
+      "deleteTitle": "Supprimer mon compte",
+      "deleteText": "Action définitive. Tes messages restent visibles des autres sous le nom « Ancien adhérent ».",
+      "deleteWord": "SUPPRIMER",
+      "deleteConfirm": "Tape {word} pour confirmer",
+      "deleteSubmit": "Supprimer définitivement"
+    },
+    "twoFactor": {
+      "title": "Double authentification",
+      "required": "Obligatoire pour les membres du bureau : active-la pour accéder aux fonctions du club.",
+      "enabled": "Double authentification activée.",
+      "backupIntro": "Garde ces codes de secours en lieu sûr : chacun ne sert qu’une fois.",
+      "download": "Télécharger",
+      "codesNoted": "J’ai noté mes codes",
+      "fileHeader": "Codes de secours Skull Darts 71",
+      "fileName": "skull-darts-71-codes-de-secours",
+      "active": "Active : un code de ton application est demandé à chaque connexion.",
+      "disableCode": "Code actuel ou code de secours",
+      "disable": "Désactiver",
+      "stepScan": "Scanne ce QR code avec une application d’authentification (Aegis, 2FAS, Google Authenticator…).",
+      "stepCode": "Saisis le code à 6 chiffres affiché.",
+      "qrAlt": "QR code de configuration de la double authentification",
+      "manualEntry": "Saisie manuelle",
+      "codeLabel": "Code à 6 chiffres",
+      "activate": "Activer",
+      "intro": "Protège ton compte avec un code temporaire en plus du mot de passe.",
+      "configure": "Configurer"
+    },
+    "notificationSettings": {
+      "pushTitle": "Notifications push sur cet appareil",
+      "pushOn": "Activées sur ce navigateur.",
+      "pushOff": "Désactivées sur ce navigateur.",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "pushUnsupported": "Ce navigateur ne gère pas les notifications push. Sur iPhone, ajoute d’abord le site à l’écran d’accueil.",
+      "prefsTitle": "Que recevoir, et où ?",
+      "prefsIntro": "Le centre de notifications du site reçoit toujours tout.",
+      "caption": "Canaux activés par catégorie",
+      "category": "Catégorie",
+      "channels": {
+        "email": "Email",
+        "push": "Push"
+      },
+      "toggle": "{category} par {channel}",
+      "saved": "Préférences enregistrées."
+    },
+    "membership": {
+      "season": "Saison {season}",
+      "amount": "Montant",
+      "paid": "Réglé",
+      "remaining": "Reste",
+      "dueDate": "Échéance",
+      "thanks": "Merci ! Ton badge « {badge} » est visible des autres adhérents.",
+      "howToPay": "Règle ta cotisation auprès du trésorier (espèces, chèque ou virement). Tu peux lui écrire depuis la messagerie, boîte « Trésorerie ».",
+      "payments": "Paiements",
+      "noPayments": "Aucun paiement enregistré.",
+      "cancelled": "(annulé)",
+      "notOpen": "La cotisation de cette saison n’est pas encore ouverte.",
+      "history": "Saisons précédentes"
+    },
+    "notificationCenter": {
+      "title": "Notifications",
+      "markAllRead": "Tout marquer comme lu",
+      "empty": "Aucune notification pour l’instant.",
+      "unread": "(non lue)"
+    },
+    "infos": {
+      "title": "Infos du club",
+      "empty": "Aucune annonce pour l’instant.",
+      "pinned": "Épinglée",
+      "edited": "modifiée"
+    }
+  }
+}

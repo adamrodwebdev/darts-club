@@ -91,7 +91,14 @@
   "errors": {
     "fields": "Vérifie les champs indiqués.",
     "unexpected": "Une erreur inattendue est survenue.",
-    "network": "Connexion impossible, vérifie ton réseau."
+    "network": "Connexion impossible, vérifie ton réseau.",
+    "tooManyRequests": "Trop de tentatives, réessaie dans quelques minutes.",
+    "server": "Le serveur rencontre un problème, réessaie plus tard.",
+    "requestFailed": "La requête a échoué.",
+    "invalidResponse": "Réponse inattendue du serveur ({what}).",
+    "invalidQrCode": "QR code invalide.",
+    "pushUnavailable": "Les notifications push ne sont pas encore configurées sur le serveur.",
+    "pushDenied": "Autorise les notifications dans ton navigateur pour les recevoir."
   },
   "landing": {
     "kicker": "Club de fléchettes",

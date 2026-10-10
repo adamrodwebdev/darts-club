@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import BaseField from '@/components/BaseField.vue'
@@ -8,6 +9,7 @@ import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Announcement } from '@/models/Admin'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const announcements = ref<Announcement[]>([])
 const title = ref('')
 const body = ref('')
@@ -68,46 +70,46 @@ async function confirmDelete(): Promise<void> {
 <template>
   <div class="stack">
     <form class="card stack" novalidate @submit.prevent="submit">
-      <h2>Publier une annonce</h2>
-      <BaseField v-model="title" label="Titre" required :maxlength="120" />
-      <BaseField v-model="body" label="Texte" multiline required :maxlength="5000" />
-      <label class="check"><input v-model="pinned" type="checkbox" /> Épingler en haut du fil</label>
-      <p class="muted">Tous les adhérents sont prévenus (centre de notifications, email / push selon leurs préférences).</p>
+      <h2>{{ t('admin.announcements.title') }}</h2>
+      <BaseField v-model="title" :label="t('admin.announcements.subject')" required :maxlength="120" />
+      <BaseField v-model="body" :label="t('admin.announcements.body')" multiline required :maxlength="5000" />
+      <label class="check"><input v-model="pinned" type="checkbox" /> {{ t('admin.announcements.pin') }}</label>
+      <p class="muted">{{ t('admin.announcements.notifyHint') }}</p>
       <p v-if="publish.error.value" class="notice notice--error" role="alert">{{ publish.error.value }}</p>
-      <BaseButton type="submit" :pending="publish.pending.value" :disabled="!title.trim() || !body.trim()">Publier</BaseButton>
+      <BaseButton type="submit" :pending="publish.pending.value" :disabled="!title.trim() || !body.trim()">{{ t('admin.announcements.publish') }}</BaseButton>
     </form>
 
     <p v-if="action.error.value && !editing && !deleting" class="notice notice--error" role="alert">{{ action.error.value }}</p>
 
     <article v-for="a in announcements" :key="a.id" class="card">
-      <h3>{{ a.pinned ? '📌 ' : '' }}{{ a.title }}</h3>
+      <h3>{{ a.pinned ? t('admin.announcements.pinnedTitle', { title: a.title }) : a.title }}</h3>
       <p class="body">{{ a.body }}</p>
       <p class="muted"><RelativeTime :date="a.publishedAt" /> · {{ a.author }}</p>
       <div class="buttons">
-        <BaseButton variant="ghost" @click="togglePin(a)">{{ a.pinned ? 'Désépingler' : 'Épingler' }}</BaseButton>
-        <BaseButton variant="ghost" @click="startEdit(a)">Modifier</BaseButton>
-        <BaseButton variant="danger" @click="deleting = a">Supprimer</BaseButton>
+        <BaseButton variant="ghost" @click="togglePin(a)">{{ a.pinned ? t('admin.announcements.unpinAction') : t('admin.announcements.pinAction') }}</BaseButton>
+        <BaseButton variant="ghost" @click="startEdit(a)">{{ t('common.edit') }}</BaseButton>
+        <BaseButton variant="danger" @click="deleting = a">{{ t('common.delete') }}</BaseButton>
       </div>
     </article>
 
-    <BaseDialog v-if="editing" title="Modifier l’annonce" @close="editing = null">
+    <BaseDialog v-if="editing" :title="t('admin.announcements.editTitle')" @close="editing = null">
       <form class="stack" @submit.prevent="saveEdit">
-        <BaseField v-model="editTitle" label="Titre" required :maxlength="120" />
-        <BaseField v-model="editBody" label="Texte" multiline required :maxlength="5000" />
-        <p class="muted">La correction ne renvoie pas de notification.</p>
+        <BaseField v-model="editTitle" :label="t('admin.announcements.subject')" required :maxlength="120" />
+        <BaseField v-model="editBody" :label="t('admin.announcements.body')" multiline required :maxlength="5000" />
+        <p class="muted">{{ t('admin.announcements.editHint') }}</p>
         <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
         <div class="buttons">
-          <BaseButton variant="ghost" @click="editing = null">Annuler</BaseButton>
-          <BaseButton type="submit" :pending="action.pending.value">Enregistrer</BaseButton>
+          <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
+          <BaseButton type="submit" :pending="action.pending.value">{{ t('common.save') }}</BaseButton>
         </div>
       </form>
     </BaseDialog>
 
-    <BaseDialog v-if="deleting" title="Supprimer l’annonce ?" @close="deleting = null">
-      <p>« {{ deleting.title }} » disparaîtra du fil des adhérents.</p>
+    <BaseDialog v-if="deleting" :title="t('admin.announcements.deleteTitle')" @close="deleting = null">
+      <p>{{ t('admin.announcements.deleteText', { title: deleting.title }) }}</p>
       <div class="buttons">
-        <BaseButton variant="ghost" @click="deleting = null">Annuler</BaseButton>
-        <BaseButton variant="danger" :pending="action.pending.value" @click="confirmDelete">Supprimer</BaseButton>
+        <BaseButton variant="ghost" @click="deleting = null">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton variant="danger" :pending="action.pending.value" @click="confirmDelete">{{ t('common.delete') }}</BaseButton>
       </div>
     </BaseDialog>
   </div>

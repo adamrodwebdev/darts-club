@@ -1,1 +1,111 @@
-{ "account": {} }
+{
+  "account": {
+    "layout": {
+      "title": "My account",
+      "logout": "Log out",
+      "boardNav": "Board area",
+      "president": "Presidency →",
+      "treasury": "Treasury →",
+      "sectionsNav": "Account sections",
+      "tabs": {
+        "profile": "Profile",
+        "membership": "Membership fee",
+        "notifications": "Notifications",
+        "security": "Security"
+      }
+    },
+    "profile": {
+      "avatarTitle": "Avatar",
+      "uploading": "Uploading…",
+      "change": "Change",
+      "remove": "Remove",
+      "avatarHint": "JPEG, PNG or WebP, 2 MB max. The image is cropped and stripped of its metadata.",
+      "infoTitle": "Details",
+      "emailHint": "Your login, only visible to the board.",
+      "displayName": "Nickname",
+      "displayNameHint": "Shown to other members.",
+      "phone": "Phone",
+      "phoneHint": "Leave empty to remove it.",
+      "saved": "Profile saved."
+    },
+    "security": {
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "newPasswordHint": "At least 12 characters.",
+      "passwordChanged": "Password changed. Your other devices have been logged out.",
+      "dataTitle": "My data",
+      "dataText": "Download a copy of all the data the club holds about you (JSON format).",
+      "dataDownload": "Download my data",
+      "deleteTitle": "Delete my account",
+      "deleteText": "This cannot be undone. Your messages stay visible to others under the name “Former member”.",
+      "deleteWord": "DELETE",
+      "deleteConfirm": "Type {word} to confirm",
+      "deleteSubmit": "Delete permanently"
+    },
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "required": "Required for board members: turn it on to access the club’s features.",
+      "enabled": "Two-factor authentication enabled.",
+      "backupIntro": "Keep these backup codes somewhere safe: each one only works once.",
+      "download": "Download",
+      "codesNoted": "I’ve saved my codes",
+      "fileHeader": "Skull Darts 71 backup codes",
+      "fileName": "skull-darts-71-backup-codes",
+      "active": "On: a code from your app is asked for at every login.",
+      "disableCode": "Current code or backup code",
+      "disable": "Turn off",
+      "stepScan": "Scan this QR code with an authenticator app (Aegis, 2FAS, Google Authenticator…).",
+      "stepCode": "Enter the 6-digit code it shows.",
+      "qrAlt": "QR code to set up two-factor authentication",
+      "manualEntry": "Manual entry",
+      "codeLabel": "6-digit code",
+      "activate": "Turn on",
+      "intro": "Protect your account with a temporary code on top of your password.",
+      "configure": "Set up"
+    },
+    "notificationSettings": {
+      "pushTitle": "Push notifications on this device",
+      "pushOn": "On in this browser.",
+      "pushOff": "Off in this browser.",
+      "enable": "Turn on",
+      "disable": "Turn off",
+      "pushUnsupported": "This browser doesn’t support push notifications. On iPhone, add the site to your home screen first.",
+      "prefsTitle": "What to receive, and where?",
+      "prefsIntro": "The site’s notification centre always gets everything.",
+      "caption": "Channels enabled per category",
+      "category": "Category",
+      "channels": {
+        "email": "Email",
+        "push": "Push"
+      },
+      "toggle": "{category} by {channel}",
+      "saved": "Preferences saved."
+    },
+    "membership": {
+      "season": "Season {season}",
+      "amount": "Amount",
+      "paid": "Paid",
+      "remaining": "Remaining",
+      "dueDate": "Due date",
+      "thanks": "Thank you! Your “{badge}” badge is visible to other members.",
+      "howToPay": "Pay your membership fee to the treasurer (cash, cheque or bank transfer). You can write to them from the messages, “Treasury” mailbox.",
+      "payments": "Payments",
+      "noPayments": "No payments recorded.",
+      "cancelled": "(cancelled)",
+      "notOpen": "This season’s membership fee isn’t open yet.",
+      "history": "Previous seasons"
+    },
+    "notificationCenter": {
+      "title": "Notifications",
+      "markAllRead": "Mark all as read",
+      "empty": "No notifications yet.",
+      "unread": "(unread)"
+    },
+    "infos": {
+      "title": "Club news",
+      "empty": "No announcements yet.",
+      "pinned": "Pinned",
+      "edited": "edited"
+    }
+  }
+}

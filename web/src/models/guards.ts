@@ -1,7 +1,9 @@
+import { i18n } from '@/i18n'
+
 /** Validation des réponses de l'API à la frontière (pas de `any` dans l'app). */
 export class InvalidResponseError extends Error {
   constructor(what: string) {
-    super(`Réponse inattendue du serveur (${what}).`)
+    super(i18n.global.t('errors.invalidResponse', { what }))
     this.name = 'InvalidResponseError'
   }
 }

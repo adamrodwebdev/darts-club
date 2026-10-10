@@ -1,1 +1,53 @@
-{ "treasury": {} }
+{
+  "treasury": {
+    "dashboard": {
+      "title": "Trésorerie",
+      "seasonLabel": "Saison",
+      "seasonOption": "Saison {season}",
+      "export": "Exporter (CSV)",
+      "collected": "Encaissé",
+      "outOf": "sur {amount}",
+      "upToDate": "À jour",
+      "outOfMembers": "sur {n} adhérents | sur {n} adhérents | sur {n} adhérents",
+      "partial": "Partielles",
+      "overdue": "En retard",
+      "dueDate": "échéance {date}",
+      "openSummary": "Ouvrir la saison / relancer",
+      "openAmount": "Montant de la cotisation (€)",
+      "openSubmit": "Ouvrir {season} pour tous les adhérents",
+      "remind": "Relancer les retardataires",
+      "remindHint": "Les relances partent aussi automatiquement chaque lundi, au plus une fois par semaine et par adhérent.",
+      "search": "Rechercher un adhérent",
+      "status": "Statut",
+      "statusAll": "Tous",
+      "statusUnpaid": "Non payées",
+      "statusPartial": "Partielles",
+      "statusPaid": "Payées",
+      "empty": "Aucune cotisation pour ces critères.",
+      "deletedAccount": "compte supprimé",
+      "collect": "Encaisser",
+      "payments": "{n} paiement(s) | {n} paiement(s) | {n} paiement(s)",
+      "cancelledReason": "annulé : {reason}",
+      "opened": "{n} cotisation(s) ouverte(s) pour {season}. | {n} cotisation(s) ouverte(s) pour {season}. | {n} cotisation(s) ouverte(s) pour {season}.",
+      "reminded": "{n} relance(s) envoyée(s). | {n} relance(s) envoyée(s). | {n} relance(s) envoyée(s).",
+      "paid": "Paiement enregistré pour {name}.",
+      "cancelled": "Paiement annulé pour {name}."
+    },
+    "paymentForm": {
+      "title": "Encaisser · {name}",
+      "remaining": "Reste à payer : {amount}",
+      "amount": "Montant (€)",
+      "method": "Moyen de paiement",
+      "paidAt": "Date du paiement",
+      "reference": "Référence (n° de chèque, virement…)"
+    },
+    "cancelDialog": {
+      "title": "Annuler un paiement",
+      "summary": "{amount} · {method} du {date}.",
+      "history": "Le paiement reste visible dans l’historique, barré, avec son motif.",
+      "reason": "Motif",
+      "back": "Retour",
+      "submit": "Annuler le paiement"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import MemberBadges from '@/components/MemberBadges.vue'
@@ -11,6 +12,7 @@ import { services } from '@/services'
 import { useNotificationStore } from '@/stores/notifications'
 
 const props = defineProps<{ id: string }>()
+const { t } = useI18n()
 
 const conversation = ref<ConversationSummary | null>(null)
 const messages = ref<ChatMessage[]>([])
@@ -67,14 +69,14 @@ onUnmounted(stop)
 <template>
   <section class="page chat">
     <header class="chat__head">
-      <RouterLink to="/messages" class="back" aria-label="Retour aux conversations">←</RouterLink>
-      <h1>{{ conversation?.title ?? 'Conversation' }}</h1>
+      <RouterLink to="/messages" class="back" :aria-label="t('messaging.conversation.back')">←</RouterLink>
+      <h1>{{ conversation?.title ?? t('messaging.conversation.fallbackTitle') }}</h1>
     </header>
 
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
-    <div ref="thread" class="thread" role="log" aria-live="polite" aria-label="Messages" tabindex="0">
-      <BaseButton v-if="cursor" variant="ghost" class="older" :pending="older.pending.value" @click="loadOlder">Messages précédents</BaseButton>
+    <div ref="thread" class="thread" role="log" aria-live="polite" :aria-label="t('messaging.conversation.thread')" tabindex="0">
+      <BaseButton v-if="cursor" variant="ghost" class="older" :pending="older.pending.value" @click="loadOlder">{{ t('messaging.conversation.older') }}</BaseButton>
       <article v-for="m in messages" :key="m.id" class="bubble" :class="{ 'bubble--mine': m.mine }">
         <UserAvatar v-if="!m.mine" :name="m.author.displayName" :src="m.author.avatarUrl" :size="32" />
         <div class="bubble__content">
@@ -90,9 +92,9 @@ onUnmounted(stop)
     </div>
 
     <form class="composer" novalidate @submit.prevent="submit">
-      <label for="draft" class="visually-hidden">Ton message</label>
-      <textarea id="draft" v-model="draft" rows="2" maxlength="5000" placeholder="Écris ton message…" @keydown="onKeydown" />
-      <BaseButton type="submit" :pending="send.pending.value" :disabled="!draft.trim()">Envoyer</BaseButton>
+      <label for="draft" class="visually-hidden">{{ t('messaging.conversation.draftLabel') }}</label>
+      <textarea id="draft" v-model="draft" rows="2" maxlength="5000" :placeholder="t('messaging.conversation.draftPlaceholder')" @keydown="onKeydown" />
+      <BaseButton type="submit" :pending="send.pending.value" :disabled="!draft.trim()">{{ t('messaging.conversation.send') }}</BaseButton>
     </form>
     <p v-if="send.error.value" class="notice notice--error" role="alert">{{ send.error.value }}</p>
   </section>

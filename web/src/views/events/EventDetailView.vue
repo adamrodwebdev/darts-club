@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
@@ -13,6 +14,7 @@ import { formatEventDate, type EventDetail } from '@/models/ClubEvent'
 import { services } from '@/services'
 
 const props = defineProps<{ id: string }>()
+const { t } = useI18n()
 
 const detail = ref<EventDetail | null>(null)
 const event = computed(() => detail.value?.summary ?? null)
@@ -79,15 +81,15 @@ async function saveSummary(): Promise<void> {
 
 <template>
   <section class="page stack">
-    <RouterLink :to="event?.past ? '/evenements?vue=archives' : '/evenements'" class="back">← Événements</RouterLink>
+    <RouterLink :to="event?.past ? '/evenements?vue=archives' : '/evenements'" class="back">{{ t('events.detail.back') }}</RouterLink>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <template v-if="detail && event">
       <header class="hero" :class="{ 'hero--cancelled': event.cancelled }">
-        <p class="muted">Saison {{ event.season }} · organisé par {{ detail.organizer }}</p>
+        <p class="muted">{{ t('events.detail.meta', { season: event.season, organizer: detail.organizer }) }}</p>
         <h1>{{ event.title }}</h1>
         <p class="when">{{ formatEventDate(event.startsAt) }} — {{ event.location }}</p>
-        <p v-if="event.cancelled" class="notice notice--error" role="status">Annulé : {{ event.cancelReason }}</p>
+        <p v-if="event.cancelled" class="notice notice--error" role="status">{{ t('events.detail.cancelled', { reason: event.cancelReason ?? '' }) }}</p>
       </header>
 
       <div class="actions">
@@ -98,24 +100,28 @@ async function saveSummary(): Promise<void> {
           :pending="registration.pending.value"
           @click="toggleRegistration"
         >
-          {{ event.isRegistered ? 'Me désinscrire' : event.full ? 'Complet' : 'M’inscrire' }}
+          {{ event.isRegistered ? t('events.detail.unregister') : event.full ? t('events.detail.full') : t('events.detail.register') }}
         </BaseButton>
-        <a class="link-button" :href="services.events.icsUrl(event.id)" download>Ajouter à mon agenda</a>
+        <a class="link-button" :href="services.events.icsUrl(event.id)" download>{{ t('events.detail.addToCalendar') }}</a>
         <span class="muted">
-          {{ event.registered }} inscrit(s)<template v-if="event.capacity"> sur {{ event.capacity }}</template>
+          {{
+            event.capacity
+              ? t('events.detail.registeredOf', { n: event.registered, capacity: event.capacity }, event.registered)
+              : t('events.detail.registered', event.registered)
+          }}
         </span>
       </div>
       <p v-if="registration.error.value" class="notice notice--error" role="alert">{{ registration.error.value }}</p>
 
       <section v-if="detail.description" class="card">
-        <h2>Présentation</h2>
+        <h2>{{ t('events.detail.description') }}</h2>
         <p class="text">{{ detail.description }}</p>
       </section>
 
       <section v-if="detail.report || (detail.canManage && event.started)" class="card stack">
-        <h2>Résumé</h2>
+        <h2>{{ t('events.detail.summary') }}</h2>
         <p v-if="detail.report" class="text">{{ detail.report }}</p>
-        <BaseButton v-if="detail.canManage" variant="ghost" @click="startSummary">{{ detail.report ? 'Modifier le résumé' : 'Rédiger le résumé' }}</BaseButton>
+        <BaseButton v-if="detail.canManage" variant="ghost" @click="startSummary">{{ detail.report ? t('events.detail.editSummary') : t('events.detail.writeSummary') }}</BaseButton>
       </section>
 
       <PhotoGallery
@@ -128,7 +134,7 @@ async function saveSummary(): Promise<void> {
       />
 
       <section v-if="event.started && !event.cancelled" class="stack" aria-labelledby="posts-title">
-        <h2 id="posts-title">Souvenirs des adhérents</h2>
+        <h2 id="posts-title">{{ t('events.detail.posts') }}</h2>
         <ul class="posts">
           <li v-for="p in detail.posts" :key="p.id" class="post">
             <UserAvatar :name="p.author.displayName" :src="p.author.avatarUrl" :size="36" />
@@ -138,26 +144,26 @@ async function saveSummary(): Promise<void> {
                 <RelativeTime class="muted" :date="p.at" />
               </p>
               <p class="text">{{ p.body }}</p>
-              <BaseButton v-if="p.mine || detail.canManage" variant="ghost" @click="deletePost(p.id)">Supprimer</BaseButton>
+              <BaseButton v-if="p.mine || detail.canManage" variant="ghost" @click="deletePost(p.id)">{{ t('common.delete') }}</BaseButton>
             </div>
           </li>
         </ul>
         <form class="stack" novalidate @submit.prevent="sendPost">
-          <BaseField v-model="draftPost" label="Partager un souvenir" multiline :maxlength="5000" />
+          <BaseField v-model="draftPost" :label="t('events.detail.sharePost')" multiline :maxlength="5000" />
           <p v-if="post.error.value" class="notice notice--error" role="alert">{{ post.error.value }}</p>
-          <BaseButton type="submit" :pending="post.pending.value" :disabled="!draftPost.trim()">Publier</BaseButton>
+          <BaseButton type="submit" :pending="post.pending.value" :disabled="!draftPost.trim()">{{ t('events.detail.publish') }}</BaseButton>
         </form>
       </section>
 
       <section v-if="detail.canManage" class="card stack" aria-labelledby="manage-title">
-        <h2 id="manage-title">Organisation</h2>
+        <h2 id="manage-title">{{ t('events.detail.manage') }}</h2>
         <div class="actions">
-          <RouterLink v-if="!event.cancelled && !event.started" :to="`/evenements/${event.id}/modifier`" class="link-button">Modifier</RouterLink>
-          <BaseButton v-if="!event.cancelled && !event.past" variant="danger" @click="cancelling = true">Annuler l’événement</BaseButton>
+          <RouterLink v-if="!event.cancelled && !event.started" :to="`/evenements/${event.id}/modifier`" class="link-button">{{ t('common.edit') }}</RouterLink>
+          <BaseButton v-if="!event.cancelled && !event.past" variant="danger" @click="cancelling = true">{{ t('events.detail.cancelEvent') }}</BaseButton>
         </div>
         <p v-if="manage.error.value" class="notice notice--error" role="alert">{{ manage.error.value }}</p>
         <details v-if="detail.participants">
-          <summary>Inscrits ({{ detail.participants.length }})</summary>
+          <summary>{{ t('events.detail.participants', { count: detail.participants.length }) }}</summary>
           <ul class="participants">
             <li v-for="m in detail.participants" :key="m.id ?? m.displayName">
               <UserAvatar :name="m.displayName" :src="m.avatarUrl" :size="28" /> {{ m.displayName }}
@@ -166,23 +172,23 @@ async function saveSummary(): Promise<void> {
         </details>
       </section>
 
-      <BaseDialog v-if="cancelling" title="Annuler l’événement" @close="cancelling = false">
+      <BaseDialog v-if="cancelling" :title="t('events.detail.cancelEvent')" @close="cancelling = false">
         <form class="stack" @submit.prevent="confirmCancel">
-          <p class="muted">Tous les adhérents seront prévenus, avec le motif.</p>
-          <BaseField v-model="cancelReason" label="Motif" required :maxlength="200" />
+          <p class="muted">{{ t('events.detail.cancelNotice') }}</p>
+          <BaseField v-model="cancelReason" :label="t('events.detail.cancelReason')" required :maxlength="200" />
           <div class="actions">
-            <BaseButton variant="ghost" @click="cancelling = false">Retour</BaseButton>
-            <BaseButton type="submit" variant="danger" :pending="manage.pending.value" :disabled="!cancelReason.trim()">Annuler l’événement</BaseButton>
+            <BaseButton variant="ghost" @click="cancelling = false">{{ t('events.detail.dismiss') }}</BaseButton>
+            <BaseButton type="submit" variant="danger" :pending="manage.pending.value" :disabled="!cancelReason.trim()">{{ t('events.detail.cancelEvent') }}</BaseButton>
           </div>
         </form>
       </BaseDialog>
 
-      <BaseDialog v-if="editingSummary" title="Résumé de l’événement" @close="editingSummary = false">
+      <BaseDialog v-if="editingSummary" :title="t('events.detail.summaryDialog')" @close="editingSummary = false">
         <form class="stack" @submit.prevent="saveSummary">
-          <BaseField v-model="summaryDraft" label="Résumé (résultats, moments forts…)" multiline :maxlength="10000" />
+          <BaseField v-model="summaryDraft" :label="t('events.detail.summaryLabel')" multiline :maxlength="10000" />
           <div class="actions">
-            <BaseButton variant="ghost" @click="editingSummary = false">Annuler</BaseButton>
-            <BaseButton type="submit" :pending="manage.pending.value">Enregistrer</BaseButton>
+            <BaseButton variant="ghost" @click="editingSummary = false">{{ t('common.cancel') }}</BaseButton>
+            <BaseButton type="submit" :pending="manage.pending.value">{{ t('common.save') }}</BaseButton>
           </div>
         </form>
       </BaseDialog>

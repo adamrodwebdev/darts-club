@@ -1,1 +1,32 @@
-{ "messaging": {} }
+{
+  "messaging": {
+    "inbox": {
+      "title": "Messages",
+      "newMessage": "Nouveau message",
+      "empty": "Aucune conversation. Écris à un adhérent ou au bureau !",
+      "unread": "non lu(s)"
+    },
+    "compose": {
+      "recipient": "Destinataire",
+      "toMember": "Un adhérent",
+      "toBoard": "Le bureau",
+      "change": "Changer",
+      "search": "Rechercher un adhérent",
+      "searchHint": "2 lettres minimum",
+      "results": "Adhérents trouvés",
+      "mailbox": "Boîte du bureau",
+      "subject": "Sujet (facultatif)",
+      "body": "Message",
+      "send": "Envoyer"
+    },
+    "conversation": {
+      "back": "Retour aux conversations",
+      "fallbackTitle": "Conversation",
+      "thread": "Messages",
+      "older": "Messages précédents",
+      "draftLabel": "Ton message",
+      "draftPlaceholder": "Écris ton message…",
+      "send": "Envoyer"
+    }
+  }
+}

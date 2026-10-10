@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -8,6 +9,7 @@ import { services } from '@/services'
 
 const props = defineProps<{ eventId: string; photos: EventPhoto[]; canUpload: boolean; canManage: boolean }>()
 const emit = defineEmits<{ changed: [] }>()
+const { t } = useI18n()
 
 const openIndex = ref<number | null>(null)
 const current = computed(() => (openIndex.value === null ? null : props.photos[openIndex.value] ?? null))
@@ -53,39 +55,39 @@ async function deleteCurrent(): Promise<void> {
 <template>
   <section class="stack" aria-labelledby="gallery-title">
     <div class="head">
-      <h2 id="gallery-title">Photos <span class="muted">({{ photos.length }})</span></h2>
+      <h2 id="gallery-title">{{ t('events.gallery.title') }} <span class="muted">({{ photos.length }})</span></h2>
       <label v-if="canUpload" class="upload">
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="visually-hidden" @change="onFiles" />
-        <span>{{ upload.pending.value ? 'Envoi…' : 'Ajouter des photos' }}</span>
+        <span>{{ upload.pending.value ? t('events.gallery.uploading') : t('events.gallery.upload') }}</span>
       </label>
     </div>
     <p v-if="upload.error.value" class="notice notice--error" role="alert">{{ upload.error.value }}</p>
-    <p v-if="!photos.length" class="muted">Pas encore de photo.</p>
+    <p v-if="!photos.length" class="muted">{{ t('events.gallery.empty') }}</p>
 
     <ul class="grid">
       <li v-for="(photo, index) in photos" :key="photo.id">
-        <button type="button" class="thumb" :aria-label="`Agrandir la photo ${index + 1} sur ${photos.length}`" @click="openIndex = index">
+        <button type="button" class="thumb" :aria-label="t('events.gallery.enlarge', { index: index + 1, total: photos.length })" @click="openIndex = index">
           <!-- Dimensions déclarées : pas de décalage de mise en page -->
-          <img :src="photo.thumbUrl" :alt="photo.caption ?? `Photo de ${photo.uploader}`" :width="photo.width" :height="photo.height" loading="lazy" decoding="async" />
+          <img :src="photo.thumbUrl" :alt="photo.caption ?? t('events.gallery.photoBy', { name: photo.uploader })" :width="photo.width" :height="photo.height" loading="lazy" decoding="async" />
         </button>
       </li>
     </ul>
 
-    <BaseDialog v-if="current" :title="`Photo ${(openIndex ?? 0) + 1} / ${photos.length}`" @close="openIndex = null">
+    <BaseDialog v-if="current" :title="t('events.gallery.position', { index: (openIndex ?? 0) + 1, total: photos.length })" @close="openIndex = null">
       <div class="viewer" tabindex="0" @keydown="onKey">
         <img
           :src="current.largeUrl"
           :srcset="`${current.thumbUrl} 480w, ${current.largeUrl} 1600w`"
           sizes="(max-width: 600px) 100vw, 900px"
-          :alt="current.caption ?? `Photo de ${current.uploader}`"
+          :alt="current.caption ?? t('events.gallery.photoBy', { name: current.uploader })"
           :width="current.width"
           :height="current.height"
         />
-        <p class="muted">Ajoutée par {{ current.uploader }}</p>
+        <p class="muted">{{ t('events.gallery.addedBy', { name: current.uploader }) }}</p>
         <div class="buttons">
-          <BaseButton variant="ghost" :disabled="photos.length < 2" @click="step(-1)">← Précédente</BaseButton>
-          <BaseButton variant="ghost" :disabled="photos.length < 2" @click="step(1)">Suivante →</BaseButton>
-          <BaseButton v-if="current.mine || canManage" variant="danger" :pending="remove.pending.value" @click="deleteCurrent">Supprimer</BaseButton>
+          <BaseButton variant="ghost" :disabled="photos.length < 2" @click="step(-1)">{{ t('events.gallery.previous') }}</BaseButton>
+          <BaseButton variant="ghost" :disabled="photos.length < 2" @click="step(1)">{{ t('events.gallery.next') }}</BaseButton>
+          <BaseButton v-if="current.mine || canManage" variant="danger" :pending="remove.pending.value" @click="deleteCurrent">{{ t('common.delete') }}</BaseButton>
         </div>
         <p v-if="remove.error.value" class="notice notice--error" role="alert">{{ remove.error.value }}</p>
       </div>
