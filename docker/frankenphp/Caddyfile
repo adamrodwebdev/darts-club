@@ -50,3 +50,8 @@
 		file_server
 	}
 }
+
+# Variante « www » : redirection permanente vers le domaine principal (certificat obtenu aussi)
+www.{$SERVER_NAME:localhost} {
+	redir https://{$SERVER_NAME:localhost}{uri} permanent
+}

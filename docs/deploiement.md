@@ -23,28 +23,21 @@ Chez le registraire, créer :
 |---|---|---|
 | A | `@` | adresse IPv4 du serveur |
 | AAAA | `@` | adresse IPv6 du serveur |
+| A | `www` | adresse IPv4 du serveur (redirigé vers le domaine principal) |
 
 Le certificat HTTPS est obtenu automatiquement par Caddy au premier démarrage (ports 80 et 443 ouverts).
 
 ## 3. Préparer le serveur (une fois)
 
-Connecté en `root` :
+Installer Debian 12 avec la clé SSH publique de l'administrateur (option proposée par l'hébergeur à
+l'installation), copier [`deploy/server-setup.sh`](../deploy/server-setup.sh) sur le serveur puis :
 
 ```bash
-apt update && apt full-upgrade -y
-apt install -y ufw fail2ban unattended-upgrades age curl
-dpkg-reconfigure -plow unattended-upgrades          # mises à jour de sécurité automatiques
-curl -fsSL https://get.docker.com | sh               # Docker + Compose
-
-adduser --disabled-password --gecos '' deploy        # compte de déploiement, sans mot de passe
-usermod -aG docker deploy
-mkdir -p /home/deploy/.ssh /opt/skull-darts-71 /var/backups/skull-darts-71
-cp ~/.ssh/authorized_keys /home/deploy/.ssh/ && chown -R deploy: /home/deploy/.ssh /opt/skull-darts-71 /var/backups/skull-darts-71
-
-ufw allow OpenSSH && ufw allow 80,443/tcp && ufw --force enable
-sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/; s/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
-systemctl restart ssh
+sudo sh server-setup.sh "ssh-ed25519 AAAA… clé publique de déploiement GitHub Actions"
 ```
+
+Le script installe les mises à jour (et les rend automatiques), Docker, le pare-feu (SSH, HTTP, HTTPS),
+fail2ban, crée le compte `deploy` (clés SSH uniquement) et interdit les mots de passe et la connexion root en SSH.
 
 ## 4. Secrets du serveur (`.env`)
 

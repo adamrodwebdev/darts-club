@@ -29,6 +29,12 @@
     <li>Administration log: [period to be defined].</li>
   </ul>
 
+  <h2>Data hosting</h2>
+  <p>
+    Data is hosted by OVHcloud in Canada (Beauharnois, Quebec), a country recognised by the European Commission as
+    providing an adequate level of personal data protection. Backups are encrypted.
+  </p>
+
   <h2>Security</h2>
   <p>
     Hashed passwords (Argon2id), two-factor authentication available and mandatory for the board, encrypted 2FA

@@ -14,7 +14,10 @@
   <p>[Prénom Nom], président(e) de l’association.</p>
 
   <h2>Hébergement</h2>
-  <p>[Nom de l’hébergeur], [adresse], [téléphone].</p>
+  <p>
+    OVH SAS, 2 rue Kellermann, 59100 Roubaix, France — 1007.<br />
+    Serveur situé dans le centre de données OVHcloud de Beauharnois (Québec, Canada).
+  </p>
 
   <h2>Propriété intellectuelle</h2>
   <p>

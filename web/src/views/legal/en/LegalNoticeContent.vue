@@ -17,7 +17,10 @@
   <p>[First name Last name], president of the association.</p>
 
   <h2>Hosting</h2>
-  <p>[Host name], [address], [phone number].</p>
+  <p>
+    OVH SAS, 2 rue Kellermann, 59100 Roubaix, France — +33 9 72 10 10 07.<br />
+    Server located in the OVHcloud data centre in Beauharnois (Quebec, Canada).
+  </p>
 
   <h2>Intellectual property</h2>
   <p>
