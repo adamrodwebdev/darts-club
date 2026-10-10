@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterLink, RouterView } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
@@ -24,7 +24,25 @@ watch(
 
 <template>
   <AppHeader />
+  <p v-if="auth.user?.twoFactorSetupRequired" class="tfa-banner" role="alert">
+    Membre du bureau : <RouterLink to="/compte/securite">active la double authentification</RouterLink> pour accéder aux fonctions du club.
+  </p>
   <main id="main" tabindex="-1">
     <RouterView />
   </main>
 </template>
+
+<style scoped>
+.tfa-banner {
+  margin: 0;
+  padding: 0.75rem var(--gutter);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-align: center;
+}
+
+.tfa-banner a {
+  color: inherit;
+  font-weight: 700;
+}
+</style>

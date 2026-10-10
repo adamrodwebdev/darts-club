@@ -11,6 +11,9 @@ export class Profile {
     readonly avatarUrl: string | null,
     readonly roles: readonly string[],
     readonly hasPassword: boolean,
+    readonly twoFactorEnabled: boolean,
+    /** Membre du bureau sans 2FA : fonctions du club bloquées */
+    readonly twoFactorSetupRequired: boolean,
   ) {}
 
   static parse(value: unknown): Profile {
@@ -23,6 +26,8 @@ export class Profile {
       optStr(d.avatarUrl),
       strList(d.roles),
       bool(d.hasPassword),
+      bool(d.twoFactorEnabled),
+      bool(d.twoFactorSetupRequired),
     )
   }
 

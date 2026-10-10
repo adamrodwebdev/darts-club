@@ -10,4 +10,10 @@ enum Role: string
     case Treasurer = 'ROLE_TREASURER';
     case President = 'ROLE_PRESIDENT';
     case Admin = 'ROLE_ADMIN';
+
+    /** Membre du bureau : 2FA obligatoire */
+    public function isBoard(): bool
+    {
+        return self::Member !== $this;
+    }
 }

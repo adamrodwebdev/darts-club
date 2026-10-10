@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Doctrine\EncryptedStringType;
 use App\Enum\Role;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
@@ -13,6 +14,10 @@ use App\ValueObject\EmailAddress;
 use App\ValueObject\PhoneNumber;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
+use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -20,7 +25,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface, BackupCodeInterface
 {
     use DomainEventsTrait;
 
@@ -64,6 +69,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     /** Identifiant du fichier dans AvatarStorage */
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $avatar = null;
+
+    /** Graine TOTP (base32), chiffrée en base */
+    #[ORM\Column(type: EncryptedStringType::NAME, nullable: true)]
+    private ?string $totpSecret = null;
+
+    #[ORM\Column]
+    private bool $totpEnabled = false;
+
+    /**
+     * Empreintes SHA-256 des codes de secours non utilisés.
+     *
+     * @var list<string>
+     */
+    #[ORM\Column(type: Types::JSON)]
+    private array $backupCodes = [];
 
     private function __construct(EmailAddress $email)
     {
@@ -199,6 +219,97 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return '' !== $this->password;
     }
 
+    /** Étape 1 : graine générée, pas encore active tant qu'un code n'a pas été confirmé. */
+    public function startTotpEnrollment(string $secret): void
+    {
+        $this->totpSecret = $secret;
+        $this->totpEnabled = false;
+        $this->backupCodes = [];
+    }
+
+    /**
+     * Étape 2 : l'adhérent a saisi un code valide.
+     *
+     * @param list<string> $backupCodes codes en clair, seules leurs empreintes sont stockées
+     */
+    public function enableTotp(array $backupCodes): void
+    {
+        if (null === $this->totpSecret) {
+            throw new \LogicException('Aucune configuration TOTP en cours.');
+        }
+
+        $this->totpEnabled = true;
+        $this->backupCodes = array_map(self::hashBackupCode(...), $backupCodes);
+    }
+
+    public function disableTotp(): void
+    {
+        $this->totpSecret = null;
+        $this->totpEnabled = false;
+        $this->backupCodes = [];
+    }
+
+    public function isBoardMember(): bool
+    {
+        foreach ($this->roles as $role) {
+            if (Role::tryFrom($role)?->isBoard()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Politique du club : 2FA obligatoire pour le bureau. */
+    public function mustSetUpTwoFactor(): bool
+    {
+        return $this->isBoardMember() && !$this->hasTwoFactor();
+    }
+
+    public function hasTwoFactor(): bool
+    {
+        return $this->totpEnabled && null !== $this->totpSecret;
+    }
+
+    public function remainingBackupCodes(): int
+    {
+        return \count($this->backupCodes);
+    }
+
+    public function isTotpAuthenticationEnabled(): bool
+    {
+        return $this->hasTwoFactor();
+    }
+
+    public function getTotpAuthenticationUsername(): string
+    {
+        return $this->email;
+    }
+
+    /** Disponible dès l'enrôlement, pour vérifier le premier code. */
+    public function getTotpAuthenticationConfiguration(): ?TotpConfigurationInterface
+    {
+        return null !== $this->totpSecret
+            ? new TotpConfiguration($this->totpSecret, TotpConfiguration::ALGORITHM_SHA1, 30, 6)
+            : null;
+    }
+
+    public function isBackupCode(string $code): bool
+    {
+        return \in_array(self::hashBackupCode($code), $this->backupCodes, true);
+    }
+
+    public function invalidateBackupCode(string $code): void
+    {
+        $hash = self::hashBackupCode($code);
+        $this->backupCodes = array_values(array_filter($this->backupCodes, static fn (string $h): bool => $h !== $hash));
+    }
+
+    private static function hashBackupCode(string $code): string
+    {
+        return hash('sha256', strtolower(str_replace([' ', '-'], '', $code)));
+    }
+
     public function notificationPreferences(): NotificationPreferences
     {
         return NotificationPreferences::fromArray($this->notificationPreferences);
@@ -221,7 +332,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         foreach ((array) $this as $key => $value) {
             $data[(string) $key] = $value;
         }
-        unset($data["\0".self::class."\0domainEvents"]);
+        // Jamais de secret 2FA ni d'empreintes de codes de secours en session
+        unset(
+            $data["\0".self::class."\0domainEvents"],
+            $data["\0".self::class."\0totpSecret"],
+            $data["\0".self::class."\0backupCodes"],
+        );
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 
         return $data;

@@ -1,4 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
+import { bool, obj } from '@/models/guards'
 import { Profile } from '@/models/Profile'
 
 export interface Registration {
@@ -8,6 +9,15 @@ export interface Registration {
 }
 
 export type OAuthProvider = 'google' | 'discord'
+
+/** Mot de passe accepté : session complète, ou code 2FA attendu. */
+export type LoginResult = { status: 'authenticated'; profile: Profile } | { status: 'two-factor' }
+
+export interface TwoFactorSetup {
+  secret: string
+  uri: string
+  qrCode: string
+}
 
 export class AuthService {
   /** Cookie non sensible posé par l'API quand une session existe. */
@@ -28,8 +38,16 @@ export class AuthService {
     return Profile.parse(await this.api.get('/api/auth/me'))
   }
 
-  async login(email: string, password: string): Promise<Profile> {
-    return Profile.parse(await this.api.post('/api/auth/login', { email, password }))
+  async login(email: string, password: string): Promise<LoginResult> {
+    const data = await this.api.post('/api/auth/login', { email, password })
+    if (obj(data).twoFactorRequired !== undefined && bool(obj(data).twoFactorRequired)) {
+      return { status: 'two-factor' }
+    }
+    return { status: 'authenticated', profile: Profile.parse(data) }
+  }
+
+  async verifyTwoFactor(code: string): Promise<Profile> {
+    return Profile.parse(await this.api.post('/api/auth/2fa/check', { code }))
   }
 
   async logout(): Promise<void> {

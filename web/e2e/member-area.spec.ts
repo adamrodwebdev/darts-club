@@ -8,6 +8,8 @@ const profile = {
   avatarUrl: null,
   roles: ['ROLE_MEMBER'],
   hasPassword: true,
+  twoFactorEnabled: false,
+  twoFactorSetupRequired: false,
 }
 
 /** API simulée : le front est testé sans backend. */
@@ -49,4 +51,22 @@ test('registration shows a neutral confirmation', async ({ page }) => {
   await page.getByRole('button', { name: 'Créer mon compte' }).click()
 
   await expect(page.getByRole('status')).toContainText('Vérifie ta boîte mail')
+})
+
+test('two-factor login asks for a code after the password', async ({ page }) => {
+  await page.route('**/api/auth/login', (route) => route.fulfill({ status: 202, json: { twoFactorRequired: true } }))
+  await page.route('**/api/auth/2fa/check', (route) =>
+    route.fulfill({ json: { ...profile, twoFactorEnabled: true } }),
+  )
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.goto('/connexion')
+
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+
+  await page.getByLabel('Code de vérification').fill('123456')
+  await page.getByRole('button', { name: 'Vérifier' }).click()
+  await expect(page).toHaveURL(/\/compte$/)
 })

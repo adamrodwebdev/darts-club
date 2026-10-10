@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
+use OTPHP\TOTP;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -49,6 +50,41 @@ abstract class ApiTestCase extends WebTestCase
         $em->flush();
 
         return $user;
+    }
+
+    /**
+     * Active la 2FA directement en base (donnée de test).
+     *
+     * @param list<string> $backupCodes
+     *
+     * @return non-empty-string graine TOTP
+     */
+    protected function enableTwoFactor(User $user, array $backupCodes = ['aaaaa-11111']): string
+    {
+        $secret = TOTP::generate()->getSecret();
+        $user->startTotpEnrollment($secret);
+        $user->enableTotp($backupCodes);
+        $this->entityManager()->flush();
+
+        return $secret;
+    }
+
+    protected function totpCode(string $secret): string
+    {
+        if ('' === $secret) {
+            self::fail('Graine TOTP vide.');
+        }
+
+        return TOTP::createFromSecret($secret)->now();
+    }
+
+    /** Connexion complète d'un compte protégé par 2FA. */
+    protected function loginWithTwoFactor(string $email, string $secret): void
+    {
+        $this->login($email, self::PASSWORD);
+        self::assertResponseStatusCodeSame(202);
+        $this->postJson('/api/auth/2fa/check', ['code' => $this->totpCode($secret)]);
+        self::assertResponseIsSuccessful();
     }
 
     /** @param array<mixed> $payload */

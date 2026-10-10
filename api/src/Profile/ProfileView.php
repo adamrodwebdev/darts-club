@@ -20,6 +20,8 @@ final class ProfileView
             'avatarUrl' => null !== $user->avatar() ? '/api/users/'.$id.'/avatar?v='.substr((string) $user->avatar(), 0, 8) : null,
             'roles' => $user->getRoles(),
             'hasPassword' => $user->hasPassword(),
+            'twoFactorEnabled' => $user->hasTwoFactor(),
+            'twoFactorSetupRequired' => $user->mustSetUpTwoFactor(),
         ];
     }
 }

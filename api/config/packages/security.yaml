@@ -32,6 +32,17 @@ security:
                 check_path: auth_login
                 username_path: email
                 password_path: password
+                success_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
+            two_factor:
+                check_path: auth_2fa_check
+                auth_form_path: auth_2fa
+                auth_code_parameter_name: code
+                post_only: true
+                prepare_on_login: true
+                prepare_on_access_denied: true
+                success_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
+                failure_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
+                authentication_required_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
             login_throttling:
                 max_attempts: 5
                 interval: '15 minutes'
@@ -43,6 +54,9 @@ security:
     access_control:
         - { path: ^/api/auth/(login|register|verify|verify/resend)$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/oauth/, roles: PUBLIC_ACCESS }
+        # Pendant la saisie du code 2FA, seules ces routes sont accessibles
+        - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/(2fa|2fa/check)$, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
