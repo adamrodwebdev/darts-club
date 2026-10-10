@@ -4,6 +4,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import MemberBadges from '@/components/MemberBadges.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
+import DisplaySettings from '@/components/preferences/DisplaySettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Profile } from '@/models/Profile'
 import { services } from '@/services'
@@ -74,6 +75,8 @@ async function removeAvatar(): Promise<void> {
         <BaseButton type="submit" :pending="form.pending.value">Enregistrer</BaseButton>
       </form>
     </section>
+
+    <DisplaySettings />
   </div>
 </template>
 

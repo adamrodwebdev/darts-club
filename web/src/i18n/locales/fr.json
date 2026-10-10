@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "title": "Skull Darts 71 · Fléchettes, fuzz et amitié",
+    "description": "Association récréative de fléchettes : soirées conviviales et communauté au son du stoner et du metal. Calendrier, inscriptions et messagerie pour les adhérents.",
+    "ogDescription": "Association récréative de fléchettes : soirées conviviales au son du stoner et du metal.",
+    "ogImageAlt": "Écusson de Skull Darts 71",
+    "ogLocale": "fr_FR",
+    "sport": "Fléchettes",
+    "noscript": "Le site de Skull Darts 71 a besoin de JavaScript pour fonctionner."
+  },
+  "routes": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "account": "Mon profil",
+    "accountNotifications": "Mes notifications",
+    "accountMembership": "Ma cotisation",
+    "accountSecurity": "Sécurité",
+    "treasury": "Trésorerie",
+    "adminMembers": "Membres",
+    "adminBroadcast": "Diffusion",
+    "adminAnnouncements": "Annonces",
+    "adminAudit": "Journal",
+    "events": "Événements",
+    "eventCreate": "Nouvel événement",
+    "event": "Événement",
+    "eventEdit": "Modifier l’événement",
+    "infos": "Infos du club",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "conversation": "Conversation",
+    "legalNotice": "Mentions légales",
+    "privacy": "Confidentialité",
+    "notFound": "Page introuvable"
+  },
+  "app": {
+    "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
+    "twoFactorLink": "active la double authentification"
+  },
+  "nav": {
+    "skip": "Aller au contenu",
+    "main": "Navigation principale",
+    "brandHome": "Skull Darts 71, accueil",
+    "president": "Présidence",
+    "treasury": "Trésorerie",
+    "events": "Événements",
+    "infos": "Infos",
+    "infosLong": "Infos du club",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "notificationsUnread": "Notifications, aucune non lue | Notifications, {n} non lue | Notifications, {n} non lues",
+    "account": "Mon compte",
+    "login": "Connexion"
+  },
+  "prefs": {
+    "title": "Affichage",
+    "hint": "Choix enregistré sur cet appareil.",
+    "theme": {
+      "legend": "Thème",
+      "toggle": "Thème : {current}. Changer de thème",
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "language": {
+      "legend": "Langue"
+    }
+  },
+  "footer": {
+    "association": "association loi 1901",
+    "nav": "Liens du pied de page",
+    "legalNotice": "Mentions légales",
+    "privacy": "Confidentialité"
+  },
+  "common": {
+    "newTab": "(nouvel onglet)",
+    "email": "Email",
+    "password": "Mot de passe",
+    "cancel": "Annuler",
+    "avatarOf": "Avatar de {name}"
+  },
+  "errors": {
+    "fields": "Vérifie les champs indiqués.",
+    "unexpected": "Une erreur inattendue est survenue.",
+    "network": "Connexion impossible, vérifie ton réseau."
+  },
+  "landing": {
+    "kicker": "Club de fléchettes",
+    "tagline": "Fléchettes, fuzz et amitié.",
+    "intro": "Un club où l’on vise juste, où l’on joue fort et où l’on se retrouve autour de la cible. Débutants bienvenus, champions tolérés.",
+    "upcoming": "Prochains événements",
+    "infos": "Infos du club",
+    "join": "Rejoindre le club",
+    "login": "Se connecter",
+    "anthem": "Écouter l’hymne ↓",
+    "pillarsLabel": "Ce que propose le club",
+    "pillars": {
+      "fun": {
+        "title": "Pour le plaisir",
+        "text": "Une association récréative : on joue pour s’amuser, débutants comme habitués, sans pression ni classement."
+      },
+      "nights": {
+        "title": "Soirées",
+        "text": "Entraînements, défis et parties improvisées, au son du stoner et du metal."
+      },
+      "community": {
+        "title": "Communauté",
+        "text": "Une messagerie, un calendrier et des souvenirs partagés après chaque événement."
+      }
+    },
+    "cta": {
+      "title": "Prêt à viser le 180 ?",
+      "text": "Crée ton compte, choisis ton pseudo et rejoins la prochaine soirée.",
+      "facebook": "Actus et photos sur {link}.",
+      "facebookLink": "la page Facebook de l’association",
+      "calendar": "Voir le calendrier",
+      "signUp": "Je m’inscris"
+    },
+    "friend": {
+      "kicker": "Groupe ami",
+      "text": "Un groupe proche du club. Va découvrir leur musique et suivre leurs prochaines dates.",
+      "link": "Leur page Facebook"
+    }
+  },
+  "song": {
+    "kicker": "Bande-son du club",
+    "subtitle": "Hymne des Skull Darts 71",
+    "mood": "Stoner groove, fuzz chaud, montée post-metal, refrain à chanter le verre levé.",
+    "credits": "Paroles et musique : Skull Darts 71. Libre de droits pour le club.",
+    "tabCaption": "Riff principal (tablature, corde grave en bas)",
+    "lyricsLanguage": "Paroles originales en français.",
+    "play": "Écouter le riff",
+    "stop": "Couper le riff",
+    "unsupported": "Ton navigateur ne gère pas la synthèse audio.",
+    "playerNote": "Riff joué en direct par ton navigateur (synthèse Web Audio, aucun fichier téléchargé). Attention au volume !",
+    "sections": {
+      "intro": "Intro",
+      "verse1": "Couplet 1",
+      "preChorus": "Pré-refrain",
+      "chorus": "Refrain",
+      "verse2": "Couplet 2",
+      "bridge": "Pont",
+      "solo": "Solo",
+      "finalChorus": "Refrain final ×2",
+      "rallyingCry": "Cri de ralliement",
+      "outro": "Outro"
+    },
+    "directions": {
+      "intro": ["Basse fuzz seule sur le riff, 4 mesures", "Entrée batterie : charleston ouvert, puis tout le groupe"],
+      "solo": ["Wah grand ouvert sur la gamme blues de do", "Montée post-metal : la batterie double, tout le monde à l’unisson"],
+      "outro": ["Larsen tenu sur le do grave", "Dernier coup de grosse caisse… et le bruit d’une fléchette dans le mille"]
+    }
+  },
+  "auth": {
+    "oauthSeparator": "ou",
+    "oauthContinue": "Continuer avec {provider}",
+    "login": {
+      "title": "Connexion",
+      "verifySuccess": "Adresse confirmée : tu peux te connecter.",
+      "verifyInvalid": "Lien de confirmation invalide ou expiré. Demande un nouveau lien ci-dessous.",
+      "oauthFailed": "Connexion externe impossible : ton fournisseur n’a pas confirmé ton email.",
+      "codeIntro": "Saisis le code à 6 chiffres affiché par ton application d’authentification, ou un code de secours.",
+      "codeLabel": "Code de vérification",
+      "verify": "Vérifier",
+      "submit": "Se connecter",
+      "resend": "Renvoyer le lien de confirmation",
+      "resent": "Si un compte en attente existe, un nouveau lien vient d’être envoyé.",
+      "noAccount": "Pas encore de compte ?",
+      "join": "Rejoindre le club"
+    },
+    "register": {
+      "title": "Rejoindre le club",
+      "checkInbox": "Vérifie ta boîte mail.",
+      "checkInboxText": "Si l’adresse est valide, tu viens de recevoir un lien pour activer ton compte.",
+      "phone": "Téléphone (facultatif)",
+      "phoneHint": "Pour être joint par le bureau, jamais affiché aux autres adhérents.",
+      "passwordHint": "12 caractères minimum. Une phrase de passe est idéale.",
+      "submit": "Créer mon compte",
+      "alreadyMember": "Déjà membre ?",
+      "login": "Se connecter"
+    }
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "text": "Raté, la fléchette est à côté de la cible.",
+    "back": "Retour à l’accueil"
+  }
+}

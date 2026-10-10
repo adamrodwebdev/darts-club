@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { initialsOf } from '@/models/Profile'
 
 const props = withDefaults(defineProps<{ name: string; src?: string | null; size?: number }>(), {
   src: null,
   size: 40,
 })
+const { t } = useI18n()
 
 const initials = computed(() => initialsOf(props.name))
 </script>
 
 <template>
   <span class="avatar" :style="{ '--size': `${props.size}px` }">
-    <img v-if="props.src" :src="props.src" :alt="`Avatar de ${props.name}`" :width="props.size" :height="props.size" loading="lazy" decoding="async" />
+    <img v-if="props.src" :src="props.src" :alt="t('common.avatarOf', { name: props.name })" :width="props.size" :height="props.size" loading="lazy" decoding="async" />
     <span v-else aria-hidden="true">{{ initials }}</span>
   </span>
 </template>

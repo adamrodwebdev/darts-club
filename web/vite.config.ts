@@ -2,7 +2,11 @@ import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { localizedIndex } from './build/localizedIndex.ts'
+
+const locales = fileURLToPath(new URL('./src/i18n/locales', import.meta.url))
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -12,7 +16,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      // Traductions précompilées : pas de compilateur de messages dans le bundle (ni eval, CSP stricte)
+      VueI18nPlugin({ include: [`${locales}/**`] }),
       vueDevTools(),
+      localizedIndex({ localesDir: locales, source: 'fr', pages: { en: 'en' } }),
     ],
     resolve: {
       alias: {

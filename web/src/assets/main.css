@@ -1,4 +1,8 @@
-/* Jetons de design — thème sombre « métal » par défaut, variante claire */
+/*
+ * Jetons de design — thème sombre « métal » par défaut, variante claire.
+ * <html data-theme> est posé avant le rendu par public/theme-init.js
+ * (préférence mémorisée ou thème du système).
+ */
 :root {
   --color-bg: #0b0b0d;
   --color-surface: #141418;
@@ -24,25 +28,23 @@
   line-height: 1.5;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: #f6f6f8;
-    --color-surface: #ffffff;
-    --color-surface-2: #ececf1;
-    --color-input: #ffffff;
-    --color-border: #d4d4dc;
-    --color-text: #15151a;
-    --color-muted: #55555f;
-    --color-accent: #c1121f;
-    --color-accent-hover: #a10e1a;
-    --color-link: #c1121f;
-    --color-danger: #b3261e;
-    --color-success: #1d7a3e;
-    --badge-gold: #8a6100;
-    --badge-teal: #096b62;
-    --badge-blue: #1f5fbf;
-    color-scheme: light;
-  }
+:root[data-theme='light'] {
+  --color-bg: #f6f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #ececf1;
+  --color-input: #ffffff;
+  --color-border: #d4d4dc;
+  --color-text: #15151a;
+  --color-muted: #55555f;
+  --color-accent: #c1121f;
+  --color-accent-hover: #a10e1a;
+  --color-link: #c1121f;
+  --color-danger: #b3261e;
+  --color-success: #1d7a3e;
+  --badge-gold: #8a6100;
+  --badge-teal: #096b62;
+  --badge-blue: #1f5fbf;
+  color-scheme: light;
 }
 
 @media (min-width: 768px) {
@@ -198,10 +200,8 @@ main {
     color: transparent;
   }
 
-  @media (prefers-color-scheme: light) {
-    .metal-title {
-      background-image: linear-gradient(180deg, #2a2a30 0%, #55555f 45%, #0b0b0d 52%, #3a3a42 100%);
-    }
+  :root[data-theme='light'] .metal-title {
+    background-image: linear-gradient(180deg, #2a2a30 0%, #55555f 45%, #0b0b0d 52%, #3a3a42 100%);
   }
 }
 

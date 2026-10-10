@@ -61,7 +61,7 @@
 - ✅ Identité visuelle unique : titres chromés, cible SVG animée (fléchette qui se plante), apparitions au défilement, hymne original « Triple Vingt » + riff synthétisé (Web Audio)
 - ✅ Section « Groupe ami » (Blind to Deaf) ; ambiances musicales reprises dans le design et l’hymne, sans citer d’artistes
 - ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
-- À faire : pré-rendu statique (SSG) de la landing (FR/EN, avec l'étape 10 bis)
+- ✅ En-têtes SEO de l'accueil générés en FR et EN (étape 10 bis) ; rendu statique complet reporté à l'étape 11
 
 ## 10. Performance (Lighthouse ≥ 95)
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
@@ -75,12 +75,16 @@
 - À faire (étape 11) : URL absolue de l'image Open Graph une fois le domaine connu ; service worker hors-ligne (PWA)
 
 ## 10 bis. Thème & internationalisation
-- **Mode sombre** : sélecteur clair / sombre / système dans l'en-tête et le compte, choix mémorisé (localStorage + préférence du compte), aucun flash au chargement (script inline avant le rendu), contrastes AA vérifiés dans les deux thèmes
-- **Traduction anglaise** : `vue-i18n` (fichiers `fr.json` / `en.json`, chargement paresseux de la langue), détection via `Accept-Language` puis choix mémorisé, sélecteur de langue
-- Côté API : messages d'erreur, validations et emails traduits (Symfony Translation, `Accept-Language` / langue du compte)
-- Dates, nombres et montants formatés selon la langue (`Intl`)
-- SEO : `lang` dynamique, `hreflang`, landing pré-rendue en FR et EN
-- Tests : Playwright exécuté dans les deux thèmes et les deux langues, contrôle des clés manquantes en CI
+Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace adhérent et bureau), **c** (API).
+- ✅ **Mode sombre** (a) : clair / sombre / système, bouton dans l'en-tête et choix détaillé dans « Mon compte », mémorisé dans le navigateur ; aucun flash grâce à `theme-init.js` exécuté avant le rendu (fichier externe : la CSP interdit l'inline) ; contrastes AA vérifiés par axe-core dans les deux thèmes
+- ✅ **Socle de traduction** (a) : `vue-i18n` avec messages précompilés (aucun compilateur ni `eval` dans le bundle), `fr.json` embarqué, `en.json` chargé à la demande, clés vérifiées par TypeScript
+- ✅ Langue : choix mémorisé, sinon langue du navigateur ; sélecteur dans l'en-tête et le compte ; `Accept-Language` envoyé à l'API
+- ✅ SEO (a) : accueil FR sur `/`, EN sur `/en` (`en.html` généré au build avec titre, description, Open Graph et JSON-LD traduits), `lang` dynamique, `hreflang` + URL canonique
+- ✅ Pages publiques traduites (a) : accueil, hymne (paroles chantées gardées en français), connexion, inscription, mentions légales et confidentialité (le français fait foi), 404
+- ✅ Tests (a) : parité des clés FR/EN, des variables et des pluriels (Vitest, en CI) ; Playwright dans les deux thèmes et les deux langues
+- À faire (b) : espace adhérent et bureau traduits ; dates, nombres et montants formatés selon la langue (`Intl`)
+- À faire (c) : messages d'erreur, validations et emails traduits côté API (Symfony Translation, `Accept-Language` puis langue enregistrée sur le compte) ; thème et langue enregistrés sur le compte
+- À faire (étape 11) : rendu complet du contenu au build (SSG) et `hreflang` en dur une fois le domaine connu
 
 ## 11. Livraison (S8)
 - Tests E2E complets, audit sécurité (OWASP ZAP), pentest léger

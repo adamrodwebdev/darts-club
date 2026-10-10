@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
@@ -11,6 +12,7 @@ import { useAuthStore } from '@/stores/auth'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const { t } = useI18n()
 
 const email = ref('')
 const password = ref('')
@@ -23,12 +25,12 @@ const resent = ref(false)
 const notice = computed(() => {
   switch (route.query.verify) {
     case 'success':
-      return { kind: 'success', text: 'Adresse confirmée : tu peux te connecter.' }
+      return { kind: 'success', text: t('auth.login.verifySuccess') }
     case 'invalid':
-      return { kind: 'error', text: 'Lien de confirmation invalide ou expiré. Demande un nouveau lien ci-dessous.' }
+      return { kind: 'error', text: t('auth.login.verifyInvalid') }
   }
   if (route.query.oauth === 'failed') {
-    return { kind: 'error', text: 'Connexion externe impossible : ton fournisseur n’a pas confirmé ton email.' }
+    return { kind: 'error', text: t('auth.login.oauthFailed') }
   }
   return null
 })
@@ -71,38 +73,38 @@ async function resendLink(): Promise<void> {
 
 <template>
   <section class="page page--narrow">
-    <h1>Connexion</h1>
+    <h1>{{ t('auth.login.title') }}</h1>
 
     <p v-if="notice" class="notice" :class="`notice--${notice.kind}`" role="status">{{ notice.text }}</p>
 
     <form v-if="step === 'code'" class="stack" novalidate @submit.prevent="submitCode">
-      <p>Saisis le code à 6 chiffres affiché par ton application d’authentification, ou un code de secours.</p>
-      <BaseField v-model="code" label="Code de vérification" autocomplete="one-time-code" :maxlength="20" required />
+      <p>{{ t('auth.login.codeIntro') }}</p>
+      <BaseField v-model="code" :label="t('auth.login.codeLabel')" autocomplete="one-time-code" :maxlength="20" required />
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
-      <BaseButton type="submit" :pending="pending">Vérifier</BaseButton>
-      <BaseButton variant="ghost" @click="restart">Annuler</BaseButton>
+      <BaseButton type="submit" :pending="pending">{{ t('auth.login.verify') }}</BaseButton>
+      <BaseButton variant="ghost" @click="restart">{{ t('common.cancel') }}</BaseButton>
     </form>
 
     <form v-else class="stack" novalidate @submit.prevent="submit">
-      <BaseField v-model="email" label="Email" type="email" autocomplete="email" required />
-      <BaseField v-model="password" label="Mot de passe" type="password" autocomplete="current-password" required />
+      <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" required />
+      <BaseField v-model="password" :label="t('common.password')" type="password" autocomplete="current-password" required />
 
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
 
-      <BaseButton type="submit" :pending="pending">Se connecter</BaseButton>
+      <BaseButton type="submit" :pending="pending">{{ t('auth.login.submit') }}</BaseButton>
     </form>
 
     <div v-if="unverified || route.query.verify === 'invalid'" class="stack resend">
       <BaseButton variant="ghost" :pending="resend.pending.value" :disabled="!email" @click="resendLink">
-        Renvoyer le lien de confirmation
+        {{ t('auth.login.resend') }}
       </BaseButton>
-      <p v-if="resent" class="notice notice--success" role="status">Si un compte en attente existe, un nouveau lien vient d’être envoyé.</p>
+      <p v-if="resent" class="notice notice--success" role="status">{{ t('auth.login.resent') }}</p>
       <p v-if="resend.error.value" class="notice notice--error" role="alert">{{ resend.error.value }}</p>
     </div>
 
     <OAuthButtons v-if="step === 'password'" />
 
-    <p class="switch">Pas encore de compte ? <RouterLink to="/inscription">Rejoindre le club</RouterLink></p>
+    <p class="switch">{{ t('auth.login.noAccount') }} <RouterLink to="/inscription">{{ t('auth.login.join') }}</RouterLink></p>
   </section>
 </template>
 

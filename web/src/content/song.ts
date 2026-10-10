@@ -1,28 +1,27 @@
 /**
  * « Triple Vingt » — hymne original du club : paroles et riff écrits pour le site.
+ * Les paroles restent en français dans toutes les langues ; titres de parties et
+ * indications de jeu sont traduits (src/i18n/locales, section « song »).
  */
-export interface SongSection {
-  label: string
-  lines: string[]
-  /** Section instrumentale : indication de jeu au lieu de paroles */
-  instrumental?: boolean
-}
+export type SongSectionKey = 'intro' | 'verse1' | 'preChorus' | 'chorus' | 'verse2' | 'bridge' | 'solo' | 'finalChorus' | 'rallyingCry' | 'outro'
+export type InstrumentalKey = 'intro' | 'solo' | 'outro'
+
+export type SongSection =
+  | { key: SongSectionKey; lines: string[]; instrumental?: undefined }
+  /** Section instrumentale : indications de jeu (traduites) au lieu de paroles */
+  | { key: InstrumentalKey; instrumental: true }
 
 export const SONG = {
   title: 'Triple Vingt',
-  subtitle: 'Hymne des Skull Darts 71',
-  credits: 'Paroles et musique : Skull Darts 71. Libre de droits pour le club.',
   tempo: 92,
   tuning: 'Drop C (C G C F A D)',
-  mood: 'Stoner groove, fuzz chaud, montée post-metal, refrain à chanter le verre levé',
   sections: [
     {
-      label: 'Intro',
+      key: 'intro',
       instrumental: true,
-      lines: ['Basse fuzz seule sur le riff, 4 mesures', 'Entrée batterie : charleston ouvert, puis tout le groupe'],
     },
     {
-      label: 'Couplet 1',
+      key: 'verse1',
       lines: [
         'La lumière du bar baisse doucement,',
         'Trois flèches dans la main, le cœur battant,',
@@ -31,11 +30,11 @@ export const SONG = {
       ],
     },
     {
-      label: 'Pré-refrain',
+      key: 'preChorus',
       lines: ['Respire… vise… lâche…'],
     },
     {
-      label: 'Refrain',
+      key: 'chorus',
       lines: [
         'Triple vingt ! Le métal plante la cible,',
         'Triple vingt ! Le bras devient fusible,',
@@ -44,7 +43,7 @@ export const SONG = {
       ],
     },
     {
-      label: 'Couplet 2',
+      key: 'verse2',
       lines: [
         'J’ai visé le vingt, j’ai planté le un,',
         'Le liège se souvient de tous mes chagrins,',
@@ -53,7 +52,7 @@ export const SONG = {
       ],
     },
     {
-      label: 'Refrain',
+      key: 'chorus',
       lines: [
         'Triple vingt ! Le métal plante la cible,',
         'Triple vingt ! Le bras devient fusible,',
@@ -62,7 +61,7 @@ export const SONG = {
       ],
     },
     {
-      label: 'Pont',
+      key: 'bridge',
       lines: [
         '(parlé, sur l’arpège qui monte)',
         'Double sortie… il reste trente-deux.',
@@ -71,12 +70,11 @@ export const SONG = {
       ],
     },
     {
-      label: 'Solo',
+      key: 'solo',
       instrumental: true,
-      lines: ['Wah grand ouvert sur la gamme blues de do', 'Montée post-metal : la batterie double, tout le monde à l’unisson'],
     },
     {
-      label: 'Refrain final ×2',
+      key: 'finalChorus',
       lines: [
         'Triple vingt ! Le métal plante la cible,',
         'Triple vingt ! Le bras devient fusible,',
@@ -85,13 +83,12 @@ export const SONG = {
       ],
     },
     {
-      label: 'Cri de ralliement',
+      key: 'rallyingCry',
       lines: ['Skull Darts ! Soixante et onze !', 'Skull Darts ! Jusqu’au dernier double !'],
     },
     {
-      label: 'Outro',
+      key: 'outro',
       instrumental: true,
-      lines: ['Larsen tenu sur le do grave', 'Dernier coup de grosse caisse… et le bruit d’une fléchette dans le mille'],
     },
   ] satisfies SongSection[],
   /** Riff principal, tablature (corde grave en bas) */

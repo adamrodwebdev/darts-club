@@ -1,29 +1,44 @@
 <script setup lang="ts">
-import { SONG } from '@/content/song'
+import { useI18n } from 'vue-i18n'
+import { SONG, type InstrumentalKey } from '@/content/song'
 import RiffPlayer from './RiffPlayer.vue'
+
+const { t, tm, rt, locale } = useI18n()
+
+/** Indications de jeu d'une partie instrumentale, dans la langue courante */
+function directions(key: InstrumentalKey): string[] {
+  return (tm(`song.directions.${key}`) as unknown as Parameters<typeof rt>[0][]).map((line) => rt(line))
+}
 </script>
 
 <template>
   <section id="hymne" class="song" aria-labelledby="song-title">
     <div class="song__intro" data-reveal>
-      <p class="kicker">Bande-son du club</p>
+      <p class="kicker">{{ t('song.kicker') }}</p>
       <h2 id="song-title" class="metal-title">{{ SONG.title }}</h2>
-      <p class="muted">{{ SONG.subtitle }} · {{ SONG.tempo }} BPM · {{ SONG.tuning }}</p>
-      <p>{{ SONG.mood }}.</p>
+      <p class="muted">{{ t('song.subtitle') }} · {{ SONG.tempo }} BPM · {{ SONG.tuning }}</p>
+      <p>{{ t('song.mood') }}</p>
       <RiffPlayer />
       <figure class="tab">
-        <figcaption>Riff principal (tablature, corde grave en bas)</figcaption>
+        <figcaption>{{ t('song.tabCaption') }}</figcaption>
         <pre><code>{{ SONG.tab.join('\n') }}</code></pre>
       </figure>
     </div>
 
-    <ol class="lyrics" data-reveal>
-      <li v-for="(section, i) in SONG.sections" :key="i" :class="{ 'lyrics__part--instrumental': section.instrumental }">
-        <h3>{{ section.label }}</h3>
-        <p v-for="(line, j) in section.lines" :key="j">{{ line }}</p>
-      </li>
-    </ol>
-    <p class="credits muted">{{ SONG.credits }}</p>
+    <div class="lyrics-block" data-reveal>
+      <p v-if="locale !== 'fr'" class="muted lyrics-note">{{ t('song.lyricsLanguage') }}</p>
+      <ol class="lyrics">
+        <li v-for="(section, i) in SONG.sections" :key="i" :class="{ 'lyrics__part--instrumental': section.instrumental }">
+          <h3>{{ t(`song.sections.${section.key}`) }}</h3>
+          <template v-if="section.instrumental">
+            <p v-for="(line, j) in directions(section.key)" :key="j">{{ line }}</p>
+          </template>
+          <!-- Paroles chantées en français quelle que soit la langue de l'interface -->
+          <p v-for="(line, j) in section.lines" v-else :key="j" lang="fr">{{ line }}</p>
+        </li>
+      </ol>
+    </div>
+    <p class="credits muted">{{ t('song.credits') }}</p>
   </section>
 </template>
 
@@ -80,6 +95,11 @@ import RiffPlayer from './RiffPlayer.vue'
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.lyrics-note {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
 }
 
 .lyrics h3 {

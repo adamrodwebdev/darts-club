@@ -4,6 +4,8 @@ import { test, expect, type Page } from '@playwright/test'
 /** Audit WCAG 2.2 niveau AA (axe-core) des pages principales. */
 const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 
+const THEMES = ['light', 'dark'] as const
+
 async function audit(page: Page): Promise<void> {
   // Laisse les animations d'apparition se terminer
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -12,13 +14,34 @@ async function audit(page: Page): Promise<void> {
   expect(summary).toEqual([])
 }
 
-for (const path of ['/', '/connexion', '/inscription', '/mentions-legales', '/confidentialite']) {
-  test(`public page ${path} meets WCAG 2.2 AA`, async ({ page }) => {
-    await page.goto(path)
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await audit(page)
-  })
+// Contrastes vérifiés dans les deux thèmes (thème du système émulé)
+for (const theme of THEMES) {
+  for (const path of ['/', '/en', '/connexion', '/inscription', '/mentions-legales', '/confidentialite']) {
+    test(`public page ${path} meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.goto(path)
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      await audit(page)
+    })
+  }
 }
+
+test.describe('in English', () => {
+  test.use({ locale: 'en-GB' })
+
+  for (const theme of THEMES) {
+    for (const [path, heading] of [['/connexion', 'Log in'], ['/inscription', 'Join the club'], ['/confidentialite', 'Privacy policy']]) {
+      test(`public page ${path} meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme: theme })
+        await page.goto(path)
+        await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading)
+        await audit(page)
+      })
+    }
+  }
+})
 
 const profile = {
   id: '01a1b2c3-0000-7000-8000-000000000001', email: 'alice@example.com', displayName: 'Alice', phone: null, avatarUrl: null,
@@ -34,7 +57,8 @@ const memberPages: [string, string][] = [
 ]
 
 for (const [path, heading] of memberPages) {
-  test(`member page ${path} meets WCAG 2.2 AA`, async ({ page }) => {
+  test(`member page ${path} meets WCAG 2.2 AA in dark theme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' })
     await page.route('**/api/auth/login', (route) => route.fulfill({ json: profile }))
     await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
     await page.route('**/api/notifications*', (route) =>

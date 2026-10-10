@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const providers = [
-  { id: 'google', label: 'Continuer avec Google' },
-  { id: 'discord', label: 'Continuer avec Discord' },
+  { id: 'google', name: 'Google' },
+  { id: 'discord', name: 'Discord' },
 ] as const
 </script>
 
 <template>
   <div class="oauth">
-    <p class="oauth__sep"><span>ou</span></p>
+    <p class="oauth__sep"><span>{{ t('auth.oauthSeparator') }}</span></p>
     <!-- Liens classiques : la redirection OAuth est une navigation complète -->
-    <a v-for="p in providers" :key="p.id" class="oauth__btn" :href="services.auth.oauthUrl(p.id)">{{ p.label }}</a>
+    <a v-for="p in providers" :key="p.id" class="oauth__btn" :href="services.auth.oauthUrl(p.id)">{{ t('auth.oauthContinue', { provider: p.name }) }}</a>
   </div>
 </template>
 

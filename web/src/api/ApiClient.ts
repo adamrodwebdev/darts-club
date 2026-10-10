@@ -10,6 +10,8 @@ export class ApiClient {
   constructor(
     private readonly baseUrl = '',
     private readonly fetchFn: typeof fetch = (...args) => fetch(...args),
+    /** Langue de l'interface, transmise à l'API (messages et emails traduits) */
+    private readonly language: () => string = () => document.documentElement.lang || 'fr',
   ) {}
 
   get(path: string): Promise<unknown> {
@@ -33,7 +35,7 @@ export class ApiClient {
   }
 
   async request(method: string, path: string, body?: Body): Promise<unknown> {
-    const headers: Record<string, string> = { Accept: 'application/json' }
+    const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': this.language() }
     let payload: BodyInit | undefined
 
     if (body instanceof FormData) {

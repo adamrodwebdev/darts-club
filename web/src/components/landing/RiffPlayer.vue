@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { RiffSynth } from '@/audio/RiffSynth'
 
 /** Joue le riff synthétisé ; le moteur audio n'est chargé qu'au premier clic. */
+const { t } = useI18n()
 const playing = ref(false)
 const bars = ref<number[]>(Array(12).fill(0.08))
 const unsupported = ref(false)
@@ -48,13 +50,13 @@ onBeforeUnmount(() => {
     <button type="button" class="play" :aria-pressed="playing" @click="toggle">
       <svg v-if="!playing" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>
       <svg v-else viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor" /></svg>
-      {{ playing ? 'Couper le riff' : 'Écouter le riff' }}
+      {{ playing ? t('song.stop') : t('song.play') }}
     </button>
     <div class="meter" aria-hidden="true">
       <span v-for="(height, i) in bars" :key="i" :style="{ transform: `scaleY(${height})` }" />
     </div>
-    <p v-if="unsupported" class="muted" role="status">Ton navigateur ne gère pas la synthèse audio.</p>
-    <p class="muted small">Riff joué en direct par ton navigateur (synthèse Web Audio, aucun fichier téléchargé). Attention au volume !</p>
+    <p v-if="unsupported" class="muted" role="status">{{ t('song.unsupported') }}</p>
+    <p class="muted small">{{ t('song.playerNote') }}</p>
   </div>
 </template>
 

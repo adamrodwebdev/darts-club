@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { LANDING } from '@/content/landing'
 
+const { t } = useI18n()
 const band = LANDING.friendBand
 </script>
 
 <template>
   <section class="friend" aria-labelledby="friend-title" data-reveal>
-    <p class="kicker">Groupe ami</p>
+    <p class="kicker">{{ t('landing.friend.kicker') }}</p>
     <h2 id="friend-title" class="metal-title">{{ band.name }}</h2>
-    <p class="friend__text">{{ band.text }}</p>
+    <p class="friend__text">{{ t('landing.friend.text') }}</p>
     <a :href="band.url" target="_blank" rel="noopener noreferrer external" class="friend__link">
-      {{ band.linkLabel }} <span aria-hidden="true">↗</span>
-      <span class="visually-hidden">(nouvel onglet)</span>
+      {{ t('landing.friend.link') }} <span aria-hidden="true">↗</span>
+      <span class="visually-hidden">{{ t('common.newTab') }}</span>
     </a>
   </section>
 </template>
