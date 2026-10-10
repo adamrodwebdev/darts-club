@@ -148,9 +148,18 @@ usePointerTilt(stage)
   perspective: 70rem;
 }
 
+/* Cible sous le texte (mobile, tablette) : place pour la fléchette qui dépasse en haut */
+@media (max-width: 1023px) {
+  .stage {
+    margin-top: 16%;
+  }
+}
+
 .stage__tilt {
   position: absolute;
   inset: 0;
+  /* Couches décoratives : ne jamais intercepter un clic (la fléchette déborde sur le texte) */
+  pointer-events: none;
   transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
