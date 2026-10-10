@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView } from 'vue-router'
 import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
+import { useDocumentHead } from '@/composables/useDocumentHead'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 
 const auth = useAuthStore()
 const notifications = useNotificationStore()
+const { t } = useI18n()
+useDocumentHead()
 
 // Cycle de vie de la session : centre de notifications + temps réel
 watch(
@@ -25,9 +29,11 @@ watch(
 
 <template>
   <AppHeader />
-  <p v-if="auth.user?.twoFactorSetupRequired" class="tfa-banner" role="alert">
-    Membre du bureau : <RouterLink to="/compte/securite">active la double authentification</RouterLink> pour accéder aux fonctions du club.
-  </p>
+  <i18n-t v-if="auth.user?.twoFactorSetupRequired" keypath="app.twoFactorBanner" tag="p" class="tfa-banner" role="alert" scope="global">
+    <template #link>
+      <RouterLink to="/compte/securite">{{ t('app.twoFactorLink') }}</RouterLink>
+    </template>
+  </i18n-t>
   <main id="main" tabindex="-1">
     <RouterView />
   </main>

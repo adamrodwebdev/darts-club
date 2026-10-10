@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import HeroDartboard from '@/components/landing/HeroDartboard.vue'
 import FriendBandSection from '@/components/landing/FriendBandSection.vue'
@@ -9,6 +10,7 @@ import { LANDING } from '@/content/landing'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 const root = useTemplateRef<HTMLElement>('root')
 useReveal(root)
 
@@ -23,32 +25,32 @@ const ICONS: Record<string, string> = {
   <div ref="root" class="landing">
     <section class="hero">
       <div class="hero__text">
-        <p class="kicker">Club de fléchettes</p>
+        <p class="kicker">{{ t('landing.kicker') }}</p>
         <h1 class="metal-title hero__title">{{ LANDING.name }}</h1>
-        <p class="hero__tagline">{{ LANDING.tagline }}</p>
-        <p class="hero__intro">{{ LANDING.intro }}</p>
+        <p class="hero__tagline">{{ t('landing.tagline') }}</p>
+        <p class="hero__intro">{{ t('landing.intro') }}</p>
         <div class="hero__cta">
           <template v-if="auth.isAuthenticated">
-            <RouterLink to="/evenements" class="btn btn--primary">Prochains événements</RouterLink>
-            <RouterLink to="/infos" class="btn btn--ghost">Infos du club</RouterLink>
+            <RouterLink to="/evenements" class="btn btn--primary">{{ t('landing.upcoming') }}</RouterLink>
+            <RouterLink to="/infos" class="btn btn--ghost">{{ t('landing.infos') }}</RouterLink>
           </template>
           <template v-else>
-            <RouterLink to="/inscription" class="btn btn--primary">Rejoindre le club</RouterLink>
-            <RouterLink to="/connexion" class="btn btn--ghost">Se connecter</RouterLink>
+            <RouterLink to="/inscription" class="btn btn--primary">{{ t('landing.join') }}</RouterLink>
+            <RouterLink to="/connexion" class="btn btn--ghost">{{ t('landing.login') }}</RouterLink>
           </template>
-          <a href="#hymne" class="btn btn--link">Écouter l’hymne ↓</a>
+          <a href="#hymne" class="btn btn--link">{{ t('landing.anthem') }}</a>
         </div>
       </div>
       <HeroDartboard class="hero__board" />
     </section>
 
-    <section class="pillars" aria-label="Ce que propose le club">
-      <article v-for="pillar in LANDING.pillars" :key="pillar.title" class="pillar" data-reveal>
+    <section class="pillars" :aria-label="t('landing.pillarsLabel')">
+      <article v-for="pillar in LANDING.pillars" :key="pillar.key" class="pillar" data-reveal>
         <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
           <path :d="ICONS[pillar.icon]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <h2>{{ pillar.title }}</h2>
-        <p>{{ pillar.text }}</p>
+        <h2>{{ t(`landing.pillars.${pillar.key}.title`) }}</h2>
+        <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
       </article>
     </section>
 
@@ -57,14 +59,15 @@ const ICONS: Record<string, string> = {
     <FriendBandSection />
 
     <section class="join" data-reveal aria-labelledby="join-title">
-      <h2 id="join-title" class="metal-title">Prêt à viser le 180 ?</h2>
-      <p>Crée ton compte, choisis ton pseudo et rejoins la prochaine soirée.</p>
-      <p>
-        Actus et photos sur
-        <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">la page Facebook de l’association<span class="visually-hidden"> (nouvel onglet)</span></a>.
-      </p>
+      <h2 id="join-title" class="metal-title">{{ t('landing.cta.title') }}</h2>
+      <p>{{ t('landing.cta.text') }}</p>
+      <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
+        <template #link>
+          <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">{{ t('landing.cta.facebookLink') }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
+        </template>
+      </i18n-t>
       <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary">
-        {{ auth.isAuthenticated ? 'Voir le calendrier' : 'Je m’inscris' }}
+        {{ auth.isAuthenticated ? t('landing.cta.calendar') : t('landing.cta.signUp') }}
       </RouterLink>
     </section>
   </div>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { LANDING } from '@/content/landing'
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -8,13 +11,13 @@ import { LANDING } from '@/content/landing'
     <div class="footer__inner">
       <p class="footer__brand">
         <img :src="LANDING.logo" width="32" height="32" alt="" loading="lazy" />
-        {{ LANDING.name }} <span class="muted">· association loi 1901</span>
+        {{ LANDING.name }} <span class="muted">· {{ t('footer.association') }}</span>
       </p>
-      <nav aria-label="Liens du pied de page">
+      <nav :aria-label="t('footer.nav')">
         <ul>
-          <li><a :href="LANDING.facebook" rel="noopener noreferrer external" target="_blank">Facebook<span class="visually-hidden"> (nouvel onglet)</span></a></li>
-          <li><RouterLink to="/mentions-legales">Mentions légales</RouterLink></li>
-          <li><RouterLink to="/confidentialite">Confidentialité</RouterLink></li>
+          <li><a :href="LANDING.facebook" rel="noopener noreferrer external" target="_blank">Facebook<span class="visually-hidden"> {{ t('common.newTab') }}</span></a></li>
+          <li><RouterLink to="/mentions-legales">{{ t('footer.legalNotice') }}</RouterLink></li>
+          <li><RouterLink to="/confidentialite">{{ t('footer.privacy') }}</RouterLink></li>
         </ul>
       </nav>
     </div>

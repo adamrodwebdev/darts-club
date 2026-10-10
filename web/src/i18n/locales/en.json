@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "title": "Skull Darts 71 · Darts, fuzz and friendship",
+    "description": "Recreational darts association: friendly game nights and a community with a stoner and metal soundtrack. Calendar, sign-ups and messaging for members.",
+    "ogDescription": "Recreational darts association: friendly game nights with a stoner and metal soundtrack.",
+    "ogImageAlt": "Skull Darts 71 crest",
+    "ogLocale": "en_GB",
+    "sport": "Darts",
+    "noscript": "The Skull Darts 71 website needs JavaScript to work."
+  },
+  "routes": {
+    "login": "Log in",
+    "register": "Sign up",
+    "account": "My profile",
+    "accountNotifications": "My notifications",
+    "accountMembership": "My membership",
+    "accountSecurity": "Security",
+    "treasury": "Treasury",
+    "adminMembers": "Members",
+    "adminBroadcast": "Broadcast",
+    "adminAnnouncements": "Announcements",
+    "adminAudit": "Audit log",
+    "events": "Events",
+    "eventCreate": "New event",
+    "event": "Event",
+    "eventEdit": "Edit event",
+    "infos": "Club news",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "conversation": "Conversation",
+    "legalNotice": "Legal notice",
+    "privacy": "Privacy",
+    "notFound": "Page not found"
+  },
+  "app": {
+    "twoFactorBanner": "Board member: {link} to access the club tools.",
+    "twoFactorLink": "enable two-factor authentication"
+  },
+  "nav": {
+    "skip": "Skip to content",
+    "main": "Main navigation",
+    "brandHome": "Skull Darts 71, home",
+    "president": "Presidency",
+    "treasury": "Treasury",
+    "events": "Events",
+    "infos": "News",
+    "infosLong": "Club news",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "notificationsUnread": "Notifications, none unread | Notifications, {n} unread | Notifications, {n} unread",
+    "account": "My account",
+    "login": "Log in"
+  },
+  "prefs": {
+    "title": "Display",
+    "hint": "Saved on this device.",
+    "theme": {
+      "legend": "Theme",
+      "toggle": "Theme: {current}. Change theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "legend": "Language"
+    }
+  },
+  "footer": {
+    "association": "non-profit association",
+    "nav": "Footer links",
+    "legalNotice": "Legal notice",
+    "privacy": "Privacy"
+  },
+  "common": {
+    "newTab": "(opens in a new tab)",
+    "email": "Email",
+    "password": "Password",
+    "cancel": "Cancel",
+    "avatarOf": "{name}’s avatar"
+  },
+  "errors": {
+    "fields": "Please check the highlighted fields.",
+    "unexpected": "An unexpected error occurred.",
+    "network": "Unable to connect, please check your network."
+  },
+  "landing": {
+    "kicker": "Darts club",
+    "tagline": "Darts, fuzz and friendship.",
+    "intro": "A club where we aim true, play loud and gather around the board. Beginners welcome, champions tolerated.",
+    "upcoming": "Upcoming events",
+    "infos": "Club news",
+    "join": "Join the club",
+    "login": "Log in",
+    "anthem": "Hear the anthem ↓",
+    "pillarsLabel": "What the club offers",
+    "pillars": {
+      "fun": {
+        "title": "Just for fun",
+        "text": "A recreational association: we play to have fun, beginners and regulars alike, with no pressure and no rankings."
+      },
+      "nights": {
+        "title": "Game nights",
+        "text": "Practice sessions, challenges and impromptu games, to a stoner and metal soundtrack."
+      },
+      "community": {
+        "title": "Community",
+        "text": "Messaging, a calendar and shared memories after every event."
+      }
+    },
+    "cta": {
+      "title": "Ready to aim for 180?",
+      "text": "Create your account, pick a nickname and join the next game night.",
+      "facebook": "News and photos on {link}.",
+      "facebookLink": "the association’s Facebook page",
+      "calendar": "See the calendar",
+      "signUp": "Sign me up"
+    },
+    "friend": {
+      "kicker": "Friend band",
+      "text": "A band close to the club. Go check out their music and catch their next gigs.",
+      "link": "Their Facebook page"
+    }
+  },
+  "song": {
+    "kicker": "Club soundtrack",
+    "subtitle": "Skull Darts 71 anthem",
+    "mood": "Stoner groove, warm fuzz, post-metal build-up, a chorus to sing with your glass raised.",
+    "credits": "Lyrics and music: Skull Darts 71. Royalty-free for the club.",
+    "tabCaption": "Main riff (tablature, low string at the bottom)",
+    "lyricsLanguage": "Original lyrics in French, as sung by the club.",
+    "play": "Play the riff",
+    "stop": "Stop the riff",
+    "unsupported": "Your browser does not support audio synthesis.",
+    "playerNote": "Riff played live by your browser (Web Audio synthesis, nothing downloaded). Mind the volume!",
+    "sections": {
+      "intro": "Intro",
+      "verse1": "Verse 1",
+      "preChorus": "Pre-chorus",
+      "chorus": "Chorus",
+      "verse2": "Verse 2",
+      "bridge": "Bridge",
+      "solo": "Solo",
+      "finalChorus": "Final chorus ×2",
+      "rallyingCry": "Rallying cry",
+      "outro": "Outro"
+    },
+    "directions": {
+      "intro": ["Fuzz bass alone on the riff, 4 bars", "Drums come in: open hi-hat, then the whole band"],
+      "solo": ["Wide-open wah over the C blues scale", "Post-metal build-up: double-time drums, everyone in unison"],
+      "outro": ["Sustained feedback on the low C", "One last kick drum… and the sound of a dart hitting the bullseye"]
+    }
+  },
+  "auth": {
+    "oauthSeparator": "or",
+    "oauthContinue": "Continue with {provider}",
+    "login": {
+      "title": "Log in",
+      "verifySuccess": "Email confirmed: you can now log in.",
+      "verifyInvalid": "Invalid or expired confirmation link. Request a new one below.",
+      "oauthFailed": "External sign-in failed: your provider did not confirm your email.",
+      "codeIntro": "Enter the 6-digit code shown by your authenticator app, or a backup code.",
+      "codeLabel": "Verification code",
+      "verify": "Verify",
+      "submit": "Log in",
+      "resend": "Resend the confirmation link",
+      "resent": "If a pending account exists, a new link has just been sent.",
+      "noAccount": "No account yet?",
+      "join": "Join the club"
+    },
+    "register": {
+      "title": "Join the club",
+      "checkInbox": "Check your inbox.",
+      "checkInboxText": "If the address is valid, you have just received a link to activate your account.",
+      "phone": "Phone (optional)",
+      "phoneHint": "So the board can reach you; never shown to other members.",
+      "passwordHint": "At least 12 characters. A passphrase is ideal.",
+      "submit": "Create my account",
+      "alreadyMember": "Already a member?",
+      "login": "Log in"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "Missed: the dart landed off the board.",
+    "back": "Back to the home page"
+  }
+}

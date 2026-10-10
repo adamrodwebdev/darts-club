@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { ApiError } from '@/api/ApiError'
+import { i18n } from '@/i18n'
 
 /**
  * État d'une action asynchrone de formulaire : envoi en cours, message
@@ -21,9 +22,11 @@ export function useAsyncAction() {
     } catch (e) {
       if (e instanceof ApiError) {
         fieldErrors.value = { ...e.violations }
-        error.value = Object.keys(e.violations).length > 0 ? 'Vérifie les champs indiqués.' : e.message
+        const { t } = i18n.global
+        if (e.status === 0) error.value = t('errors.network')
+        else error.value = Object.keys(e.violations).length > 0 ? t('errors.fields') : e.message
       } else {
-        error.value = e instanceof Error ? e.message : 'Une erreur inattendue est survenue.'
+        error.value = e instanceof Error ? e.message : i18n.global.t('errors.unexpected')
       }
       return undefined
     } finally {

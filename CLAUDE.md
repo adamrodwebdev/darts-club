@@ -23,6 +23,7 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - **Modèles typés** (classes ou interfaces + fonctions de mapping) ; les réponses API sont validées à la frontière.
 - Logique réutilisable dans des **composables** ; état partagé dans des **stores Pinia** ; composants centrés sur l'affichage.
 - `strict` TypeScript, pas de `any`.
+- **Aucun texte en dur** : toute chaîne visible passe par `vue-i18n` (`src/i18n/locales/fr.json` + `en.json`, mêmes clés) ; dates, nombres et montants via `Intl` dans la langue courante. Couleurs uniquement via les jetons CSS (thèmes clair et sombre).
 
 ## Responsive design (obligatoire)
 - **Mobile-first** : styles de base pour ~360 px, puis `min-width` aux points de rupture `640 / 768 / 1024 / 1280 px`.
