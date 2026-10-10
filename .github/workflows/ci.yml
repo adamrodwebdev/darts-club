@@ -50,6 +50,13 @@ jobs:
       - run: vendor/bin/phpstan analyse --no-progress
       - run: bin/console lint:container
       - run: bin/console lint:yaml config
+      - name: Migrations + validation du schéma (PostgreSQL)
+        env:
+          MESSENGER_TRANSPORT_DSN: in-memory://
+        run: |
+          bin/console doctrine:database:create --if-not-exists
+          bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+          bin/console doctrine:schema:validate
       - run: vendor/bin/phpunit
 
   web:

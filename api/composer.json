@@ -24,6 +24,7 @@
         "symfony/expression-language": "7.4.*",
         "symfony/flex": "^2.11",
         "symfony/framework-bundle": "7.4.*",
+        "symfony/lock": "7.4.*",
         "symfony/mailer": "7.4.*",
         "symfony/messenger": "7.4.*",
         "symfony/property-access": "7.4.*",
@@ -33,6 +34,7 @@
         "symfony/security-bundle": "7.4.*",
         "symfony/serializer": "7.4.*",
         "symfony/twig-bundle": "7.4.*",
+        "symfony/uid": "7.4.*",
         "symfony/validator": "7.4.*",
         "symfony/yaml": "7.4.*"
     },
