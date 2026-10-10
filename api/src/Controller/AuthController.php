@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Profile\ProfileView;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,12 +24,7 @@ final class AuthController extends AbstractController
     #[IsGranted('ROLE_MEMBER')]
     public function me(#[CurrentUser] User $user): JsonResponse
     {
-        return $this->json([
-            'id' => $user->getId()->toRfc4122(),
-            'email' => $user->getEmail(),
-            'phone' => $user->getPhone(),
-            'roles' => $user->getRoles(),
-        ]);
+        return $this->json(ProfileView::of($user));
     }
 
     /** Intercepté par le pare-feu (logout). */

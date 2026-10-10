@@ -8,6 +8,7 @@ use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
 use App\Notification\NotificationPreferences;
 use App\Repository\UserRepository;
+use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\PhoneNumber;
 use Doctrine\DBAL\Types\Types;
@@ -56,6 +57,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     /** @var array<string, list<string>> */
     #[ORM\Column(type: Types::JSON)]
     private array $notificationPreferences = [];
+
+    #[ORM\Column(length: DisplayName::MAX, nullable: true)]
+    private ?string $displayName = null;
+
+    /** Identifiant du fichier dans AvatarStorage */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $avatar = null;
 
     private function __construct(EmailAddress $email)
     {
@@ -158,6 +166,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function displayName(): DisplayName
+    {
+        return null !== $this->displayName
+            ? DisplayName::fromString($this->displayName)
+            : DisplayName::fromEmail(EmailAddress::fromString($this->email));
+    }
+
+    public function rename(DisplayName $name): void
+    {
+        $this->displayName = $name->value;
+    }
+
+    public function avatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    /** @return string|null identifiant de l'ancien avatar, à supprimer du stockage */
+    public function changeAvatar(?string $avatarId): ?string
+    {
+        $previous = $this->avatar;
+        $this->avatar = $avatarId;
+
+        return $previous;
+    }
+
+    public function hasPassword(): bool
+    {
+        return '' !== $this->password;
     }
 
     public function notificationPreferences(): NotificationPreferences
