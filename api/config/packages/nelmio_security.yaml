@@ -1,0 +1,36 @@
+nelmio_security:
+    clickjacking:
+        paths:
+            '^/.*': DENY
+
+    content_type:
+        nosniff: true
+
+    referrer_policy:
+        enabled: true
+        policies:
+            - 'no-referrer'
+            - 'strict-origin-when-cross-origin'
+
+    # L'API ne sert que du JSON : CSP minimale et stricte
+    csp:
+        enforce:
+            level1_fallback: false
+            default-src: ["'none'"]
+            frame-ancestors: ["'none'"]
+            base-uri: ["'none'"]
+            form-action: ["'self'"]
+
+    permissions_policy:
+        enabled: true
+        policies:
+            camera: []
+            microphone: []
+            geolocation: []
+
+when@prod:
+    nelmio_security:
+        forced_ssl:
+            hsts_max_age: 31536000
+            hsts_subdomains: true
+            hsts_preload: true

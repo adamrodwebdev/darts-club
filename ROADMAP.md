@@ -5,8 +5,12 @@
 - **Front** : Vue 3.5 + Vite + TypeScript, Pinia, Vue Router, Tailwind 4, GSAP/Motion (`prefers-reduced-motion` respecté), PWA (Workbox)
 - **Infra** : Docker Compose (FrankenPHP, Postgres, Redis, Mailpit), GitHub Actions, monorepo `/api` + `/web`
 
+## Directives transverses
+- **Programmation orientée objet** : entités riches, objets valeur, services à responsabilité unique, interfaces aux frontières, stratégies polymorphes, événements de domaine (détail dans [CLAUDE.md](CLAUDE.md))
+- **Responsive design mobile-first** : 320 → 1920 px sans défilement horizontal, typographie fluide, cibles tactiles ≥ 44 px, tests Playwright mobile + desktop
+
 ## 1. Socle projet (S1)
-- Dépôt GitHub privé, branche `main` protégée, PR obligatoires, Conventional Commits, Dependabot, CodeQL
+- Dépôt GitHub public, branche `main` protégée, PR obligatoires, Conventional Commits, Dependabot, CodeQL
 - CI : PHPStan (max), PHP-CS-Fixer, PHPUnit, ESLint, Vitest, Playwright, **Lighthouse CI (assert ≥ 95 sur les 4 catégories)**
 - Environnements : dev / staging / prod, secrets via Symfony Secrets Vault
 

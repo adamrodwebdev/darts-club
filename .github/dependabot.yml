@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: composer
+    directory: /api
+    schedule: { interval: weekly }
+    groups:
+      symfony: { patterns: ["symfony/*"] }
+  - package-ecosystem: npm
+    directory: /web
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+  - package-ecosystem: docker
+    directory: /docker/php
+    schedule: { interval: monthly }
