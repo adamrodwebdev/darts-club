@@ -39,6 +39,9 @@ export default defineConfig({
     /* Navigateur francophone par défaut : la langue détectée est celle des parcours */
     locale: 'fr-FR',
 
+    /* Le service worker (production) empêche Playwright d'intercepter les appels d'API simulés */
+    serviceWorkers: 'block',
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
 
