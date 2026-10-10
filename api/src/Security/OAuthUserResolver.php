@@ -50,7 +50,7 @@ final class OAuthUserResolver
             $this->em->persist($user);
         } else {
             // Le fournisseur prouve la possession de l'adresse
-            $user->markVerified();
+            $user->verifyThroughProvider();
         }
 
         $this->em->persist(new OAuthIdentity($user, $provider, $subject));

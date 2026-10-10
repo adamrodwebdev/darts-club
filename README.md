@@ -53,3 +53,14 @@ Pour naviguer sur le site avec des données de démonstration (SQLite, emails é
 4. Ouvrir http://localhost:5173 — comptes `president@demo.local`, `tresorier@demo.local`, `secretaire@demo.local`, `alice@demo.local`, `bob@demo.local`, `chloe@demo.local`, mot de passe `SkullDarts71-demo!` (données fictives).
 
 Sans hub Mercure, le temps réel est inactif : les notifications apparaissent au rechargement.
+
+## Production
+
+Serveur Docker (FrankenPHP/Caddy, PostgreSQL, Redis, Mercure), image publiée sur `ghcr.io` par GitHub Actions
+et déployée automatiquement après chaque CI verte sur `main`. Guide pas à pas : [docs/deploiement.md](docs/deploiement.md).
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml up -d      # sur le serveur, avec /opt/skull-darts-71/.env
+./deploy/deploy.sh <sha>                                       # déploiement / retour arrière
+./deploy/backup.sh                                             # sauvegarde chiffrée (age)
+```

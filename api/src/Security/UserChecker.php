@@ -11,15 +11,16 @@ final class UserChecker implements UserCheckerInterface
 {
     public function checkPreAuth(UserInterface $user, ?TokenInterface $token = null): void
     {
+    }
+
+    /** Après la vérification du mot de passe : un tiers ne peut pas savoir si un compte existe ou est suspendu. */
+    public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
+    {
         if ($user instanceof User && !$user->isVerified()) {
             throw new AccountNotVerified();
         }
         if ($user instanceof User && $user->isSuspended()) {
             throw new AccountSuspended();
         }
-    }
-
-    public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void
-    {
     }
 }

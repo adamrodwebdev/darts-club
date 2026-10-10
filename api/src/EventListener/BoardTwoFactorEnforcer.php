@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 0)]
 final class BoardTwoFactorEnforcer
 {
-    private const ALLOWED = ['/api/auth/', '/api/me', '/api/realtime/', '/api/notifications', '/api/push/'];
+    private const ALLOWED = ['/api/auth/', '/api/me/', '/api/realtime/', '/api/notifications', '/api/push/'];
 
     public function __construct(
         private readonly ErrorMessages $messages,
@@ -31,6 +31,9 @@ final class BoardTwoFactorEnforcer
     {
         $path = $event->getRequest()->getPathInfo();
         if (!$event->isMainRequest() || !str_starts_with($path, '/api/')) {
+            return;
+        }
+        if ('/api/me' === $path) {
             return;
         }
         foreach (self::ALLOWED as $prefix) {

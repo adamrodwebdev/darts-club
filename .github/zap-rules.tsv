@@ -1,0 +1,9 @@
+# Règles ZAP : identifiant<TAB>IGNORE|WARN|FAIL<TAB>justification
+10038	FAIL	(Content Security Policy absente)
+10020	FAIL	(Protection contre le clickjacking absente)
+10021	FAIL	(X-Content-Type-Options absent)
+10035	FAIL	(HSTS absent)
+10010	FAIL	(Cookie sans HttpOnly)
+10011	FAIL	(Cookie sans Secure)
+10054	FAIL	(Cookie sans SameSite)
+10096	IGNORE	(Horodatages : dates d événements publiques)

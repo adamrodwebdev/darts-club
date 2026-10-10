@@ -1,19 +1,24 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { services } from '@/services'
+import type { OAuthProvider } from '@/services/AuthService'
 
 const { t } = useI18n()
-const providers = [
-  { id: 'google', name: 'Google' },
-  { id: 'discord', name: 'Discord' },
-] as const
+const NAMES: Record<OAuthProvider, string> = { google: 'Google', discord: 'Discord' }
+
+/** Seuls les fournisseurs configurés sur le serveur sont proposés */
+const providers = ref<OAuthProvider[]>([])
+onMounted(async () => {
+  providers.value = await services.auth.oauthProviders()
+})
 </script>
 
 <template>
-  <div class="oauth">
+  <div v-if="providers.length" class="oauth">
     <p class="oauth__sep"><span>{{ t('auth.oauthSeparator') }}</span></p>
     <!-- Liens classiques : la redirection OAuth est une navigation complète -->
-    <a v-for="p in providers" :key="p.id" class="oauth__btn" :href="services.auth.oauthUrl(p.id)">{{ t('auth.oauthContinue', { provider: p.name }) }}</a>
+    <a v-for="p in providers" :key="p" class="oauth__btn" :href="services.auth.oauthUrl(p)">{{ t('auth.oauthContinue', { provider: NAMES[p] }) }}</a>
   </div>
 </template>
 

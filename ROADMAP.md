@@ -72,7 +72,7 @@
 - ✅ Serveur de production unique (FrankenPHP/Caddy) : front + API + Mercure sur la même origine, compression zstd/Brotli/gzip, cache immuable des fichiers versionnés, CSP stricte, HSTS
 - ✅ Production : OPcache + préchargement, cache et sessions dans Redis, image sans root, sans fichiers locaux ni secrets (vérifié en CI)
 - ✅ Manifest d'application, icônes (dont iPhone et « maskable »), image de partage Open Graph
-- À faire (étape 11) : URL absolue de l'image Open Graph une fois le domaine connu ; service worker hors-ligne (PWA)
+- ✅ URL absolue de l'image Open Graph et service worker hors ligne (étape 11)
 
 ## 10 bis. Thème & internationalisation
 Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace adhérent et bureau), **c** (API).
@@ -90,8 +90,16 @@ Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace
 - ✅ Langue et thème enregistrés sur le compte (c) : un choix fait sur l'appareil prime à la connexion, sinon celui du compte s'applique ; la langue est fixée à l'inscription
 - ✅ Emails, notifications (centre, email, push), calendrier ICS et export CSV dans la langue de chaque destinataire (c)
 - ✅ Contrôle en CI (c) : test PHPUnit qui vérifie que chaque message français a sa traduction anglaise et que les catalogues à clés sont complets
-- À faire (étape 11) : rendu complet du contenu au build (SSG) et `hreflang` en dur une fois le domaine connu
+- ✅ `hreflang` en dur au build (étape 11) ; rendu complet du contenu au build (SSG) non retenu : l'en-tête traduit suffit au référencement
 
 ## 11. Livraison (S8)
-- Tests E2E complets, audit sécurité (OWASP ZAP), pentest léger
-- Déploiement (VPS Docker ou PaaS), sauvegardes chiffrées, monitoring (Sentry), uptime
+- ✅ Hébergement retenu : VPS + Docker (Hetzner ou OVH), emails Brevo, sonde de disponibilité sans service de suivi d'erreurs
+- ✅ Image de production publiée sur ghcr.io par GitHub Actions, déploiement SSH automatique après une CI verte sur `main` (environnement protégé), migrations et vérification `/api/health`, retour arrière par SHA
+- ✅ `compose.prod.yaml` : secrets obligatoires depuis le `.env` du serveur, volume persistant des avatars et photos, redémarrage automatique, rotation des journaux
+- ✅ Sauvegardes quotidiennes chiffrées (age) de la base et des fichiers, copie distante facultative (rclone), script de restauration
+- ✅ Amorçage : commande `app:member:grant-role` pour nommer le premier président ; boutons OAuth affichés seulement s'ils sont configurés
+- ✅ Audit OWASP ZAP (scan passif hebdomadaire de la production) et revue de sécurité du code avant la mise en ligne
+- ✅ SEO : Open Graph, canonique, hreflang et sitemap en URL absolues au build ; robots.txt excluant les espaces adhérents
+- ✅ Service worker : page hors ligne (navigation réseau d'abord, aucune donnée mise en cache)
+- ✅ Guide de mise en production : [docs/deploiement.md](docs/deploiement.md)
+- À faire (bureau) : choisir l'hébergeur et le domaine, créer les comptes Brevo / UptimeRobot, compléter les mentions légales, suivre le guide
