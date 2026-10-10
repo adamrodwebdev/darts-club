@@ -25,13 +25,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['email' => $email->value]);
     }
 
-    /** @return list<string> identifiants RFC 4122 des comptes vérifiés */
-    public function findVerifiedIds(): array
+    /** @return list<User> comptes vérifiés et non suspendus */
+    public function findActive(): array
+    {
+        return $this->findBy(['verified' => true, 'suspendedAt' => null]);
+    }
+
+    /** @return list<string> identifiants RFC 4122 des comptes actifs */
+    public function findActiveIds(): array
     {
         /** @var list<array{id: \Symfony\Component\Uid\Uuid}> $rows */
         $rows = $this->createQueryBuilder('u')
             ->select('u.id')
             ->andWhere('u.verified = true')
+            ->andWhere('u.suspendedAt IS NULL')
             ->getQuery()
             ->getResult();
 

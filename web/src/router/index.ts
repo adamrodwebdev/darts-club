@@ -7,6 +7,7 @@ declare module 'vue-router' {
     title?: string
     requiresAuth?: boolean
     requiresTreasurer?: boolean
+    requiresPresident?: boolean
     guestOnly?: boolean
   }
 }
@@ -56,6 +57,23 @@ const router = createRouter({
       meta: { title: 'Trésorerie', requiresAuth: true, requiresTreasurer: true },
     },
     {
+      path: '/admin',
+      component: () => import('../views/admin/AdminLayout.vue'),
+      meta: { requiresAuth: true, requiresPresident: true },
+      children: [
+        { path: '', name: 'admin', component: () => import('../views/admin/AdminMembersView.vue'), meta: { title: 'Membres' } },
+        { path: 'diffusion', name: 'admin-broadcast', component: () => import('../views/admin/BroadcastView.vue'), meta: { title: 'Diffusion' } },
+        { path: 'annonces', name: 'admin-announcements', component: () => import('../views/admin/AnnouncementsAdminView.vue'), meta: { title: 'Annonces' } },
+        { path: 'journal', name: 'admin-audit', component: () => import('../views/admin/AuditView.vue'), meta: { title: 'Journal' } },
+      ],
+    },
+    {
+      path: '/infos',
+      name: 'infos',
+      component: () => import('../views/InfosView.vue'),
+      meta: { title: 'Infos du club', requiresAuth: true },
+    },
+    {
       path: '/notifications',
       name: 'notifications',
       component: () => import('../views/NotificationsView.vue'),
@@ -91,7 +109,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   // Contrôle d'ergonomie : l'API reste seule garante des droits
-  if (to.meta.requiresTreasurer && !auth.user?.canManageTreasury) {
+  if ((to.meta.requiresTreasurer && !auth.user?.canManageTreasury) || (to.meta.requiresPresident && !auth.user?.canAdminister)) {
     return { name: 'account' }
   }
   if (to.meta.guestOnly && auth.isAuthenticated) {

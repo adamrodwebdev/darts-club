@@ -15,6 +15,9 @@ final class UserChecker implements UserCheckerInterface
         if ($user instanceof User && !$user->isVerified()) {
             throw new CustomUserMessageAccountStatusException('Adresse email non vérifiée.');
         }
+        if ($user instanceof User && $user->isSuspended()) {
+            throw new CustomUserMessageAccountStatusException('Compte suspendu. Contacte le bureau du club.');
+        }
     }
 
     public function checkPostAuth(UserInterface $user, ?TokenInterface $token = null): void

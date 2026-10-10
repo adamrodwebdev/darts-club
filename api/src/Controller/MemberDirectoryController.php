@@ -22,7 +22,7 @@ final class MemberDirectoryController extends AbstractController
         $needle = mb_strtolower(trim($q));
 
         $members = array_filter(
-            $users->findBy(['verified' => true]),
+            $users->findActive(),
             static fn (User $u): bool => !$u->getId()->equals($viewer->getId())
                 && ('' === $needle || str_contains(mb_strtolower($u->displayName()->value), $needle)),
         );
