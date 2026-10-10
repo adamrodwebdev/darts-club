@@ -8,6 +8,7 @@ const router = useRouter()
 
 const tabs = [
   { to: '/compte', label: 'Profil' },
+  { to: '/compte/cotisation', label: 'Cotisation' },
   { to: '/compte/notifications', label: 'Notifications' },
   { to: '/compte/securite', label: 'Sécurité' },
 ]

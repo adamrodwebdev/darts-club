@@ -8,6 +8,12 @@ services:
     environment:
       APP_ENV: dev
 
+  worker:
+    build:
+      target: dev
+    volumes:
+      - ./api:/app
+
   database:
     ports:
       - "5432:5432"

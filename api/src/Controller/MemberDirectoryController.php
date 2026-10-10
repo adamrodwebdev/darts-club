@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class MemberDirectoryController extends AbstractController
 {
     #[Route('/api/members', name: 'members_list', methods: ['GET'], format: 'json')]
-    public function __invoke(#[CurrentUser] User $viewer, UserRepository $users, #[MapQueryParameter] string $q = ''): JsonResponse
+    public function __invoke(#[CurrentUser] User $viewer, UserRepository $users, MessagingView $view, #[MapQueryParameter] string $q = ''): JsonResponse
     {
         $needle = mb_strtolower(trim($q));
 
@@ -28,6 +28,6 @@ final class MemberDirectoryController extends AbstractController
         );
         usort($members, static fn (User $a, User $b): int => strcasecmp($a->displayName()->value, $b->displayName()->value));
 
-        return $this->json(['items' => array_map(MessagingView::member(...), \array_slice($members, 0, 50))]);
+        return $this->json(['items' => array_map($view->member(...), \array_slice($members, 0, 50))]);
     }
 }

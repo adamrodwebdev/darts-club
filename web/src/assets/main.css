@@ -13,6 +13,9 @@
   --color-on-accent: #ffffff;
   --color-danger: #ff6b6b;
   --color-success: #4cd47d;
+  --badge-gold: #e3b341;
+  --badge-teal: #3cc6b8;
+  --badge-blue: #6cb2ff;
   --radius: 0.6rem;
   --gutter: 1rem;
   --max-width: 72rem;
@@ -35,6 +38,9 @@
     --color-link: #c1121f;
     --color-danger: #b3261e;
     --color-success: #1d7a3e;
+    --badge-gold: #8a6100;
+    --badge-teal: #096b62;
+    --badge-blue: #1f5fbf;
     color-scheme: light;
   }
 }

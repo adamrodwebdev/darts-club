@@ -22,6 +22,11 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
  */
 final class JsonTwoFactorHandlers implements AuthenticationSuccessHandlerInterface, AuthenticationFailureHandlerInterface, AuthenticationRequiredHandlerInterface
 {
+    public function __construct(
+        private readonly ProfileView $view,
+    ) {
+    }
+
     public function onAuthenticationSuccess(Request $request, TokenInterface $token): Response
     {
         if ($token instanceof TwoFactorTokenInterface) {
@@ -33,7 +38,7 @@ final class JsonTwoFactorHandlers implements AuthenticationSuccessHandlerInterfa
             return new JsonResponse(status: Response::HTTP_NO_CONTENT);
         }
 
-        return new JsonResponse(ProfileView::of($user));
+        return new JsonResponse($this->view->of($user));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response

@@ -11,3 +11,8 @@ services:
 
     # Pas encore utilisé par un contrôleur (diffusions du président : étape 7)
     App\Notification\MemberNotifier: ~
+
+    # Horloge figée : saison 2026-2027, échéance du 1er octobre dépassée
+    clock:
+        class: Symfony\Component\Clock\MockClock
+        arguments: ['2026-10-15 12:00:00']

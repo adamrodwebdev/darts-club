@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use OTPHP\TOTP;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
@@ -75,7 +76,31 @@ abstract class ApiTestCase extends WebTestCase
             self::fail('Graine TOTP vide.');
         }
 
-        return TOTP::createFromSecret($secret)->now();
+        // Même horloge que l'application (figée en test)
+        $now = $this->service('clock', ClockInterface::class)->now();
+
+        return TOTP::createFromSecret($secret)->at(max(0, $now->getTimestamp()));
+    }
+
+    /** Lecture typée d'une valeur imbriquée de la réponse JSON (« status », « id »…). */
+    protected function dig(mixed $data, string|int ...$keys): mixed
+    {
+        foreach ($keys as $key) {
+            self::assertIsArray($data);
+            self::assertArrayHasKey($key, $data);
+            $data = $data[$key];
+        }
+
+        return $data;
+    }
+
+    /** Comme dig(), en exigeant une chaîne. */
+    protected function digString(mixed $data, string|int ...$keys): string
+    {
+        $value = $this->dig($data, ...$keys);
+        self::assertIsString($value);
+
+        return $value;
     }
 
     /** Connexion complète d'un compte protégé par 2FA. */

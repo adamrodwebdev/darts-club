@@ -5,8 +5,10 @@ namespace App\Profile;
 use App\Entity\Notification;
 use App\Entity\OAuthIdentity;
 use App\Entity\Participant;
+use App\Entity\Payment;
 use App\Entity\PushSubscription;
 use App\Entity\User;
+use App\Repository\MembershipRepository;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -25,6 +27,7 @@ final class AccountDeleter
         private readonly EntityManagerInterface $em,
         private readonly AvatarStorage $avatars,
         private readonly MessageRepository $messages,
+        private readonly MembershipRepository $memberships,
     ) {
     }
 
@@ -35,6 +38,15 @@ final class AccountDeleter
         $this->em->wrapInTransaction(function () use ($user): void {
             // Messages conservés pour les autres participants, auteur anonymisé
             $this->messages->anonymizeAuthor($user);
+            // Obligation comptable : la cotisation reste, détachée du compte
+            $this->memberships->detachUser($user);
+            $this->em->createQueryBuilder()
+                ->update(Payment::class, 'p')
+                ->set('p.recordedBy', 'NULL')
+                ->where('p.recordedBy = :user')
+                ->setParameter('user', $user->getId(), 'uuid')
+                ->getQuery()
+                ->execute();
 
             foreach (self::OWNED as $class => $field) {
                 $this->em->createQueryBuilder()

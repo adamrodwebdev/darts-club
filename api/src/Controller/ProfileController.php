@@ -39,13 +39,14 @@ final class ProfileController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly RateLimiterFactoryInterface $sensitiveActionLimiter,
+        private readonly ProfileView $view,
     ) {
     }
 
     #[Route('', name: 'show', methods: ['GET'])]
     public function show(#[CurrentUser] User $user): JsonResponse
     {
-        return $this->json(ProfileView::of($user));
+        return $this->json($this->view->of($user));
     }
 
     #[Route('', name: 'update', methods: ['PATCH'])]

@@ -6,6 +6,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     title?: string
     requiresAuth?: boolean
+    requiresTreasurer?: boolean
     guestOnly?: boolean
   }
 }
@@ -39,8 +40,20 @@ const router = createRouter({
           component: () => import('../views/account/NotificationSettingsView.vue'),
           meta: { title: 'Mes notifications' },
         },
+        {
+          path: 'cotisation',
+          name: 'account-membership',
+          component: () => import('../views/account/MembershipView.vue'),
+          meta: { title: 'Ma cotisation' },
+        },
         { path: 'securite', name: 'account-security', component: () => import('../views/account/SecurityView.vue'), meta: { title: 'Sécurité' } },
       ],
+    },
+    {
+      path: '/tresorerie',
+      name: 'treasury',
+      component: () => import('../views/treasury/TreasuryView.vue'),
+      meta: { title: 'Trésorerie', requiresAuth: true, requiresTreasurer: true },
     },
     {
       path: '/notifications',
@@ -76,6 +89,10 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  // Contrôle d'ergonomie : l'API reste seule garante des droits
+  if (to.meta.requiresTreasurer && !auth.user?.canManageTreasury) {
+    return { name: 'account' }
   }
   if (to.meta.guestOnly && auth.isAuthenticated) {
     return { name: 'account' }

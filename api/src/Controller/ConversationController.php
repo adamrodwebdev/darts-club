@@ -39,6 +39,7 @@ final class ConversationController extends AbstractController
         private readonly Conversations $conversations,
         private readonly MessageRepository $messages,
         private readonly RateLimiterFactoryInterface $messagePostLimiter,
+        private readonly MessagingView $view,
     ) {
     }
 
@@ -46,7 +47,7 @@ final class ConversationController extends AbstractController
     public function list(#[CurrentUser] User $user, ConversationRepository $repository, MailboxAccess $access): JsonResponse
     {
         $items = array_map(
-            fn (Conversation $c): array => MessagingView::conversation($c, $user, $this->messages->latest($c), $this->messages->countUnread($c, $user)),
+            fn (Conversation $c): array => $this->view->conversation($c, $user, $this->messages->latest($c), $this->messages->countUnread($c, $user)),
             $repository->findVisibleTo($user, $access->mailboxesManagedBy($user)),
         );
 
@@ -73,7 +74,7 @@ final class ConversationController extends AbstractController
         }
 
         return $this->json(
-            MessagingView::conversation($conversation, $user, $this->messages->latest($conversation), 0),
+            $this->view->conversation($conversation, $user, $this->messages->latest($conversation), 0),
             Response::HTTP_CREATED,
         );
     }
@@ -86,9 +87,9 @@ final class ConversationController extends AbstractController
         $page = $this->messages->page($conversation, $cursor);
 
         return $this->json([
-            'conversation' => MessagingView::conversation($conversation, $user, $page[0] ?? null, $this->messages->countUnread($conversation, $user)),
+            'conversation' => $this->view->conversation($conversation, $user, $page[0] ?? null, $this->messages->countUnread($conversation, $user)),
             // Ordre chronologique pour l'affichage
-            'items' => array_reverse(array_map(static fn ($m): array => MessagingView::message($m, $user), $page)),
+            'items' => array_reverse(array_map(fn ($m): array => $this->view->message($m, $user), $page)),
             'nextCursor' => \count($page) > 0 ? end($page)->getId()->toRfc4122() : null,
         ]);
     }
@@ -103,7 +104,7 @@ final class ConversationController extends AbstractController
         $latest = $this->messages->latest($conversation);
         \assert(null !== $latest);
 
-        return $this->json(MessagingView::message($latest, $user), Response::HTTP_CREATED);
+        return $this->json($this->view->message($latest, $user), Response::HTTP_CREATED);
     }
 
     #[Route('/{id}/read', name: 'read', requirements: ['id' => self::UUID], methods: ['POST'])]
