@@ -20,7 +20,7 @@ const { unread } = storeToRefs(useNotificationStore())
           <circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="2.5" />
           <circle cx="16" cy="16" r="2.5" fill="var(--color-accent)" />
         </svg>
-        <span class="brand__name">Darts Club</span>
+        <span class="brand__name" :class="{ 'brand__name--member': user }">Darts Club</span>
       </RouterLink>
 
       <ul v-if="user" class="nav">
@@ -35,6 +35,12 @@ const { unread } = storeToRefs(useNotificationStore())
           <RouterLink to="/tresorerie" class="nav__link" aria-label="Trésorerie">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 7h18v12H3zM3 7l2-3h14l2 3M12 11v4M9 13h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
             <span class="nav__label">Trésorerie</span>
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/evenements" class="nav__link" aria-label="Événements">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            <span class="nav__label">Événements</span>
           </RouterLink>
         </li>
         <li>
@@ -190,6 +196,13 @@ const { unread } = storeToRefs(useNotificationStore())
 
 @media (max-width: 359px) {
   .brand__name {
+    display: none;
+  }
+}
+
+/* Connecté : 5 icônes de 44 px, le logo seul suffit sur petit écran */
+@media (max-width: 639px) {
+  .brand__name--member {
     display: none;
   }
 }

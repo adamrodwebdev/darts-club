@@ -2,12 +2,16 @@
 
 namespace App\Profile;
 
+use App\Entity\EventPhoto;
+use App\Entity\EventPost;
 use App\Entity\Notification;
 use App\Entity\OAuthIdentity;
 use App\Entity\Participant;
 use App\Entity\Payment;
 use App\Entity\PushSubscription;
+use App\Entity\Registration;
 use App\Entity\User;
+use App\Media\ImageStorage;
 use App\Repository\MembershipRepository;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,11 +25,19 @@ final class AccountDeleter
         PushSubscription::class => 'user',
         OAuthIdentity::class => 'user',
         Participant::class => 'user',
+        Registration::class => 'user',
+    ];
+
+    /** Contenus conservés pour les autres, détachés du compte (auteur anonymisé) */
+    private const ANONYMIZED = [
+        Payment::class => 'recordedBy',
+        EventPhoto::class => 'uploader',
+        EventPost::class => 'author',
     ];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly AvatarStorage $avatars,
+        private readonly ImageStorage $avatarStorage,
         private readonly MessageRepository $messages,
         private readonly MembershipRepository $memberships,
     ) {
@@ -40,13 +52,16 @@ final class AccountDeleter
             $this->messages->anonymizeAuthor($user);
             // Obligation comptable : la cotisation reste, détachée du compte
             $this->memberships->detachUser($user);
-            $this->em->createQueryBuilder()
-                ->update(Payment::class, 'p')
-                ->set('p.recordedBy', 'NULL')
-                ->where('p.recordedBy = :user')
-                ->setParameter('user', $user->getId(), 'uuid')
-                ->getQuery()
-                ->execute();
+
+            foreach (self::ANONYMIZED as $class => $field) {
+                $this->em->createQueryBuilder()
+                    ->update($class, 'e')
+                    ->set("e.{$field}", 'NULL')
+                    ->where("e.{$field} = :user")
+                    ->setParameter('user', $user->getId(), 'uuid')
+                    ->getQuery()
+                    ->execute();
+            }
 
             foreach (self::OWNED as $class => $field) {
                 $this->em->createQueryBuilder()
@@ -61,7 +76,7 @@ final class AccountDeleter
         });
 
         if (null !== $avatar) {
-            $this->avatars->delete($avatar);
+            $this->avatarStorage->delete($avatar);
         }
     }
 }

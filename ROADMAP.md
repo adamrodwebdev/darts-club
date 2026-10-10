@@ -53,8 +53,9 @@
 - ✅ Canal d'informations (annonces épinglées, temps réel + push)
 
 ## 8. Calendrier & événements (S6)
-- Planification, inscriptions, export iCal, rappels J-7 / J-1 (mail + push)
-- Archives : résumé, galerie (images optimisées, lazy), textes, posts ; recherche/filtre par saison
+- ✅ Planification, inscriptions (capacité), export iCal + abonnement personnel, rappels J-7 (tous) / J-1 (inscrits)
+- ✅ Archives : résumé, galerie (WebP, vignettes, lazy, visionneuse), posts des adhérents ; recherche/filtre par saison
+- À faire : liste d'attente quand l'événement est complet
 
 ## 9. Landing page « metal » (S7)
 - Identité visuelle unique : typographie display, textures, cible de fléchettes animée (SVG/Canvas léger)

@@ -1,6 +1,7 @@
 import { ApiClient } from '@/api/ApiClient'
 import { AdminService } from './AdminService'
 import { AuthService } from './AuthService'
+import { EventService } from './EventService'
 import { MessagingService } from './MessagingService'
 import { NotificationService } from './NotificationService'
 import { ProfileService } from './ProfileService'
@@ -20,6 +21,7 @@ export const services = {
   realtime: new RealtimeClient(api),
   treasury: new TreasuryService(api),
   admin: new AdminService(api),
+  events: new EventService(api),
 }
 
 export type Services = typeof services

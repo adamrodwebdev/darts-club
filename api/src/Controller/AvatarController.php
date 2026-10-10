@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Profile\AvatarStorage;
+use App\Media\ImageStorage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,10 +16,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class AvatarController extends AbstractController
 {
     #[Route('/api/users/{id}/avatar', name: 'user_avatar', requirements: ['id' => '[0-9a-f-]{36}'], methods: ['GET'])]
-    public function __invoke(User $user, AvatarStorage $storage, Request $request): BinaryFileResponse
+    public function __invoke(User $user, ImageStorage $avatarStorage, Request $request): BinaryFileResponse
     {
         $avatar = $user->avatar();
-        $path = null !== $avatar ? $storage->path($avatar) : null;
+        $path = null !== $avatar ? $avatarStorage->path($avatar) : null;
         if (null === $avatar || null === $path) {
             throw new NotFoundHttpException();
         }

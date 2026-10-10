@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Profile;
+namespace App\Media;
 
-/** Stockage des avatars traités, hors de la racine web. */
-interface AvatarStorage
+/**
+ * Stockage d'images traitées, hors de la racine web.
+ * Instances nommées : $avatarStorage, $eventPhotoStorage (config/services.yaml).
+ */
+interface ImageStorage
 {
     /** @return string identifiant opaque du fichier */
     public function store(string $webpBinary): string;

@@ -27,3 +27,13 @@ services:
         public: true
         arguments:
             $base64Key: '%env(TWO_FACTOR_ENCRYPTION_KEY)%'
+
+    # Stockages d'images (hors racine web), injectés par nom d'argument
+    app.storage.avatars:
+        class: App\Media\FilesystemImageStorage
+        arguments: ['%kernel.project_dir%/var/storage/avatars']
+    app.storage.event_photos:
+        class: App\Media\FilesystemImageStorage
+        arguments: ['%kernel.project_dir%/var/storage/event-photos']
+    App\Media\ImageStorage $avatarStorage: '@app.storage.avatars'
+    App\Media\ImageStorage $eventPhotoStorage: '@app.storage.event_photos'

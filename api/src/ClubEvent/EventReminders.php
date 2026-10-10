@@ -1,0 +1,65 @@
+<?php
+
+namespace App\ClubEvent;
+
+use App\Notification\Category;
+use App\Notification\MemberNotifier;
+use App\Notification\NotificationContent;
+use App\Notification\Recipients;
+use App\Repository\ClubEventRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Uid\Uuid;
+
+/** Rappels J-7 (tous les adhérents) et J-1 (inscrits), une seule fois chacun. */
+final class EventReminders
+{
+    public function __construct(
+        private readonly ClubEventRepository $events,
+        private readonly MemberNotifier $notifier,
+        private readonly EntityManagerInterface $em,
+        private readonly ClockInterface $clock,
+    ) {
+    }
+
+    /** @return int nombre de rappels envoyés */
+    public function sendDue(): int
+    {
+        $now = $this->clock->now();
+        $sent = 0;
+
+        foreach ($this->events->startingWithinDays($now, 8) as $event) {
+            if ($event->isDueForDayReminder($now)) {
+                // J-1 prime : le rappel J-7 n'a plus de sens
+                $event->markWeekReminderSent($now);
+                $event->markDayReminderSent($now);
+                $participants = $event->participants();
+                if ([] !== $participants) {
+                    $this->send($event, 'Demain : %s', Recipients::users(...array_map(static fn ($u): Uuid => $u->getId(), $participants)));
+                    ++$sent;
+                }
+            } elseif ($event->isDueForWeekReminder($now)) {
+                $event->markWeekReminderSent($now);
+                $this->send($event, 'Dans une semaine : %s', Recipients::allMembers());
+                ++$sent;
+            }
+        }
+
+        $this->em->flush();
+
+        return $sent;
+    }
+
+    private function send(\App\Entity\ClubEvent $event, string $format, Recipients $recipients): void
+    {
+        $this->notifier->notify(
+            new NotificationContent(
+                Category::Event,
+                mb_substr(\sprintf($format, $event->getTitle()), 0, 120),
+                NotifyOnClubEventChanges::body($event),
+                NotifyOnClubEventChanges::link($event),
+            ),
+            $recipients,
+        );
+    }
+}

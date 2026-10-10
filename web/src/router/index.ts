@@ -8,6 +8,7 @@ declare module 'vue-router' {
     requiresAuth?: boolean
     requiresTreasurer?: boolean
     requiresPresident?: boolean
+    requiresOrganizer?: boolean
     guestOnly?: boolean
   }
 }
@@ -68,6 +69,32 @@ const router = createRouter({
       ],
     },
     {
+      path: '/evenements',
+      name: 'events',
+      component: () => import('../views/events/EventsView.vue'),
+      meta: { title: 'Événements', requiresAuth: true },
+    },
+    {
+      path: '/evenements/nouveau',
+      name: 'event-create',
+      component: () => import('../views/events/EventFormView.vue'),
+      meta: { title: 'Nouvel événement', requiresAuth: true, requiresOrganizer: true },
+    },
+    {
+      path: '/evenements/:id([0-9a-f-]{36})',
+      name: 'event',
+      component: () => import('../views/events/EventDetailView.vue'),
+      props: true,
+      meta: { title: 'Événement', requiresAuth: true },
+    },
+    {
+      path: '/evenements/:id([0-9a-f-]{36})/modifier',
+      name: 'event-edit',
+      component: () => import('../views/events/EventFormView.vue'),
+      props: true,
+      meta: { title: 'Modifier l’événement', requiresAuth: true, requiresOrganizer: true },
+    },
+    {
       path: '/infos',
       name: 'infos',
       component: () => import('../views/InfosView.vue'),
@@ -109,7 +136,11 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   // Contrôle d'ergonomie : l'API reste seule garante des droits
-  if ((to.meta.requiresTreasurer && !auth.user?.canManageTreasury) || (to.meta.requiresPresident && !auth.user?.canAdminister)) {
+  if (
+    (to.meta.requiresTreasurer && !auth.user?.canManageTreasury) ||
+    (to.meta.requiresPresident && !auth.user?.canAdminister) ||
+    (to.meta.requiresOrganizer && !auth.user?.canOrganizeEvents)
+  ) {
     return { name: 'account' }
   }
   if (to.meta.guestOnly && auth.isAuthenticated) {

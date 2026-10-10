@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import BaseButton from '@/components/BaseButton.vue'
+import CalendarSubscription from '@/components/events/CalendarSubscription.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CATEGORIES, type OptionalChannel, type Preferences } from '@/models/Notification'
 import { services } from '@/services'
@@ -53,6 +54,7 @@ async function togglePush(): Promise<void> {
 
 <template>
   <div class="stack">
+    <CalendarSubscription />
     <section class="card" aria-labelledby="push-title">
       <h2 id="push-title">Notifications push sur cet appareil</h2>
       <template v-if="pushSupported">
