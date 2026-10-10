@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import TwoFactorSettings from '@/components/TwoFactorSettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { services } from '@/services'
 import { useAuthStore } from '@/stores/auth'
@@ -49,6 +50,8 @@ async function deleteAccount(): Promise<void> {
         <BaseButton type="submit" :pending="password.pending.value">Modifier</BaseButton>
       </form>
     </section>
+
+    <TwoFactorSettings />
 
     <section class="card" aria-labelledby="data-title">
       <h2 id="data-title">Mes données</h2>

@@ -12,6 +12,8 @@ describe('Profile', () => {
     avatarUrl: null,
     roles: ['ROLE_TREASURER', 'ROLE_MEMBER'],
     hasPassword: true,
+    twoFactorEnabled: false,
+    twoFactorSetupRequired: true,
   }
 
   it('parses the API payload', () => {

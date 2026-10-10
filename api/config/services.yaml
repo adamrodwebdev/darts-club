@@ -21,3 +21,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Security\Crypto\SecretCipher:
+        # Public : récupéré au démarrage du noyau pour le type Doctrine chiffré
+        public: true
+        arguments:
+            $base64Key: '%env(TWO_FACTOR_ENCRYPTION_KEY)%'

@@ -14,6 +14,8 @@ const auth = useAuthStore()
 
 const email = ref('')
 const password = ref('')
+const step = ref<'password' | 'code'>('password')
+const code = ref('')
 const { pending, error, run } = useAsyncAction()
 const resend = useAsyncAction()
 const resent = ref(false)
@@ -33,15 +35,32 @@ const notice = computed(() => {
 
 const unverified = computed(() => error.value?.includes('non vérifiée') ?? false)
 
+async function goToRedirect(): Promise<void> {
+  const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/compte'
+  await router.replace(redirect)
+}
+
 async function submit(): Promise<void> {
+  const status = await run(() => auth.login(email.value, password.value))
+  if (status === 'authenticated') await goToRedirect()
+  if (status === 'two-factor') {
+    password.value = ''
+    step.value = 'code'
+  }
+}
+
+async function submitCode(): Promise<void> {
   const ok = await run(async () => {
-    await auth.login(email.value, password.value)
+    await auth.verifyTwoFactor(code.value)
     return true
   })
-  if (ok) {
-    const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/compte'
-    await router.replace(redirect)
-  }
+  if (ok) await goToRedirect()
+}
+
+async function restart(): Promise<void> {
+  await auth.logout().catch(() => undefined)
+  code.value = ''
+  step.value = 'password'
 }
 
 async function resendLink(): Promise<void> {
@@ -56,7 +75,15 @@ async function resendLink(): Promise<void> {
 
     <p v-if="notice" class="notice" :class="`notice--${notice.kind}`" role="status">{{ notice.text }}</p>
 
-    <form class="stack" novalidate @submit.prevent="submit">
+    <form v-if="step === 'code'" class="stack" novalidate @submit.prevent="submitCode">
+      <p>Saisis le code à 6 chiffres affiché par ton application d’authentification, ou un code de secours.</p>
+      <BaseField v-model="code" label="Code de vérification" autocomplete="one-time-code" :maxlength="20" required />
+      <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
+      <BaseButton type="submit" :pending="pending">Vérifier</BaseButton>
+      <BaseButton variant="ghost" @click="restart">Annuler</BaseButton>
+    </form>
+
+    <form v-else class="stack" novalidate @submit.prevent="submit">
       <BaseField v-model="email" label="Email" type="email" autocomplete="email" required />
       <BaseField v-model="password" label="Mot de passe" type="password" autocomplete="current-password" required />
 
@@ -73,7 +100,7 @@ async function resendLink(): Promise<void> {
       <p v-if="resend.error.value" class="notice notice--error" role="alert">{{ resend.error.value }}</p>
     </div>
 
-    <OAuthButtons />
+    <OAuthButtons v-if="step === 'password'" />
 
     <p class="switch">Pas encore de compte ? <RouterLink to="/inscription">Rejoindre le club</RouterLink></p>
   </section>

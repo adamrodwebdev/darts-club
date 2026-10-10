@@ -49,8 +49,12 @@ final class MessagingTest extends ApiTestCase
         $president->grantRole(Role::President);
         $admin = $this->createUser('admin@example.com');
         $admin->grantRole(Role::Admin);
-        $this->createUser('treasurer@example.com')->grantRole(Role::Treasurer);
+        $treasurer = $this->createUser('treasurer@example.com');
+        $treasurer->grantRole(Role::Treasurer);
         $this->entityManager()->flush();
+        // Bureau : 2FA obligatoire
+        $presidentSecret = $this->enableTwoFactor($president);
+        $treasurerSecret = $this->enableTwoFactor($treasurer);
 
         $this->loginAs('member@example.com');
         $this->postJson('/api/conversations', ['mailbox' => 'president', 'subject' => 'Cotisation', 'body' => 'Puis-je payer en deux fois ?']);
@@ -61,11 +65,11 @@ final class MessagingTest extends ApiTestCase
         // Président + admin (hiérarchie), pas le trésorier
         self::assertEmailCount(2);
 
-        $this->switchTo('treasurer@example.com');
+        $this->switchTo('treasurer@example.com', $treasurerSecret);
         $this->client->request('GET', "/api/conversations/{$id}/messages");
         self::assertResponseStatusCodeSame(403);
 
-        $this->switchTo('president@example.com');
+        $this->switchTo('president@example.com', $presidentSecret);
         $this->client->request('GET', '/api/conversations');
         self::assertCount(1, $this->items());
         $this->postJson("/api/conversations/{$id}/messages", ['body' => 'Oui, bien sûr.']);
@@ -156,10 +160,14 @@ final class MessagingTest extends ApiTestCase
         self::assertResponseIsSuccessful();
     }
 
-    private function switchTo(string $email): void
+    private function switchTo(string $email, ?string $totpSecret = null): void
     {
         $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
-        $this->loginAs($email);
+        if (null !== $totpSecret) {
+            $this->loginWithTwoFactor($email, $totpSecret);
+        } else {
+            $this->loginAs($email);
+        }
     }
 
     /** @return list<array<mixed>> */

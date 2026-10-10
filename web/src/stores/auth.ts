@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { ApiError } from '@/api/ApiError'
 import type { Profile } from '@/models/Profile'
 import { services } from '@/services'
-import type { Registration } from '@/services/AuthService'
+import type { LoginResult, Registration } from '@/services/AuthService'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<Profile | null>(null)
@@ -24,8 +24,14 @@ export const useAuthStore = defineStore('auth', () => {
     return initialization
   }
 
-  async function login(email: string, password: string): Promise<void> {
-    user.value = await services.auth.login(email, password)
+  async function login(email: string, password: string): Promise<LoginResult['status']> {
+    const result = await services.auth.login(email, password)
+    if (result.status === 'authenticated') user.value = result.profile
+    return result.status
+  }
+
+  async function verifyTwoFactor(code: string): Promise<void> {
+    user.value = await services.auth.verifyTwoFactor(code)
   }
 
   async function logout(): Promise<void> {
@@ -49,5 +55,5 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, isAuthenticated, init, login, logout, register, setUser, forget }
+  return { user, isAuthenticated, init, login, verifyTwoFactor, logout, register, setUser, forget }
 })
