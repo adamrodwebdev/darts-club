@@ -12,7 +12,7 @@ echo "→ Mises à jour du système"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
 apt-get full-upgrade -yq
-apt-get install -yq ufw fail2ban unattended-upgrades age curl ca-certificates rsync
+apt-get install -yq ufw fail2ban python3-systemd unattended-upgrades age curl ca-certificates rsync
 
 echo "→ Mises à jour de sécurité automatiques"
 cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
@@ -52,14 +52,28 @@ ufw allow 443/tcp
 ufw --force enable
 
 echo "→ SSH : clés uniquement, pas de connexion root"
-cat > /etc/ssh/sshd_config.d/90-skull-darts-71.conf <<'EOF'
+# Préfixe 00 : lu avant 50-cloud-init.conf (la première valeur rencontrée l'emporte)
+rm -f /etc/ssh/sshd_config.d/90-skull-darts-71.conf
+cat > /etc/ssh/sshd_config.d/00-skull-darts-71.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PermitRootLogin no
 EOF
 sshd -t && systemctl reload ssh
 
-echo "→ fail2ban (protection SSH contre les essais de mots de passe)"
-systemctl enable --now fail2ban
+echo "→ fail2ban (bannit les IP qui multiplient les échecs SSH)"
+# Debian 12 : pas de /var/log/auth.log, lecture du journal systemd
+cat > /etc/fail2ban/jail.local <<'EOF'
+[DEFAULT]
+backend = systemd
+bantime = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+EOF
+systemctl enable fail2ban
+systemctl restart fail2ban
 
 echo "✓ Serveur prêt : se connecter désormais avec « ssh deploy@<serveur> »"
