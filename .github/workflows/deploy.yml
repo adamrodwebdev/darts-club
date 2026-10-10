@@ -1,0 +1,105 @@
+name: Déploiement
+
+# Après une CI verte sur main (ou à la main) : image publiée sur ghcr.io, puis
+# mise à jour du serveur par SSH si celui-ci est configuré (voir docs/deploiement.md).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  image:
+    name: Image de production
+    # Uniquement un push sur main de ce dépôt : une PR venant d'un fork (même nommée « main ») ne déploie jamais
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: version
+        run: echo "tag=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/php/Dockerfile
+          target: prod
+          push: true
+          # Domaine public (variable du dépôt SERVER_NAME) : Open Graph, hreflang, sitemap
+          build-args: |
+            SITE_URL=${{ vars.SERVER_NAME && format('https://{0}', vars.SERVER_NAME) || '' }}
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Mise à jour du serveur
+    needs: image
+    # Activé une fois le serveur prêt : variables DEPLOY_HOST / DEPLOY_USER, secrets DEPLOY_SSH_KEY / DEPLOY_KNOWN_HOSTS
+    if: vars.DEPLOY_HOST != ''
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://${{ vars.SERVER_NAME }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          sparse-checkout: |
+            compose.yaml
+            compose.prod.yaml
+            deploy
+          sparse-checkout-cone-mode: false
+      - name: Clé SSH de déploiement
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Fichiers de déploiement
+        run: |
+          scp -i ~/.ssh/deploy -r compose.yaml compose.prod.yaml deploy \
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/opt/skull-darts-71/"
+      - name: Déploiement
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.image.outputs.tag }}
+        # Jeton transmis par l'entrée standard (jamais dans une ligne de commande du serveur)
+        run: |
+          printf '%s' "$TOKEN" | ssh -i ~/.ssh/deploy "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin > /dev/null \
+             && /opt/skull-darts-71/deploy/deploy.sh '$TAG'; status=\$?; docker logout ghcr.io > /dev/null; exit \$status"

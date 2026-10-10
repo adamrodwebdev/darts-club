@@ -205,6 +205,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $this->verified = true;
     }
 
+    /**
+     * Adresse prouvée par un fournisseur OAuth. Si le compte n'était pas confirmé,
+     * son mot de passe a pu être choisi par quelqu'un d'autre que le titulaire de
+     * l'adresse : il est supprimé (prise de contrôle préalable impossible).
+     */
+    public function verifyThroughProvider(): void
+    {
+        if (!$this->verified) {
+            $this->password = '';
+        }
+        $this->verified = true;
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;

@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { bool, obj } from '@/models/guards'
+import { bool, obj, strList } from '@/models/guards'
 import { Profile } from '@/models/Profile'
 
 export interface Registration {
@@ -8,7 +8,8 @@ export interface Registration {
   phone?: string
 }
 
-export type OAuthProvider = 'google' | 'discord'
+export const OAUTH_PROVIDERS = ['google', 'discord'] as const
+export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 
 /** Mot de passe accepté : session complète, ou code 2FA attendu. */
 export type LoginResult = { status: 'authenticated'; profile: Profile } | { status: 'two-factor' }
@@ -62,6 +63,16 @@ export class AuthService {
 
   async resendVerification(email: string): Promise<void> {
     await this.api.post('/api/auth/verify/resend', { email })
+  }
+
+  /** Fournisseurs configurés sur le serveur (aucun bouton si l'API est injoignable). */
+  async oauthProviders(): Promise<OAuthProvider[]> {
+    try {
+      const configured = strList(obj(await this.api.get('/api/auth/oauth/providers')).providers)
+      return OAUTH_PROVIDERS.filter((provider) => configured.includes(provider))
+    } catch {
+      return []
+    }
   }
 
   oauthUrl(provider: OAuthProvider): string {

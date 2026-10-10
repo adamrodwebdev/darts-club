@@ -74,6 +74,10 @@ final class MemberAdministration
 
     public function reactivate(User $actor, User $member): void
     {
+        if ($member->hasRole(Role::Admin) && !\in_array(Role::Admin, $actor->assignedRoles(), true)) {
+            throw new AdministrationException('Seul un administrateur peut réactiver un administrateur.');
+        }
+
         $member->reactivate();
         $this->audit->record($actor, 'member.reactivate', $member->displayName()->value);
         $this->em->flush();

@@ -1,0 +1,27 @@
+name: Audit de sécurité (OWASP ZAP)
+
+# Scan passif hebdomadaire du site en production (aucune attaque) :
+# en-têtes, cookies, CSP, fuites d'informations. Rapport en artefact.
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    name: ZAP baseline
+    if: vars.SERVER_NAME != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: https://${{ vars.SERVER_NAME }}
+          rules_file_name: .github/zap-rules.tsv
+          # -I : les avertissements informatifs n'échouent pas le job, seules les alertes FAIL
+          cmd_options: '-I -j'
+          allow_issue_writing: false
+          artifact_name: zap-report

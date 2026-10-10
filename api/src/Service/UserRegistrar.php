@@ -34,6 +34,8 @@ final class UserRegistrar
 
         $existing = $this->users->findOneByEmail($email);
         if (null !== $existing) {
+            // Hachage inutile mais volontaire : même durée de réponse qu'une vraie inscription
+            $this->hashers->getPasswordHasher(User::class)->hash($registration->password);
             $this->bus->dispatch(new SendAccountExistsEmail($existing->getId()->toRfc4122()));
 
             return;

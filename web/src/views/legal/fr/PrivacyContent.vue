@@ -26,6 +26,12 @@
     <li>Journal d’administration : [durée à définir].</li>
   </ul>
 
+  <h2>Hébergement des données</h2>
+  <p>
+    Les données sont hébergées par OVHcloud au Canada (Beauharnois, Québec), pays reconnu par la Commission
+    européenne comme assurant un niveau de protection adéquat des données personnelles. Les sauvegardes sont chiffrées.
+  </p>
+
   <h2>Sécurité</h2>
   <p>
     Mots de passe chiffrés (Argon2id), double authentification disponible et obligatoire pour le bureau, secrets 2FA

@@ -114,6 +114,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Configuration Compose de production valide
+        env:
+          APP_SECRET: ci
+          POSTGRES_PASSWORD: ci
+          MERCURE_JWT_SECRET: ci
+          TWO_FACTOR_ENCRYPTION_KEY: ci
+          MAILER_DSN: null://null
+          MAILER_FROM: ci@example.com
+        run: docker compose -f compose.yaml -f compose.prod.yaml config --quiet
       - name: Construction de l'image (front Vite + API Symfony + FrankenPHP)
         run: docker build --target prod -f docker/php/Dockerfile -t skull-darts-71:ci .
       - name: Configuration Caddy valide

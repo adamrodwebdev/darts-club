@@ -6,6 +6,9 @@ WORKDIR /web
 COPY web/package.json web/package-lock.json web/.npmrc ./
 RUN npm ci --no-audit --no-fund
 COPY web/ ./
+# URL publique (https://domaine) : Open Graph, hreflang et URL canoniques absolus
+ARG SITE_URL=""
+ENV VITE_SITE_URL=$SITE_URL
 RUN npm run build-only
 
 # --- Base PHP (FrankenPHP = Caddy + PHP) ---
@@ -32,6 +35,8 @@ COPY api/ ./
 COPY --from=web-build /web/dist /app/web
 RUN composer dump-autoload --classmap-authoritative --no-dev \
  && composer run-script --no-dev post-install-cmd \
+ # Photos et avatars : volume persistant monté sur var/storage (propriétaire www-data)
+ && mkdir -p var/storage/avatars var/storage/event-photos \
  && chown -R www-data:www-data var \
  # Sans root : autorisation d'écouter les ports 80/443, dossiers Caddy accessibles
  && setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \

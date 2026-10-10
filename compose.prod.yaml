@@ -1,0 +1,50 @@
+# Production : docker compose -f compose.yaml -f compose.prod.yaml up -d
+# L'image est construite par GitHub Actions (workflow « Déploiement ») et publiée
+# sur ghcr.io ; le serveur ne compile rien. Variables : fichier .env du serveur
+# (modèle : deploy/.env.example), jamais commité.
+x-prod-env: &prod-env
+  APP_ENV: prod
+  APP_SECRET: ${APP_SECRET:?définir APP_SECRET dans .env}
+  DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:?définir POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-app}?serverVersion=17&charset=utf8
+  MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?définir MERCURE_JWT_SECRET}
+  TWO_FACTOR_ENCRYPTION_KEY: ${TWO_FACTOR_ENCRYPTION_KEY:?définir TWO_FACTOR_ENCRYPTION_KEY}
+  MAILER_DSN: ${MAILER_DSN:?définir MAILER_DSN (SMTP Brevo)}
+  MAILER_FROM: ${MAILER_FROM:?définir MAILER_FROM}
+  VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+  VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+  VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:${MAILER_FROM}}
+  OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID:-}
+  OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
+  OAUTH_DISCORD_CLIENT_ID: ${OAUTH_DISCORD_CLIENT_ID:-}
+  OAUTH_DISCORD_CLIENT_SECRET: ${OAUTH_DISCORD_CLIENT_SECRET:-}
+
+services:
+  php:
+    image: ${IMAGE:-ghcr.io/adamrodwebdev/darts-club}:${IMAGE_TAG:-latest}
+    build: !reset null
+    environment: *prod-env
+    logging: &logs
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+  worker:
+    image: ${IMAGE:-ghcr.io/adamrodwebdev/darts-club}:${IMAGE_TAG:-latest}
+    build: !reset null
+    environment: *prod-env
+    logging: *logs
+
+  database:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?définir POSTGRES_PASSWORD}
+    logging: *logs
+
+  mercure:
+    environment:
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:?définir MERCURE_JWT_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:?définir MERCURE_JWT_SECRET}
+    logging: *logs
+
+  redis:
+    logging: *logs

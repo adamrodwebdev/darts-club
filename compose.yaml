@@ -18,9 +18,12 @@ services:
       MERCURE_PUBLIC_URL: https://${SERVER_NAME:-localhost}/.well-known/mercure
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       SERVER_NAME: ${SERVER_NAME:-localhost}
+    restart: unless-stopped
     volumes:
       - caddy_data:/data
       - caddy_config:/config
+      # Avatars et photos d'événements : conservés entre deux déploiements
+      - app_storage:/app/var/storage
     ports:
       - "443:443"
       - "80:80"
@@ -39,6 +42,8 @@ services:
     command: ["php", "bin/console", "messenger:consume", "async", "scheduler_default", "--time-limit=3600", "--memory-limit=256M"]
     environment: *app-env
     restart: unless-stopped
+    volumes:
+      - app_storage:/app/var/storage
     depends_on:
       database:
         condition: service_healthy
@@ -47,6 +52,7 @@ services:
 
   database:
     image: postgres:17-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-app}
       POSTGRES_USER: ${POSTGRES_USER:-app}
@@ -61,6 +67,7 @@ services:
 
   mercure:
     image: dunglas/mercure:v0.21
+    restart: unless-stopped
     environment:
       SERVER_NAME: ":80"
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
@@ -71,11 +78,13 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis_data:/data
 
 volumes:
+  app_storage:
   caddy_data:
   caddy_config:
   database_data:

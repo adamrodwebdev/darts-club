@@ -8,6 +8,9 @@
 !/.editorconfig
 !/compose.yaml
 !/compose.override.yaml
+!/compose.prod.yaml
+!/deploy/
+!/docs/
 !/lighthouserc.json
 !/README.md
 !/ROADMAP.md

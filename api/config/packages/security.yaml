@@ -55,6 +55,8 @@ security:
     access_control:
         - { path: ^/api/auth/(login|register|verify|verify/resend)$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/oauth/, roles: PUBLIC_ACCESS }
+        # Sonde de disponibilité
+        - { path: ^/api/health$, roles: PUBLIC_ACCESS }
         # Abonnement calendrier : authentifié par jeton secret, sans session
         - { path: '^/api/calendar/[a-f0-9]{48}\.ics$', roles: PUBLIC_ACCESS }
         # Pendant la saisie du code 2FA, seules ces routes sont accessibles
