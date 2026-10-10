@@ -15,7 +15,14 @@ declare module 'vue-router' {
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  scrollBehavior: (_to, _from, saved) => saved ?? { top: 0 },
+  scrollBehavior: (to, _from, saved) => {
+    if (saved) return saved
+    if (to.hash) {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      return { el: to.hash, top: 72, behavior: reduced ? 'auto' : 'smooth' }
+    }
+    return { top: 0 }
+  },
   routes: [
     { path: '/', name: 'home', component: HomeView },
     {
@@ -118,6 +125,18 @@ const router = createRouter({
       component: () => import('../views/messages/ConversationView.vue'),
       props: true,
       meta: { title: 'Conversation', requiresAuth: true },
+    },
+    {
+      path: '/mentions-legales',
+      name: 'legal-notice',
+      component: () => import('../views/legal/LegalNoticeView.vue'),
+      meta: { title: 'Mentions légales' },
+    },
+    {
+      path: '/confidentialite',
+      name: 'privacy',
+      component: () => import('../views/legal/PrivacyView.vue'),
+      meta: { title: 'Confidentialité' },
     },
     {
       path: '/:pathMatch(.*)*',
