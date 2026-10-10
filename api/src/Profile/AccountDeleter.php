@@ -4,8 +4,10 @@ namespace App\Profile;
 
 use App\Entity\Notification;
 use App\Entity\OAuthIdentity;
+use App\Entity\Participant;
 use App\Entity\PushSubscription;
 use App\Entity\User;
+use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /** Droit à l'effacement (RGPD art. 17) : supprime le compte et ses données. */
@@ -16,11 +18,13 @@ final class AccountDeleter
         Notification::class => 'recipient',
         PushSubscription::class => 'user',
         OAuthIdentity::class => 'user',
+        Participant::class => 'user',
     ];
 
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly AvatarStorage $avatars,
+        private readonly MessageRepository $messages,
     ) {
     }
 
@@ -29,6 +33,9 @@ final class AccountDeleter
         $avatar = $user->changeAvatar(null);
 
         $this->em->wrapInTransaction(function () use ($user): void {
+            // Messages conservés pour les autres participants, auteur anonymisé
+            $this->messages->anonymizeAuthor($user);
+
             foreach (self::OWNED as $class => $field) {
                 $this->em->createQueryBuilder()
                     ->delete($class, 'e')
