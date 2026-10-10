@@ -8,3 +8,7 @@ framework:
             policy: fixed_window
             limit: 3
             interval: '1 hour'
+        sensitive_action:
+            policy: fixed_window
+            limit: 5
+            interval: '15 minutes'

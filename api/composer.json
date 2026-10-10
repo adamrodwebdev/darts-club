@@ -8,6 +8,7 @@
     "require": {
         "php": ">=8.2",
         "ext-ctype": "*",
+        "ext-gd": "*",
         "ext-iconv": "*",
         "ext-redis": "*",
         "api-platform/doctrine-orm": "^5.0.3",
@@ -57,7 +58,8 @@
         "bump-after-update": true,
         "sort-packages": true,
         "platform": {
-            "ext-redis": "6.2.0"
+            "ext-redis": "6.2.0",
+            "ext-gd": "8.4.6"
         }
     },
     "autoload": {

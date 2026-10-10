@@ -36,7 +36,7 @@ jobs:
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
-          extensions: intl, pdo_pgsql, redis, gmp
+          extensions: intl, pdo_pgsql, redis, gmp, gd
           coverage: none
           tools: composer:v2
       - uses: actions/cache@v4
