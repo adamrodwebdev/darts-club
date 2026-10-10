@@ -1,28 +1,31 @@
+import { enumLabel } from '@/i18n'
+import { labelled } from '@/i18n/labels'
 import { bool, list, num, obj, optStr, str, strList } from './guards'
 
-export const CATEGORIES = [
-  { id: 'cotisation', label: 'Cotisation' },
-  { id: 'evenement', label: 'Événement' },
-  { id: 'reunion', label: 'Réunion' },
-  { id: 'annulation', label: 'Annulation' },
-  { id: 'information', label: 'Information' },
-  { id: 'message', label: 'Message' },
-] as const
+const CATEGORY_IDS = ['cotisation', 'evenement', 'reunion', 'annulation', 'information', 'message'] as const
+export type CategoryId = (typeof CATEGORY_IDS)[number]
 
-export type CategoryId = (typeof CATEGORIES)[number]['id']
+/** Catégories de notification, libellés dans la langue courante */
+export const CATEGORIES = CATEGORY_IDS.map((id) => labelled('category', id))
 export type OptionalChannel = 'email' | 'push'
 
 export class AppNotification {
   constructor(
     readonly id: string,
     readonly category: string,
-    readonly label: string,
+    /** Libellé fourni par l'API (repli) */
+    readonly apiLabel: string,
     readonly title: string,
     readonly body: string,
     readonly link: string | null,
     readonly createdAt: Date,
     public read: boolean,
   ) {}
+
+  /** Libellé de la catégorie dans la langue courante */
+  get label(): string {
+    return enumLabel('category', this.category, this.apiLabel)
+  }
 
   static parse(value: unknown): AppNotification {
     const d = obj(value, 'notification')

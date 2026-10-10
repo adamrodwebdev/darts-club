@@ -1,3 +1,5 @@
+import { i18n } from '@/i18n'
+import { labelled, type LabelledOption } from '@/i18n/labels'
 import { parseBadges, type Badge } from './Badge'
 import { bool, list, num, obj, optStr, str } from './guards'
 
@@ -8,10 +10,7 @@ export interface Member {
   badges: Badge[]
 }
 
-export interface Mailbox {
-  id: string
-  label: string
-}
+export type Mailbox = LabelledOption
 
 export function parseMember(value: unknown): Member {
   const d = obj(value, 'adhérent')
@@ -20,7 +19,7 @@ export function parseMember(value: unknown): Member {
 
 function parseMailbox(value: unknown): Mailbox {
   const d = obj(value, 'boîte')
-  return { id: str(d.id), label: str(d.label) }
+  return labelled('mailbox', str(d.id), str(d.label))
 }
 
 export class ConversationSummary {
@@ -49,7 +48,7 @@ export class ConversationSummary {
   /** Titre affiché : l'autre adhérent, ou la boîte du bureau et le sujet. */
   get title(): string {
     if (this.counterpart !== null) return this.counterpart.displayName
-    const box = this.mailbox?.label ?? 'Bureau'
+    const box = this.mailbox?.label ?? i18n.global.t('common.board')
     return this.subject !== null ? `${box} · ${this.subject}` : box
   }
 }

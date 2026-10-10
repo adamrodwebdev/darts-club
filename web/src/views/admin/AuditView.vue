@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { AUDIT_LABELS, type AuditEntry } from '@/models/Admin'
+import { auditLabel, type AuditEntry } from '@/models/Admin'
 import { services } from '@/services'
 
 const entries = ref<AuditEntry[]>([])
@@ -27,7 +27,7 @@ function details(entry: AuditEntry): string {
     <ol class="log">
       <li v-for="e in entries" :key="e.id">
         <RelativeTime class="muted" :date="e.at" />
-        <span><strong>{{ AUDIT_LABELS[e.action] ?? e.action }}</strong><template v-if="e.target"> · {{ e.target }}</template></span>
+        <span><strong>{{ auditLabel(e.action) }}</strong><template v-if="e.target"> · {{ e.target }}</template></span>
         <span class="muted">par {{ e.actor }}<template v-if="details(e)"> · {{ details(e) }}</template></span>
       </li>
     </ol>

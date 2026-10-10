@@ -1,11 +1,10 @@
+import { enumLabel } from '@/i18n'
+import { labelled } from '@/i18n/labels'
 import { parseBadges, type Badge } from './Badge'
 import { bool, list, num, obj, optStr, str, strList, type Json } from './guards'
 
-export const BOARD_ROLE_OPTIONS = [
-  { id: 'president', label: 'Président' },
-  { id: 'tresorier', label: 'Trésorier' },
-  { id: 'secretaire', label: 'Secrétaire' },
-] as const
+/** Fonctions du bureau attribuables (mêmes identifiants que les badges) */
+export const BOARD_ROLE_OPTIONS = (['president', 'tresorier', 'secretaire'] as const).map((id) => labelled('badge', id))
 
 export interface AdminMember {
   id: string
@@ -43,9 +42,10 @@ export function parseAdminMember(value: unknown): AdminMember {
 }
 
 export interface BroadcastRecord {
-  id: string
-  label: string
-  labelText: string
+  readonly id: string
+  readonly label: string
+  /** Libellé du label dans la langue courante */
+  readonly labelText: string
   title: string
   body: string
   author: string
@@ -56,10 +56,14 @@ export interface BroadcastRecord {
 
 export function parseBroadcast(value: unknown): BroadcastRecord {
   const d = obj(value, 'diffusion')
+  const label = str(d.label)
+  const labelText = str(d.labelText)
   return {
     id: str(d.id),
-    label: str(d.label),
-    labelText: str(d.labelText),
+    label,
+    get labelText() {
+      return enumLabel('category', label, labelText)
+    },
     title: str(d.title),
     body: str(d.body),
     author: str(d.author),
@@ -114,14 +118,9 @@ export function parseAuditEntry(value: unknown): AuditEntry {
   }
 }
 
-export const AUDIT_LABELS: Record<string, string> = {
-  'member.roles': 'Rôles modifiés',
-  'member.suspend': 'Compte suspendu',
-  'member.reactivate': 'Compte réactivé',
-  'broadcast.send': 'Message diffusé',
-  'announcement.publish': 'Annonce publiée',
-  'announcement.edit': 'Annonce modifiée',
-  'announcement.delete': 'Annonce supprimée',
+/** Libellé d'une action du journal (« member.suspend »…) dans la langue courante */
+export function auditLabel(action: string): string {
+  return enumLabel('audit', action)
 }
 
 export function parseList<T>(value: unknown, parse: (item: unknown) => T): T[] {

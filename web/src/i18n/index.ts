@@ -1,6 +1,14 @@
 import { createI18n } from 'vue-i18n'
-import fr from './locales/fr.json'
+import account from './locales/fr/account.json'
+import admin from './locales/fr/admin.json'
+import core from './locales/fr/core.json'
+import events from './locales/fr/events.json'
+import messaging from './locales/fr/messaging.json'
+import treasury from './locales/fr/treasury.json'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from './locales'
+
+/** Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue. */
+const fr = { ...core, ...account, ...events, ...messaging, ...treasury, ...admin }
 
 export type MessageSchema = typeof fr
 
@@ -18,14 +26,17 @@ export const i18n = createI18n<[MessageSchema], Locale, false>({
   messages: { fr } as Record<Locale, MessageSchema>,
 })
 
-const loaders: Record<Exclude<Locale, 'fr'>, () => Promise<{ default: MessageSchema }>> = {
-  en: () => import('./locales/en.json'),
+type Catalogue = () => Promise<{ default: Partial<MessageSchema> }>
+const english = import.meta.glob<{ default: Partial<MessageSchema> }>('./locales/en/*.json')
+
+const loaders: Record<Exclude<Locale, 'fr'>, Catalogue[]> = {
+  en: Object.values(english),
 }
 
 export async function loadLocaleMessages(locale: Locale): Promise<void> {
   if (locale === 'fr' || i18n.global.availableLocales.includes(locale)) return
-  const messages = await loaders[locale]()
-  i18n.global.setLocaleMessage(locale, messages.default)
+  const parts = await Promise.all(loaders[locale].map((load) => load()))
+  i18n.global.setLocaleMessage(locale, Object.assign({}, ...parts.map((part) => part.default)) as MessageSchema)
 }
 
 export function currentLocale(): Locale {
@@ -35,4 +46,16 @@ export function currentLocale(): Locale {
 /** Étiquette BCP 47 pour Intl (dates, nombres, montants). */
 export function intlLocale(): string {
   return INTL_LOCALES[currentLocale()]
+}
+
+export type EnumKind = keyof MessageSchema['enums']
+
+/**
+ * Libellé traduit d'une valeur d'énumération de l'API (rôle, statut, badge…),
+ * repli sur le libellé fourni par l'API si la valeur est inconnue du front.
+ */
+export function enumLabel(kind: EnumKind, id: string, fallback = id): string {
+  const key = `enums.${kind}.${id}`
+  const { te, t } = i18n.global
+  return te(key as never) ? t(key as never) : fallback
 }

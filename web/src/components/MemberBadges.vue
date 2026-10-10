@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { Badge } from '@/models/Badge'
 
 defineProps<{ badges: readonly Badge[]; compact?: boolean }>()
+const { t } = useI18n()
 
 const ICONS: Record<Badge['id'], string> = {
   president: 'M12 2l2.6 6.3 6.4.6-4.9 4.3 1.5 6.5L12 16.4 6.4 19.7l1.5-6.5L3 8.9l6.4-.6z',
@@ -12,7 +14,7 @@ const ICONS: Record<Badge['id'], string> = {
 </script>
 
 <template>
-  <ul v-if="badges.length" class="badges" :class="{ 'badges--compact': compact }" aria-label="Badges">
+  <ul v-if="badges.length" class="badges" :class="{ 'badges--compact': compact }" :aria-label="t('common.badges')">
     <li v-for="badge in badges" :key="badge.id" class="badge" :class="`badge--${badge.id}`" :title="badge.label">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path :d="ICONS[badge.id]" fill="currentColor" /></svg>
       <span :class="{ 'visually-hidden': compact }">{{ badge.label }}</span>

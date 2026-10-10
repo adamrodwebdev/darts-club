@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { MembershipRecord } from '@/models/Membership'
 
 defineProps<{ membership: Pick<MembershipRecord, 'status' | 'overdue'> }>()
+const { t } = useI18n()
 </script>
 
 <template>
   <span class="status" :class="[`status--${membership.status.id}`, { 'status--overdue': membership.overdue }]">
-    {{ membership.status.label }}<template v-if="membership.overdue"> · en retard</template>
+    {{ membership.status.label }}<template v-if="membership.overdue"> · {{ t('common.overdue') }}</template>
   </span>
 </template>
 

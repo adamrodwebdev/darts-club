@@ -76,7 +76,17 @@
     "email": "Email",
     "password": "Password",
     "cancel": "Cancel",
-    "avatarOf": "{name}’s avatar"
+    "avatarOf": "{name}’s avatar",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "justNow": "just now",
+    "badges": "Badges",
+    "overdue": "overdue",
+    "board": "Board"
   },
   "errors": {
     "fields": "Please check the highlighted fields.",
@@ -145,9 +155,18 @@
       "outro": "Outro"
     },
     "directions": {
-      "intro": ["Fuzz bass alone on the riff, 4 bars", "Drums come in: open hi-hat, then the whole band"],
-      "solo": ["Wide-open wah over the C blues scale", "Post-metal build-up: double-time drums, everyone in unison"],
-      "outro": ["Sustained feedback on the low C", "One last kick drum… and the sound of a dart hitting the bullseye"]
+      "intro": [
+        "Fuzz bass alone on the riff, 4 bars",
+        "Drums come in: open hi-hat, then the whole band"
+      ],
+      "solo": [
+        "Wide-open wah over the C blues scale",
+        "Post-metal build-up: double-time drums, everyone in unison"
+      ],
+      "outro": [
+        "Sustained feedback on the low C",
+        "One last kick drum… and the sound of a dart hitting the bullseye"
+      ]
     }
   },
   "auth": {
@@ -183,5 +202,69 @@
     "title": "Page not found",
     "text": "Missed: the dart landed off the board.",
     "back": "Back to the home page"
+  },
+  "enums": {
+    "role": {
+      "ROLE_MEMBER": "Member",
+      "ROLE_SECRETARY": "Secretary",
+      "ROLE_TREASURER": "Treasurer",
+      "ROLE_PRESIDENT": "President",
+      "ROLE_ADMIN": "Administrator"
+    },
+    "badge": {
+      "president": "President",
+      "tresorier": "Treasurer",
+      "secretaire": "Secretary",
+      "cotisant": "Paid-up member"
+    },
+    "category": {
+      "cotisation": "Membership fee",
+      "evenement": "Event",
+      "reunion": "Meeting",
+      "annulation": "Cancellation",
+      "information": "Information",
+      "message": "Message"
+    },
+    "channel": {
+      "in_app": "On the site",
+      "email": "Email",
+      "push": "Push notification"
+    },
+    "mailbox": {
+      "secretaire": "Secretariat",
+      "tresorier": "Treasury",
+      "president": "Presidency"
+    },
+    "membershipStatus": {
+      "payee": "Paid",
+      "partielle": "Partly paid",
+      "impayee": "Unpaid"
+    },
+    "paymentMethod": {
+      "especes": "Cash",
+      "cheque": "Cheque",
+      "virement": "Bank transfer",
+      "carte": "Card",
+      "en_ligne": "Online payment"
+    },
+    "eventStatus": {
+      "prevu": "Scheduled",
+      "annule": "Cancelled"
+    },
+    "audit": {
+      "member": {
+        "roles": "Roles changed",
+        "suspend": "Account suspended",
+        "reactivate": "Account reactivated"
+      },
+      "broadcast": {
+        "send": "Message broadcast"
+      },
+      "announcement": {
+        "publish": "Announcement published",
+        "edit": "Announcement edited",
+        "delete": "Announcement deleted"
+      }
+    }
   }
 }

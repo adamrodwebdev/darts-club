@@ -5,7 +5,7 @@ import type { Plugin } from 'vite'
 type MetaMessages = Record<string, string>
 
 function readMeta(localesDir: string, locale: string): MetaMessages {
-  return (JSON.parse(readFileSync(join(localesDir, `${locale}.json`), 'utf8')) as { meta: MetaMessages }).meta
+  return (JSON.parse(readFileSync(join(localesDir, locale, 'core.json'), 'utf8')) as { meta: MetaMessages }).meta
 }
 
 /**
