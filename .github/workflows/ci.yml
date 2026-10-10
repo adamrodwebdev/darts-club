@@ -39,7 +39,7 @@ jobs:
           extensions: intl, pdo_pgsql, redis, gmp, gd
           coverage: none
           tools: composer:v2
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.composer/cache
           key: composer-${{ hashFiles('api/composer.lock') }}
