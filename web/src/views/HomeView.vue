@@ -13,7 +13,7 @@ const root = useTemplateRef<HTMLElement>('root')
 useReveal(root)
 
 const ICONS: Record<string, string> = {
-  trophy: 'M7 4h10v3a5 5 0 0 1-10 0zM5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3M12 12v4M8 20h8M9 16h6v4H9z',
+  target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
   night: 'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z',
   crew: 'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-5 6-5s6 2 6 5M14 15c3 0 8 1 8 5',
 }

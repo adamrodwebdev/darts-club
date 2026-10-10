@@ -15,7 +15,6 @@ import { LANDING } from '@/content/landing'
           <li><a :href="LANDING.facebook" rel="noopener noreferrer external" target="_blank">Facebook<span class="visually-hidden"> (nouvel onglet)</span></a></li>
           <li><RouterLink to="/mentions-legales">Mentions légales</RouterLink></li>
           <li><RouterLink to="/confidentialite">Confidentialité</RouterLink></li>
-          <li><a href="https://github.com/adamrodwebdev/darts-club" rel="noopener noreferrer external" target="_blank">Code source</a></li>
         </ul>
       </nav>
     </div>

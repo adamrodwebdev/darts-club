@@ -8,7 +8,7 @@ export const LANDING = {
   intro:
     'Un club où l’on vise juste, où l’on joue fort et où l’on se retrouve autour de la cible. Débutants bienvenus, champions tolérés.',
   pillars: [
-    { title: 'Tournois', text: 'Des compétitions internes et des déplacements pour défier les clubs voisins.', icon: 'trophy' },
+    { title: 'Pour le plaisir', text: 'Une association récréative : on joue pour s’amuser, débutants comme habitués, sans pression ni classement.', icon: 'target' },
     { title: 'Soirées', text: 'Entraînements, défis et parties improvisées, au son du stoner et du metal.', icon: 'night' },
     { title: 'Communauté', text: 'Une messagerie, un calendrier et des souvenirs partagés après chaque événement.', icon: 'crew' },
   ],
