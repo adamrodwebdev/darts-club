@@ -20,8 +20,7 @@
     <h2>Propriété intellectuelle</h2>
     <p>
       Les textes, l’hymne « Triple Vingt » et le code du site appartiennent à l’association, sauf mention contraire.
-      Le code source est publié sur GitHub. Les noms de groupes cités dans « Nos influences » le sont à titre de
-      référence ; ils appartiennent à leurs titulaires et aucun partenariat n’est sous-entendu.
+      Le code source est publié sur GitHub. Le nom du groupe présenté dans « Groupe ami » appartient à ses membres.
     </p>
   </article>
 </template>

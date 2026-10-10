@@ -1,7 +1,5 @@
 /**
- * « Triple Vingt » — hymne original du club.
- * Paroles et riff écrits pour le site (aucun emprunt aux œuvres des groupes
- * cités en influences : seule l'ambiance stoner / psyché / post-metal inspire).
+ * « Triple Vingt » — hymne original du club : paroles et riff écrits pour le site.
  */
 export interface SongSection {
   label: string

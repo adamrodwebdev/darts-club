@@ -1,8 +1,4 @@
-/**
- * Contenus de la page d'accueil, regroupés pour être modifiés sans toucher
- * aux composants. Les influences ne citent que le nom des groupes et un lien
- * officiel : aucun logo, visuel ni extrait (respect du droit d'auteur et des marques).
- */
+/** Contenus de la page d'accueil, regroupés pour être modifiés sans toucher aux composants. */
 export const LANDING = {
   tagline: 'Fléchettes, fuzz et amitié.',
   intro:
@@ -12,15 +8,11 @@ export const LANDING = {
     { title: 'Soirées', text: 'Entraînements, défis et parties improvisées, au son du stoner et du metal.', icon: 'night' },
     { title: 'Communauté', text: 'Une messagerie, un calendrier et des souvenirs partagés après chaque événement.', icon: 'crew' },
   ],
-  influences: [
-    { name: 'Monkey3', genre: 'Rock psychédélique instrumental · Suisse', url: 'https://monkey-3.bandcamp.com' },
-    { name: '7 Weeks', genre: 'Stoner rock · Limoges', url: 'https://7weeks.bandcamp.com' },
-    { name: 'My Sleeping Karma', genre: 'Psychédélique instrumental · Allemagne', url: 'https://mysleepingkarma.bandcamp.com' },
-    { name: 'Alber Jupiter', genre: 'Krautrock spatial · Rennes', url: 'https://alberjupiter.bandcamp.com' },
-    { name: 'Russian Circles', genre: 'Post-metal instrumental · Chicago', url: 'https://www.russiancircles.com' },
-    { name: 'Baroness', genre: 'Sludge progressif · Savannah', url: 'https://www.yourbaroness.com' },
-    { name: 'Elder', genre: 'Heavy psych · Berlin', url: 'https://beholdtheelder.bandcamp.com' },
-    { name: 'Truckfighters', genre: 'Fuzz rock · Suède', url: 'https://teepeerecords.com/pages/truckfighters' },
-    { name: 'Ultra Vomit', genre: 'Metal parodique · Nantes', url: 'https://fr.wikipedia.org/wiki/Ultra_Vomit' },
-  ],
+  /** Groupe proche du club */
+  friendBand: {
+    name: 'Blind to Deaf',
+    text: 'Un groupe proche du club. Va découvrir leur musique et suivre leurs prochaines dates.',
+    url: 'https://www.facebook.com/share/1Fy1CPbgGh/',
+    linkLabel: 'Leur page Facebook',
+  },
 } as const

@@ -2,7 +2,7 @@
 import { useTemplateRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import HeroDartboard from '@/components/landing/HeroDartboard.vue'
-import InfluencesSection from '@/components/landing/InfluencesSection.vue'
+import FriendBandSection from '@/components/landing/FriendBandSection.vue'
 import SongSection from '@/components/landing/SongSection.vue'
 import { useReveal } from '@/composables/useReveal'
 import { LANDING } from '@/content/landing'
@@ -54,7 +54,7 @@ const ICONS: Record<string, string> = {
 
     <SongSection />
 
-    <InfluencesSection />
+    <FriendBandSection />
 
     <section class="join" data-reveal aria-labelledby="join-title">
       <h2 id="join-title" class="metal-title">Prêt à viser le 180 ?</h2>

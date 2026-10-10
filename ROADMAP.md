@@ -59,7 +59,7 @@
 
 ## 9. Landing page « metal » (S7)
 - ✅ Identité visuelle unique : titres chromés, cible SVG animée (fléchette qui se plante), apparitions au défilement, hymne original « Triple Vingt » + riff synthétisé (Web Audio)
-- ✅ Références musicales légales : noms + liens officiels, aucun logo, visuel ni extrait ; avertissement de non-affiliation
+- ✅ Section « Groupe ami » (Blind to Deaf) ; ambiances musicales reprises dans le design et l’hymne, sans citer d’artistes
 - ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
 - À faire : pré-rendu statique (SSG) de la landing (FR/EN, avec l'étape 10 bis)
 
