@@ -301,7 +301,7 @@ main {
     transform: translate3d(0, 0, 0) rotateX(0deg);
   }
   50% {
-    transform: translate3d(0, -0.14em, 2.5rem) rotateX(9deg);
+    transform: translate3d(0, -0.16em, 1.25rem) rotateX(9deg);
   }
 }
 
