@@ -40,6 +40,9 @@ services:
       dockerfile: docker/php/Dockerfile
       target: prod
     command: ["php", "bin/console", "messenger:consume", "async", "scheduler_default", "--time-limit=3600", "--memory-limit=256M"]
+    # La sonde de l'image interroge Caddy, absent de ce conteneur : sans objet ici
+    healthcheck:
+      disable: true
     environment: *app-env
     restart: unless-stopped
     volumes:

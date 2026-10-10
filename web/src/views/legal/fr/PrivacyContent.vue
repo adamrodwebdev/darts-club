@@ -3,7 +3,7 @@
   <p class="notice">Les champs entre crochets sont à compléter par le bureau de l’association.</p>
 
   <h2>Responsable du traitement</h2>
-  <p>Skull Darts 71, [adresse du siège], représenté par [président(e)]. Contact : [email].</p>
+  <p>Skull Darts 71, Bellevesvre (Saône-et-Loire), représentée par [président(e)]. Contact : [email].</p>
 
   <h2>Données collectées et finalités</h2>
   <ul>

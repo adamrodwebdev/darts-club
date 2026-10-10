@@ -26,17 +26,14 @@ export const i18n = createI18n<[MessageSchema], Locale, false>({
   messages: { fr } as Record<Locale, MessageSchema>,
 })
 
-type Catalogue = () => Promise<{ default: Partial<MessageSchema> }>
-const english = import.meta.glob<{ default: Partial<MessageSchema> }>('./locales/en/*.json')
-
-const loaders: Record<Exclude<Locale, 'fr'>, Catalogue[]> = {
-  en: Object.values(english),
+const loaders: Record<Exclude<Locale, 'fr'>, () => Promise<{ default: unknown }>> = {
+  en: () => import('./locales/en/index'),
 }
 
 export async function loadLocaleMessages(locale: Locale): Promise<void> {
   if (locale === 'fr' || i18n.global.availableLocales.includes(locale)) return
-  const parts = await Promise.all(loaders[locale].map((load) => load()))
-  i18n.global.setLocaleMessage(locale, Object.assign({}, ...parts.map((part) => part.default)) as MessageSchema)
+  const catalogue = await loaders[locale]()
+  i18n.global.setLocaleMessage(locale, catalogue.default as MessageSchema)
 }
 
 export function currentLocale(): Locale {

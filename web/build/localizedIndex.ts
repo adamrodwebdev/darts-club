@@ -36,6 +36,17 @@ function withSiteUrl(html: string, siteUrl: string, path: string, homes: Record<
     .replace('</head>', `    ${links.join('\n    ')}\n  </head>`)
 }
 
+/**
+ * Script de thème intégré à la page (aucune requête bloquante avant l'affichage).
+ * La CSP l'autorise par son empreinte SHA-256 (docker/frankenphp/Caddyfile), contrôlée
+ * par src/__tests__/csp.spec.ts : le contenu inséré est le fichier, espaces de début/fin retirés.
+ */
+function inlineThemeScript(html: string, scriptPath: string): string {
+  const tag = '<script src="/theme-init.js"></script>'
+  if (!html.includes(tag)) throw new Error('index.html : balise du script de thème introuvable')
+  return html.replace(tag, `<script>${readFileSync(scriptPath, 'utf8').trim()}</script>`)
+}
+
 export function localizedIndex(options: {
   localesDir: string
   source: string
@@ -43,6 +54,8 @@ export function localizedIndex(options: {
   pages: Record<string, string>
   /** URL publique sans « / » final (VITE_SITE_URL), vide en développement */
   siteUrl?: string
+  /** public/theme-init.js, intégré à la page au build */
+  themeScript: string
 }): Plugin {
   return {
     name: 'localized-index',
@@ -52,10 +65,10 @@ export function localizedIndex(options: {
       const index = bundle['index.html']
       if (!index || index.type !== 'asset') this.error('index.html introuvable dans le bundle')
 
-      const html = String(index.source)
+      const html = inlineThemeScript(String(index.source), options.themeScript)
       const siteUrl = (options.siteUrl ?? '').replace(/\/+$/, '')
       const homes: Record<string, string> = { [options.source]: '/', ...Object.fromEntries(Object.entries(options.pages).map(([l, d]) => [l, `/${d}`])) }
-      if (siteUrl) index.source = withSiteUrl(html, siteUrl, '/', homes, options.source)
+      index.source = siteUrl ? withSiteUrl(html, siteUrl, '/', homes, options.source) : html
       const source = readMeta(options.localesDir, options.source)
       // Plus longs d'abord : « Fléchettes » est aussi contenu dans le titre
       const entries = Object.entries(source).sort(([, a], [, b]) => b.length - a.length)

@@ -19,7 +19,13 @@ export default defineConfig(({ mode }) => {
       // Traductions précompilées : pas de compilateur de messages dans le bundle (ni eval, CSP stricte)
       VueI18nPlugin({ include: [`${locales}/**`] }),
       vueDevTools(),
-      localizedIndex({ localesDir: locales, source: 'fr', pages: { en: 'en' }, siteUrl: env.VITE_SITE_URL }),
+      localizedIndex({
+        localesDir: locales,
+        source: 'fr',
+        pages: { en: 'en' },
+        siteUrl: env.VITE_SITE_URL,
+        themeScript: fileURLToPath(new URL('./public/theme-init.js', import.meta.url)),
+      }),
     ],
     resolve: {
       alias: {

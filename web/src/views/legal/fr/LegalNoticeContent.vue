@@ -5,7 +5,7 @@
   <h2>Éditeur du site</h2>
   <p>
     Skull Darts 71, association régie par la loi du 1er juillet 1901.<br />
-    Siège : [adresse du siège]<br />
+    Siège : Bellevesvre (Saône-et-Loire)<br />
     RNA : [numéro W…] · SIRET : [si applicable]<br />
     Contact : [adresse email de contact]
   </p>
