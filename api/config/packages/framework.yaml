@@ -24,3 +24,5 @@ when@prod:
     framework:
         session:
             name: __Host-sid
+            # Sessions dans Redis : survivent aux redémarrages et aux déploiements
+            handler_id: '%env(REDIS_URL)%'

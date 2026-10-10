@@ -13,7 +13,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title || 'Skull Darts 71', {
       body: data.body || '',
       tag: data.tag,
-      icon: '/logo.svg',
+      icon: '/icon-192.png',
+      badge: '/favicon-32.png',
       data: { url },
     }),
   )

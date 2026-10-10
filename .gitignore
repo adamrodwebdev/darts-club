@@ -14,3 +14,4 @@
 !/CLAUDE.md
 !/SECURITY.md
 !/.gitattributes
+!/.dockerignore

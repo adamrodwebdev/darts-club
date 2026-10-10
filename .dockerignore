@@ -1,0 +1,16 @@
+# Secrets et fichiers locaux : jamais dans une image
+**/.env.local
+**/.env.*.local
+**/*.local
+.git
+.github
+.claude
+.lighthouseci
+
+# Dépendances et artefacts : reconstruits dans l'image
+api/vendor
+api/var
+web/node_modules
+web/dist
+web/test-results
+web/playwright-report

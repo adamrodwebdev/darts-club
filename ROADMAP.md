@@ -64,9 +64,15 @@
 - À faire : pré-rendu statique (SSG) de la landing (FR/EN, avec l'étape 10 bis)
 
 ## 10. Performance (Lighthouse ≥ 95)
-- SSG landing, code-splitting par route, preload des polices (subset, `font-display: swap`)
-- Images AVIF/WebP `srcset`, dimensions fixes (CLS ≈ 0), animations sur `transform/opacity` uniquement
-- Cache HTTP + Brotli, budget JS < 150 Ko gz initial, accessibilité WCAG 2.2 AA
+- ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
+- ✅ Images à dimensions fixes (CLS = 0), photos WebP + vignettes en lazy loading, animations transform/opacity uniquement
+- ✅ Budget vérifié en CI : JS initial ≤ 150 Ko gzip (actuel ≈ 54 Ko), CSS ≤ 30 Ko, module à la demande ≤ 100 Ko
+- ✅ Lighthouse CI sur 4 pages (accueil, connexion, inscription, confidentialité) : scores ≥ 95, LCP ≤ 2,5 s, CLS ≤ 0,1, TBT ≤ 200 ms
+- ✅ Accessibilité WCAG 2.2 AA : audit axe-core automatisé (pages publiques + espace adhérent)
+- ✅ Serveur de production unique (FrankenPHP/Caddy) : front + API + Mercure sur la même origine, compression zstd/Brotli/gzip, cache immuable des fichiers versionnés, CSP stricte, HSTS
+- ✅ Production : OPcache + préchargement, cache et sessions dans Redis, image sans root, sans fichiers locaux ni secrets (vérifié en CI)
+- ✅ Manifest d'application, icônes (dont iPhone et « maskable »), image de partage Open Graph
+- À faire (étape 11) : URL absolue de l'image Open Graph une fois le domaine connu ; service worker hors-ligne (PWA)
 
 ## 10 bis. Thème & internationalisation
 - **Mode sombre** : sélecteur clair / sombre / système dans l'en-tête et le compte, choix mémorisé (localStorage + préférence du compte), aucun flash au chargement (script inline avant le rendu), contrastes AA vérifiés dans les deux thèmes
