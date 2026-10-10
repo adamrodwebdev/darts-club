@@ -8,6 +8,7 @@ use App\Entity\Participant;
 use App\Entity\Payment;
 use App\Entity\PushSubscription;
 use App\Entity\User;
+use App\Media\ImageStorage;
 use App\Repository\MembershipRepository;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,7 +26,7 @@ final class AccountDeleter
 
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly AvatarStorage $avatars,
+        private readonly ImageStorage $avatarStorage,
         private readonly MessageRepository $messages,
         private readonly MembershipRepository $memberships,
     ) {
@@ -61,7 +62,7 @@ final class AccountDeleter
         });
 
         if (null !== $avatar) {
-            $this->avatars->delete($avatar);
+            $this->avatarStorage->delete($avatar);
         }
     }
 }

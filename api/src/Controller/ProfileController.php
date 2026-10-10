@@ -6,10 +6,10 @@ use App\Dto\AccountDeletion;
 use App\Dto\PasswordChange;
 use App\Dto\ProfileUpdate;
 use App\Entity\User;
+use App\Media\ImageProcessor;
+use App\Media\ImageStorage;
+use App\Media\InvalidImageException;
 use App\Profile\AccountDeleter;
-use App\Profile\AvatarProcessor;
-use App\Profile\AvatarStorage;
-use App\Profile\InvalidAvatarException;
 use App\Profile\PersonalDataExporter;
 use App\Profile\ProfileView;
 use App\ValueObject\DisplayName;
@@ -86,34 +86,34 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('/avatar', name: 'avatar_upload', methods: ['POST'])]
-    public function uploadAvatar(#[CurrentUser] User $user, Request $request, AvatarProcessor $processor, AvatarStorage $storage): JsonResponse
+    public function uploadAvatar(#[CurrentUser] User $user, Request $request, ImageProcessor $processor, ImageStorage $avatarStorage): JsonResponse
     {
         $file = $request->files->get('avatar');
         if (!$file instanceof UploadedFile || !$file->isValid()) {
-            throw new InvalidAvatarException('Fichier « avatar » manquant.');
+            throw new InvalidImageException('Fichier « avatar » manquant.');
         }
         if ($file->getSize() > self::MAX_AVATAR_BYTES) {
-            throw new InvalidAvatarException('Image trop lourde (2 Mo maximum).');
+            throw new InvalidImageException('Image trop lourde (2 Mo maximum).');
         }
 
-        $previous = $user->changeAvatar($storage->store($processor->process($file->getPathname())));
+        $previous = $user->changeAvatar($avatarStorage->store($processor->avatar($file->getPathname())));
         $this->em->flush();
 
         if (null !== $previous) {
-            $storage->delete($previous);
+            $avatarStorage->delete($previous);
         }
 
         return $this->show($user);
     }
 
     #[Route('/avatar', name: 'avatar_delete', methods: ['DELETE'])]
-    public function deleteAvatar(#[CurrentUser] User $user, AvatarStorage $storage): JsonResponse
+    public function deleteAvatar(#[CurrentUser] User $user, ImageStorage $avatarStorage): JsonResponse
     {
         $previous = $user->changeAvatar(null);
         $this->em->flush();
 
         if (null !== $previous) {
-            $storage->delete($previous);
+            $avatarStorage->delete($previous);
         }
 
         return $this->show($user);

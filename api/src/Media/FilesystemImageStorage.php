@@ -1,20 +1,19 @@
 <?php
 
-namespace App\Profile;
+namespace App\Media;
 
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\Filesystem\Filesystem;
 
-#[AsAlias(AvatarStorage::class)]
-final class FilesystemAvatarStorage implements AvatarStorage
+/** Déclaré explicitement par dossier dans config/services.yaml. */
+#[Exclude]
+final class FilesystemImageStorage implements ImageStorage
 {
     private const ID_PATTERN = '/^[a-f0-9]{32}$/';
 
     private readonly Filesystem $filesystem;
 
     public function __construct(
-        #[Autowire('%kernel.project_dir%/var/storage/avatars')]
         private readonly string $directory,
     ) {
         $this->filesystem = new Filesystem();

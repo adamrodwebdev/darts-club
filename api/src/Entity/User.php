@@ -66,7 +66,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(length: DisplayName::MAX, nullable: true)]
     private ?string $displayName = null;
 
-    /** Identifiant du fichier dans AvatarStorage */
+    /** Identifiant du fichier dans ImageStorage $avatarStorage */
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $avatar = null;
 
