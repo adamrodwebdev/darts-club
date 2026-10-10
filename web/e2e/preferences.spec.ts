@@ -46,6 +46,29 @@ test.describe('theme', () => {
   })
 })
 
+test.describe('animations', () => {
+  test('follow the device setting, and the footer switch turns them off for good', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await page.goto('/')
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'off')
+
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.reload()
+    const html = page.locator('html')
+    await expect(html).toHaveAttribute('data-motion', 'on')
+    await expect(page.locator('.hero__title .split__word').first()).toHaveCSS('animation-name', /word-rise/)
+
+    await page.getByRole('button', { name: /^Animations : Activées/ }).click()
+    await expect(html).toHaveAttribute('data-motion', 'off')
+    await expect(page.locator('.marquee__track')).toHaveCSS('animation-name', 'none')
+
+    // Choix mémorisé, appliqué avant le rendu
+    await page.reload()
+    await expect(html).toHaveAttribute('data-motion', 'off')
+    await expect(page.getByRole('button', { name: /^Animations : Désactivées/ })).toBeVisible()
+  })
+})
+
 test.describe('account preferences', () => {
   test('are applied at login and saved when changed', async ({ page }) => {
     const profile = {

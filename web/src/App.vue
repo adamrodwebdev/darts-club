@@ -46,7 +46,13 @@ watch(
     </template>
   </i18n-t>
   <main id="main" tabindex="-1">
-    <RouterView />
+    <!-- Fondu entre les pages (désactivé avec les animations, voir main.css) -->
+    <RouterView v-slot="{ Component, route: current }">
+      <Transition name="page" mode="out-in">
+        <!-- v-if : avant la première navigation, aucune page (sinon la transition de sortie ne se termine jamais) -->
+        <component :is="Component" v-if="Component" :key="current.matched[0]?.path ?? current.path" />
+      </Transition>
+    </RouterView>
   </main>
   <AppFooter />
 </template>

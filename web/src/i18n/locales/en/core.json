@@ -63,6 +63,14 @@
     },
     "language": {
       "legend": "Language"
+    },
+    "motion": {
+      "legend": "Animations",
+      "system": "Device setting",
+      "on": "On",
+      "off": "Off",
+      "toggle": "Animations: {state}",
+      "toggleHint": "Turn animations and text effects on or off"
     }
   },
   "footer": {
@@ -136,7 +144,18 @@
       "kicker": "Friend band",
       "text": "A band close to the club. Go check out their music and catch their next gigs.",
       "link": "Their Facebook page"
-    }
+    },
+    "marquee": [
+      "Darts",
+      "Fuzz",
+      "Friendship",
+      "Treble twenty",
+      "Bullseye",
+      "Game nights",
+      "Stoner",
+      "Metal",
+      "Skull Darts 71"
+    ]
   },
   "song": {
     "kicker": "Club soundtrack",

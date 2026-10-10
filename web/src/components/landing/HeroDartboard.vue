@@ -139,15 +139,14 @@ const segments = SECTORS.flatMap((value, i) => {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .board__face,
-  .emblem,
-  .dart {
-    animation: none;
-  }
+/* Animations coupées (préférence du site ou de l'appareil) : cible et fléchette immobiles */
+:root[data-motion='off'] .board__face,
+:root[data-motion='off'] .emblem,
+:root[data-motion='off'] .dart {
+  animation: none;
+}
 
-  .dart {
-    transform: rotate(-14deg);
-  }
+:root[data-motion='off'] .dart {
+  transform: rotate(-14deg);
 }
 </style>

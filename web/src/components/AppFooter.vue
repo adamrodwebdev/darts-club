@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { LANDING } from '@/content/landing'
+import MotionToggle from './preferences/MotionToggle.vue'
 
 const { t } = useI18n()
 </script>
@@ -20,6 +21,7 @@ const { t } = useI18n()
           <li><RouterLink to="/confidentialite">{{ t('footer.privacy') }}</RouterLink></li>
         </ul>
       </nav>
+      <MotionToggle />
     </div>
   </footer>
 </template>

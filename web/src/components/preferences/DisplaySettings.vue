@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { AUTONYMS, LOCALES, type Locale } from '@/i18n/locales'
+import { MOTION_PREFERENCES, type MotionPreference } from '@/preferences/MotionController'
 import { THEME_PREFERENCES, type ThemePreference } from '@/preferences/ThemeController'
 import { usePreferencesStore } from '@/stores/preferences'
 
@@ -10,6 +11,10 @@ const { t } = useI18n()
 
 function onTheme(value: string): void {
   preferences.setTheme(value as ThemePreference)
+}
+
+function onMotion(value: string): void {
+  preferences.setMotion(value as MotionPreference)
 }
 
 async function onLocale(value: string): Promise<void> {
@@ -26,6 +31,14 @@ async function onLocale(value: string): Promise<void> {
       <label v-for="option in THEME_PREFERENCES" :key="option" class="choice">
         <input type="radio" name="theme" :value="option" :checked="preferences.theme === option" @change="onTheme(option)" />
         {{ t(`prefs.theme.${option}`) }}
+      </label>
+    </fieldset>
+
+    <fieldset class="choices">
+      <legend>{{ t('prefs.motion.legend') }}</legend>
+      <label v-for="option in MOTION_PREFERENCES" :key="option" class="choice">
+        <input type="radio" name="motion" :value="option" :checked="preferences.motion === option" @change="onMotion(option)" />
+        {{ t(`prefs.motion.${option}`) }}
       </label>
     </fieldset>
 

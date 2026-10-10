@@ -14,7 +14,7 @@ withDefaults(
   <button
     :type="type"
     class="btn"
-    :class="`btn--${variant}`"
+    :class="[`btn--${variant}`, { 'sheen-button': variant === 'primary' }]"
     :disabled="disabled || pending"
     :aria-busy="pending"
   >

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { SONG, type InstrumentalKey } from '@/content/song'
+import SplitText from '@/components/motion/SplitText.vue'
 import RiffPlayer from './RiffPlayer.vue'
 
 const { t, tm, rt, locale } = useI18n()
@@ -15,7 +16,7 @@ function directions(key: InstrumentalKey): string[] {
   <section id="hymne" class="song" aria-labelledby="song-title">
     <div class="song__intro" data-reveal>
       <p class="kicker">{{ t('song.kicker') }}</p>
-      <h2 id="song-title" class="metal-title">{{ SONG.title }}</h2>
+      <SplitText id="song-title" tag="h2" class="metal-title" :text="SONG.title" />
       <p class="muted">{{ t('song.subtitle') }} · {{ SONG.tempo }} BPM · {{ SONG.tuning }}</p>
       <p>{{ t('song.mood') }}</p>
       <RiffPlayer />

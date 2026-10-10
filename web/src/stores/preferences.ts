@@ -3,7 +3,8 @@ import { computed, ref } from 'vue'
 import { i18n, loadLocaleMessages } from '@/i18n'
 import type { Locale } from '@/i18n/locales'
 import type { DisplayPreferences } from '@/models/Profile'
-import { localeController, themeController } from '@/preferences'
+import { localeController, motionController, themeController } from '@/preferences'
+import { MOTION_PREFERENCES, type Motion, type MotionPreference } from '@/preferences/MotionController'
 import { THEME_PREFERENCES, type Theme, type ThemePreference } from '@/preferences/ThemeController'
 import { services } from '@/services'
 import { useAuthStore } from './auth'
@@ -20,6 +21,23 @@ export const usePreferencesStore = defineStore('preferences', () => {
   })
 
   const locale = computed<Locale>(() => i18n.global.locale.value)
+
+  /** Animations : mémorisées sur l'appareil (choix d'usage, pas de donnée de compte) */
+  const motion = ref<MotionPreference>(motionController.preference)
+  const appliedMotion = ref<Motion>(motionController.apply(motion.value))
+  motionController.onSystemChange(() => {
+    appliedMotion.value = motionController.apply(motion.value)
+  })
+
+  function setMotion(preference: MotionPreference): void {
+    motion.value = MOTION_PREFERENCES.includes(preference) ? preference : 'system'
+    appliedMotion.value = motionController.choose(motion.value)
+  }
+
+  /** Interrupteur du pied de page : bascule l'état affiché */
+  function toggleMotion(): void {
+    setMotion(appliedMotion.value === 'on' ? 'off' : 'on')
+  }
 
   /** Enregistre le choix sur le compte ; l'interface n'attend pas la réponse. */
   function saveToAccount(): void {
@@ -75,5 +93,5 @@ export const usePreferencesStore = defineStore('preferences', () => {
     }
   }
 
-  return { theme, appliedTheme, locale, setTheme, cycleTheme, setLocale, adoptAccount }
+  return { theme, appliedTheme, motion, appliedMotion, locale, setTheme, cycleTheme, setMotion, toggleMotion, setLocale, adoptAccount }
 })
