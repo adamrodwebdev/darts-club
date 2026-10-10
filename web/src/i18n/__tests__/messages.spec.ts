@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
 
 // Fichiers lus bruts : l'import JSON passe par la précompilation des messages
-const read = (locale: string): unknown => 
-  JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'locales', `${locale}.json`), 'utf8'))
+const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'locales')
+const read = (locale: string): unknown =>
+  Object.assign({}, ...readdirSync(join(LOCALES_DIR, locale)).map((file) => JSON.parse(readFileSync(join(LOCALES_DIR, locale, file), 'utf8'))))
 const fr = read('fr')
 const en = read('en')
 

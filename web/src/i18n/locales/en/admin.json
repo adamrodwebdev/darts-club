@@ -1,0 +1,69 @@
+{
+  "admin": {
+    "layout": {
+      "nav": "Presidency sections"
+    },
+    "members": {
+      "search": "Search (nickname or email)",
+      "unverified": "Email not verified",
+      "admin": "Admin",
+      "twoFactorMissing": "2FA to enable",
+      "membershipTag": "Membership: {status}",
+      "membership": {
+        "payee": "Paid",
+        "partielle": "Partial",
+        "impayee": "Unpaid"
+      },
+      "suspendedTag": "Suspended: {reason}",
+      "roles": "Roles",
+      "reactivate": "Reactivate",
+      "suspend": "Suspend",
+      "rolesTitle": "Roles of {name}",
+      "rolesLegend": "Committee roles",
+      "rolesHint": "Committee members must enable two-factor authentication.",
+      "rolesSaved": "Roles of {name} updated. A new committee member will need to enable two-factor authentication.",
+      "suspendTitle": "Suspend {name}",
+      "suspendHint": "They are signed out immediately and can no longer sign in or be contacted. This can be undone and is logged.",
+      "reason": "Reason",
+      "suspended": "{name} has been suspended and signed out.",
+      "reactivated": "{name} has been reactivated."
+    },
+    "broadcast": {
+      "title": "New message",
+      "label": "Label",
+      "subject": "Title",
+      "body": "Message",
+      "recipients": "Recipients",
+      "allMembers": "All members",
+      "selection": "A selection",
+      "filter": "Filter members",
+      "selected": "{n} selected | {n} selected | {n} selected",
+      "delivery": "Delivered to everyone’s notification centre, and by email / push depending on their preferences.",
+      "send": "Send",
+      "sent": "Message sent to {n} members. | Message sent to {n} member. | Message sent to {n} members.",
+      "history": "Sent messages",
+      "toAll": "All",
+      "recipientCount": "{n} members | {n} member | {n} members"
+    },
+    "announcements": {
+      "title": "Publish an announcement",
+      "subject": "Title",
+      "body": "Text",
+      "pin": "Pin to the top of the feed",
+      "notifyHint": "All members are notified (notification centre, email / push depending on their preferences).",
+      "publish": "Publish",
+      "pinnedTitle": "📌 {title}",
+      "pinAction": "Pin",
+      "unpinAction": "Unpin",
+      "editTitle": "Edit the announcement",
+      "editHint": "Corrections don’t send a new notification.",
+      "deleteTitle": "Delete the announcement?",
+      "deleteText": "“{title}” will disappear from the members’ feed."
+    },
+    "audit": {
+      "intro": "Every presidency and administration action is recorded here and cannot be modified.",
+      "by": "by {actor}",
+      "detail": "{key}: {value}"
+    }
+  }
+}

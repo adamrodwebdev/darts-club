@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import MemberBadges from '@/components/MemberBadges.vue'
@@ -11,6 +12,7 @@ import { services } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 const user = auth.user as Profile
 
 const displayName = ref(user.displayName)
@@ -46,33 +48,47 @@ async function removeAvatar(): Promise<void> {
 <template>
   <div class="grid">
     <section class="card avatar-card" aria-labelledby="avatar-title">
-      <h2 id="avatar-title">Avatar</h2>
+      <h2 id="avatar-title">{{ t('account.profile.avatarTitle') }}</h2>
       <UserAvatar :name="auth.user?.displayName ?? ''" :src="auth.user?.avatarUrl" :size="112" />
       <MemberBadges :badges="auth.user?.badges ?? []" />
       <div class="avatar-actions">
         <label class="upload">
           <input ref="file" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" @change="onFile" />
-          <span>{{ avatar.pending.value ? 'Envoi…' : 'Changer' }}</span>
+          <span>{{ avatar.pending.value ? t('account.profile.uploading') : t('account.profile.change') }}</span>
         </label>
-        <BaseButton v-if="auth.user?.avatarUrl" variant="ghost" :pending="avatar.pending.value" @click="removeAvatar">Retirer</BaseButton>
+        <BaseButton v-if="auth.user?.avatarUrl" variant="ghost" :pending="avatar.pending.value" @click="removeAvatar">{{ t('account.profile.remove') }}</BaseButton>
       </div>
-      <p class="muted">JPEG, PNG ou WebP, 2 Mo max. L’image est recadrée et nettoyée de ses métadonnées.</p>
+      <p class="muted">{{ t('account.profile.avatarHint') }}</p>
       <p v-if="avatar.error.value" class="notice notice--error" role="alert">{{ avatar.error.value }}</p>
     </section>
 
     <section class="card" aria-labelledby="info-title">
-      <h2 id="info-title">Informations</h2>
+      <h2 id="info-title">{{ t('account.profile.infoTitle') }}</h2>
       <form class="stack" novalidate @submit.prevent="save">
         <dl class="readonly">
-          <dt>Email</dt>
+          <dt>{{ t('common.email') }}</dt>
           <dd>{{ auth.user?.email }}</dd>
-          <dd class="muted">Identifiant de connexion, visible du seul bureau.</dd>
+          <dd class="muted">{{ t('account.profile.emailHint') }}</dd>
         </dl>
-        <BaseField v-model="displayName" label="Pseudo" :maxlength="40" required :error="form.fieldErrors.value.displayName" hint="Affiché aux autres adhérents." />
-        <BaseField v-model="phone" label="Téléphone" type="tel" autocomplete="tel" :error="form.fieldErrors.value.phone" hint="Laisser vide pour le retirer." />
+        <BaseField
+          v-model="displayName"
+          :label="t('account.profile.displayName')"
+          :maxlength="40"
+          required
+          :error="form.fieldErrors.value.displayName"
+          :hint="t('account.profile.displayNameHint')"
+        />
+        <BaseField
+          v-model="phone"
+          :label="t('account.profile.phone')"
+          type="tel"
+          autocomplete="tel"
+          :error="form.fieldErrors.value.phone"
+          :hint="t('account.profile.phoneHint')"
+        />
         <p v-if="form.error.value" class="notice notice--error" role="alert">{{ form.error.value }}</p>
-        <p v-if="saved" class="notice notice--success" role="status">Profil enregistré.</p>
-        <BaseButton type="submit" :pending="form.pending.value">Enregistrer</BaseButton>
+        <p v-if="saved" class="notice notice--success" role="status">{{ t('account.profile.saved') }}</p>
+        <BaseButton type="submit" :pending="form.pending.value">{{ t('common.save') }}</BaseButton>
       </form>
     </section>
 

@@ -1,3 +1,4 @@
+import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import { parseMember, type Member } from './Conversation'
 import { bool, list, num, obj, optStr, str, type Json } from './guards'
 
@@ -113,17 +114,17 @@ export function parseEventDetail(value: unknown): EventDetail {
   }
 }
 
-const dateFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
-const dayFormat = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', timeZone: 'Europe/Paris' })
-const monthFormat = new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'Europe/Paris' })
-
+/** Date d'événement à l'heure du club, dans la langue courante */
 export function formatEventDate(date: Date): string {
-  const text = dateFormat.format(date)
+  const text = formatDate(date, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: CLUB_TIME_ZONE })
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
 export function dateBlock(date: Date): { day: string; month: string } {
-  return { day: dayFormat.format(date), month: monthFormat.format(date).replace('.', '') }
+  return {
+    day: formatDate(date, { day: '2-digit', timeZone: CLUB_TIME_ZONE }),
+    month: formatDate(date, { month: 'short', timeZone: CLUB_TIME_ZONE }).replace('.', ''),
+  }
 }
 
 /** Valeur d'un <input type="datetime-local"> (heure locale) → ISO 8601 UTC pour l'API */

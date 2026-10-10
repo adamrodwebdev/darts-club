@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n'
 import type { ApiClient } from '@/api/ApiClient'
 import { list, obj, str } from '@/models/guards'
 import { Profile } from '@/models/Profile'
@@ -38,7 +39,7 @@ export class ProfileService {
   async startTwoFactor(): Promise<TwoFactorSetup> {
     const d = obj(await this.api.post('/api/me/2fa/setup'))
     const qrCode = str(d.qrCode)
-    if (!qrCode.startsWith('data:image/svg+xml;base64,')) throw new Error('QR code invalide.')
+    if (!qrCode.startsWith('data:image/svg+xml;base64,')) throw new Error(i18n.global.t('errors.invalidQrCode'))
     return { secret: str(d.secret), uri: str(d.uri), qrCode }
   }
 

@@ -1,3 +1,5 @@
+import { i18n } from '@/i18n'
+
 /** Erreur HTTP de l'API, avec les violations de validation par champ. */
 export class ApiError extends Error {
   constructor(
@@ -44,8 +46,9 @@ export class ApiError extends Error {
   }
 
   private static defaultMessage(status: number): string {
-    if (status === 429) return 'Trop de tentatives, réessaie dans quelques minutes.'
-    if (status >= 500) return 'Le serveur rencontre un problème, réessaie plus tard.'
-    return 'La requête a échoué.'
+    const { t } = i18n.global
+    if (status === 429) return t('errors.tooManyRequests')
+    if (status >= 500) return t('errors.server')
+    return t('errors.requestFailed')
   }
 }

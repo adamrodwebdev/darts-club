@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import MembershipStatusPill from '@/components/MembershipStatusPill.vue'
 import CancelPaymentDialog from '@/components/treasury/CancelPaymentDialog.vue'
 import PaymentForm from '@/components/treasury/PaymentForm.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { formatDate } from '@/i18n/format'
 import { currentSeason, formatEuro, type MembershipRecord, type Option, type PaymentRecord, type TreasuryDashboard } from '@/models/Membership'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const thisSeason = currentSeason()
 const seasons = [-1, 0, 1].map((offset) => {
   const start = Number(thisSeason.slice(0, 4)) + offset
@@ -49,25 +52,25 @@ async function refresh(): Promise<void> {
 async function openSeason(): Promise<void> {
   const created = await open.run(() => services.treasury.openSeason(season.value, openAmount.value))
   if (created !== undefined) {
-    info.value = `${created} cotisation(s) ouverte(s) pour ${season.value}.`
+    info.value = t('treasury.dashboard.opened', { season: season.value }, created)
     await refresh()
   }
 }
 
 async function sendReminders(): Promise<void> {
   const sent = await remind.run(() => services.treasury.sendReminders())
-  if (sent !== undefined) info.value = `${sent} relance(s) envoyée(s).`
+  if (sent !== undefined) info.value = t('treasury.dashboard.reminded', sent)
 }
 
 async function onPaid(updated: MembershipRecord): Promise<void> {
   selected.value = null
-  info.value = `Paiement enregistré pour ${updated.holder.displayName}.`
+  info.value = t('treasury.dashboard.paid', { name: updated.holder.displayName })
   await refresh()
 }
 
 async function onCancelled(updated: MembershipRecord): Promise<void> {
   cancelling.value = null
-  info.value = `Paiement annulé pour ${updated.holder.displayName}.`
+  info.value = t('treasury.dashboard.cancelled', { name: updated.holder.displayName })
   await refresh()
 }
 
@@ -78,15 +81,15 @@ onMounted(refresh)
 <template>
   <section class="page stack">
     <div class="head">
-      <h1>Trésorerie</h1>
+      <h1>{{ t('treasury.dashboard.title') }}</h1>
       <div class="filters">
         <label>
-          <span class="visually-hidden">Saison</span>
+          <span class="visually-hidden">{{ t('treasury.dashboard.seasonLabel') }}</span>
           <select v-model="season">
-            <option v-for="s in seasons" :key="s" :value="s">Saison {{ s }}</option>
+            <option v-for="s in seasons" :key="s" :value="s">{{ t('treasury.dashboard.seasonOption', { season: s }) }}</option>
           </select>
         </label>
-        <a class="link-button" :href="services.treasury.exportUrl(season)" download>Exporter (CSV)</a>
+        <a class="link-button" :href="services.treasury.exportUrl(season)" download>{{ t('treasury.dashboard.export') }}</a>
       </div>
     </div>
 
@@ -94,55 +97,55 @@ onMounted(refresh)
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <dl v-if="dashboard" class="tiles">
-      <div><dt>Encaissé</dt><dd>{{ formatEuro(dashboard.collected) }}</dd><dd class="muted">sur {{ formatEuro(dashboard.expected) }}</dd></div>
-      <div><dt>À jour</dt><dd>{{ dashboard.byStatus.payee }}</dd><dd class="muted">sur {{ dashboard.members }} adhérents</dd></div>
-      <div><dt>Partielles</dt><dd>{{ dashboard.byStatus.partielle }}</dd></div>
-      <div class="tile--alert"><dt>En retard</dt><dd>{{ dashboard.overdue }}</dd><dd class="muted">échéance {{ new Date(dashboard.dueDate).toLocaleDateString('fr-FR') }}</dd></div>
+      <div><dt>{{ t('treasury.dashboard.collected') }}</dt><dd>{{ formatEuro(dashboard.collected) }}</dd><dd class="muted">{{ t('treasury.dashboard.outOf', { amount: formatEuro(dashboard.expected) }) }}</dd></div>
+      <div><dt>{{ t('treasury.dashboard.upToDate') }}</dt><dd>{{ dashboard.byStatus.payee }}</dd><dd class="muted">{{ t('treasury.dashboard.outOfMembers', dashboard.members) }}</dd></div>
+      <div><dt>{{ t('treasury.dashboard.partial') }}</dt><dd>{{ dashboard.byStatus.partielle }}</dd></div>
+      <div class="tile--alert"><dt>{{ t('treasury.dashboard.overdue') }}</dt><dd>{{ dashboard.overdue }}</dd><dd class="muted">{{ t('treasury.dashboard.dueDate', { date: formatDate(new Date(dashboard.dueDate), { dateStyle: 'short' }) }) }}</dd></div>
     </dl>
 
     <details class="card">
-      <summary>Ouvrir la saison / relancer</summary>
+      <summary>{{ t('treasury.dashboard.openSummary') }}</summary>
       <form class="actions" novalidate @submit.prevent="openSeason">
-        <BaseField v-model="openAmount" label="Montant de la cotisation (€)" :error="open.error.value ?? undefined" />
-        <BaseButton type="submit" :pending="open.pending.value">Ouvrir {{ season }} pour tous les adhérents</BaseButton>
+        <BaseField v-model="openAmount" :label="t('treasury.dashboard.openAmount')" :error="open.error.value ?? undefined" />
+        <BaseButton type="submit" :pending="open.pending.value">{{ t('treasury.dashboard.openSubmit', { season }) }}</BaseButton>
       </form>
-      <BaseButton variant="ghost" :pending="remind.pending.value" @click="sendReminders">Relancer les retardataires</BaseButton>
-      <p class="muted">Les relances partent aussi automatiquement chaque lundi, au plus une fois par semaine et par adhérent.</p>
+      <BaseButton variant="ghost" :pending="remind.pending.value" @click="sendReminders">{{ t('treasury.dashboard.remind') }}</BaseButton>
+      <p class="muted">{{ t('treasury.dashboard.remindHint') }}</p>
     </details>
 
     <div class="filters">
-      <BaseField v-model="search" label="Rechercher un adhérent" />
+      <BaseField v-model="search" :label="t('treasury.dashboard.search')" />
       <label class="field">
-        <span>Statut</span>
+        <span>{{ t('treasury.dashboard.status') }}</span>
         <select v-model="status">
-          <option value="">Tous</option>
-          <option value="impayee">Non payées</option>
-          <option value="partielle">Partielles</option>
-          <option value="payee">Payées</option>
+          <option value="">{{ t('treasury.dashboard.statusAll') }}</option>
+          <option value="impayee">{{ t('treasury.dashboard.statusUnpaid') }}</option>
+          <option value="partielle">{{ t('treasury.dashboard.statusPartial') }}</option>
+          <option value="payee">{{ t('treasury.dashboard.statusPaid') }}</option>
         </select>
       </label>
     </div>
 
-    <p v-if="!load.pending.value && !filtered.length" class="muted">Aucune cotisation pour ces critères.</p>
+    <p v-if="!load.pending.value && !filtered.length" class="muted">{{ t('treasury.dashboard.empty') }}</p>
 
     <!-- Cartes sur mobile, grille alignée façon tableau sur grand écran -->
     <ul class="rows">
       <li v-for="m in filtered" :key="m.id" class="row">
         <div class="row__who">
           <strong>{{ m.holder.displayName }}</strong>
-          <span class="muted">{{ m.holder.email ?? 'compte supprimé' }}</span>
+          <span class="muted">{{ m.holder.email ?? t('treasury.dashboard.deletedAccount') }}</span>
         </div>
         <MembershipStatusPill :membership="m" />
         <div class="row__money">{{ formatEuro(m.paid) }} / {{ formatEuro(m.amountDue) }}</div>
-        <BaseButton v-if="m.status.id !== 'payee'" @click="selected = m">Encaisser</BaseButton>
+        <BaseButton v-if="m.status.id !== 'payee'" @click="selected = m">{{ t('treasury.dashboard.collect') }}</BaseButton>
         <details v-if="m.payments.length" class="row__payments">
-          <summary>{{ m.payments.length }} paiement(s)</summary>
+          <summary>{{ t('treasury.dashboard.payments', m.payments.length) }}</summary>
           <ul>
             <li v-for="p in m.payments" :key="p.id" :class="{ cancelled: p.cancelled }">
-              {{ new Date(p.paidAt).toLocaleDateString('fr-FR') }} · {{ p.method.label }} · {{ formatEuro(p.amount) }}
+              {{ formatDate(new Date(p.paidAt), { dateStyle: 'short' }) }} · {{ p.method.label }} · {{ formatEuro(p.amount) }}
               <span v-if="p.reference" class="muted">· {{ p.reference }}</span>
-              <span v-if="p.cancelled" class="muted"> · annulé : {{ p.cancelReason }}</span>
-              <BaseButton v-else variant="ghost" @click="cancelling = p">Annuler</BaseButton>
+              <span v-if="p.cancelled" class="muted"> · {{ t('treasury.dashboard.cancelledReason', { reason: p.cancelReason }) }}</span>
+              <BaseButton v-else variant="ghost" @click="cancelling = p">{{ t('common.cancel') }}</BaseButton>
             </li>
           </ul>
         </details>

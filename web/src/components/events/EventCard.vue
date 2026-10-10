@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { dateBlock, formatEventDate, type EventSummary } from '@/models/ClubEvent'
 
 const props = defineProps<{ event: EventSummary }>()
+const { t } = useI18n()
 const block = computed(() => dateBlock(props.event.startsAt))
 </script>
 
@@ -15,15 +17,15 @@ const block = computed(() => dateBlock(props.event.startsAt))
     </span>
     <span class="info">
       <span class="info__title">
-        <span v-if="event.cancelled" class="tag tag--danger">Annulé</span>
+        <span v-if="event.cancelled" class="tag tag--danger">{{ t('enums.eventStatus.annule') }}</span>
         {{ event.title }}
       </span>
       <span class="muted">{{ formatEventDate(event.startsAt) }} · {{ event.location }}</span>
       <span class="tags">
-        <span v-if="event.isRegistered" class="tag tag--ok">Inscrit(e)</span>
-        <span v-else-if="event.full && !event.past" class="tag">Complet</span>
-        <span v-else-if="event.placesLeft !== null && !event.past" class="tag">{{ event.placesLeft }} place(s)</span>
-        <span v-if="event.past && event.hasSummary" class="tag">Résumé</span>
+        <span v-if="event.isRegistered" class="tag tag--ok">{{ t('events.card.registered') }}</span>
+        <span v-else-if="event.full && !event.past" class="tag">{{ t('events.card.full') }}</span>
+        <span v-else-if="event.placesLeft !== null && !event.past" class="tag">{{ t('events.card.placesLeft', event.placesLeft) }}</span>
+        <span v-if="event.past && event.hasSummary" class="tag">{{ t('events.card.summary') }}</span>
       </span>
     </span>
   </RouterLink>

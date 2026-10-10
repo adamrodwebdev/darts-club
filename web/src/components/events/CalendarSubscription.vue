@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const feed = ref<{ url: string; webcal: string } | null>(null)
 const copied = ref(false)
 const action = useAsyncAction()
@@ -29,25 +31,22 @@ async function copy(): Promise<void> {
 
 <template>
   <section class="card stack" aria-labelledby="calendar-title">
-    <h2 id="calendar-title">Calendrier du club dans mon agenda</h2>
-    <p class="muted">
-      Abonne ton agenda (Google, Apple, Outlook…) aux événements du club : il se met à jour tout seul.
-      Le lien est personnel : ne le partage pas. En générer un nouveau désactive l’ancien.
-    </p>
+    <h2 id="calendar-title">{{ t('events.calendar.title') }}</h2>
+    <p class="muted">{{ t('events.calendar.intro') }}</p>
 
     <template v-if="feed">
       <p class="url"><code>{{ feed.url }}</code></p>
       <div class="buttons">
-        <BaseButton @click="copy">{{ copied ? 'Lien copié ✓' : 'Copier le lien' }}</BaseButton>
-        <a class="link-button" :href="feed.webcal">Ouvrir dans mon agenda</a>
+        <BaseButton @click="copy">{{ copied ? t('events.calendar.copied') : t('events.calendar.copy') }}</BaseButton>
+        <a class="link-button" :href="feed.webcal">{{ t('events.calendar.open') }}</a>
       </div>
     </template>
 
     <div class="buttons">
       <BaseButton :variant="feed ? 'ghost' : 'primary'" :pending="action.pending.value" @click="create">
-        {{ feed ? 'Générer un nouveau lien' : 'Obtenir mon lien d’abonnement' }}
+        {{ feed ? t('events.calendar.regenerate') : t('events.calendar.create') }}
       </BaseButton>
-      <BaseButton variant="ghost" :pending="action.pending.value" @click="revoke">Désactiver mon lien</BaseButton>
+      <BaseButton variant="ghost" :pending="action.pending.value" @click="revoke">{{ t('events.calendar.revoke') }}</BaseButton>
     </div>
     <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
   </section>

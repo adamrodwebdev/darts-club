@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
@@ -8,6 +9,7 @@ import { useNotificationStore } from '@/stores/notifications'
 
 const store = useNotificationStore()
 const router = useRouter()
+const { t } = useI18n()
 
 onMounted(() => {
   if (!store.loaded) store.load().catch(() => undefined)
@@ -22,17 +24,17 @@ async function open(notification: AppNotification): Promise<void> {
 <template>
   <section class="page">
     <div class="head">
-      <h1>Notifications</h1>
-      <BaseButton v-if="store.unread > 0" variant="ghost" @click="store.markAllRead()">Tout marquer comme lu</BaseButton>
+      <h1>{{ t('account.notificationCenter.title') }}</h1>
+      <BaseButton v-if="store.unread > 0" variant="ghost" @click="store.markAllRead()">{{ t('account.notificationCenter.markAllRead') }}</BaseButton>
     </div>
 
-    <p v-if="store.loaded && store.items.length === 0" class="muted">Aucune notification pour l’instant.</p>
+    <p v-if="store.loaded && store.items.length === 0" class="muted">{{ t('account.notificationCenter.empty') }}</p>
 
     <ul class="list" aria-live="polite">
       <li v-for="n in store.items" :key="n.id">
         <button type="button" class="item" :class="{ 'item--unread': !n.read }" @click="open(n)">
           <span class="item__label" :data-category="n.category">{{ n.label }}</span>
-          <span class="item__title">{{ n.title }}<span v-if="!n.read" class="visually-hidden"> (non lue)</span></span>
+          <span class="item__title">{{ n.title }}<span v-if="!n.read" class="visually-hidden"> {{ t('account.notificationCenter.unread') }}</span></span>
           <span class="item__body">{{ n.body }}</span>
           <RelativeTime class="item__time" :date="n.createdAt" />
         </button>

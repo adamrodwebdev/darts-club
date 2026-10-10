@@ -1,0 +1,53 @@
+{
+  "treasury": {
+    "dashboard": {
+      "title": "Treasury",
+      "seasonLabel": "Season",
+      "seasonOption": "Season {season}",
+      "export": "Export (CSV)",
+      "collected": "Collected",
+      "outOf": "of {amount}",
+      "upToDate": "Up to date",
+      "outOfMembers": "of {n} members | of {n} member | of {n} members",
+      "partial": "Partial",
+      "overdue": "Overdue",
+      "dueDate": "due {date}",
+      "openSummary": "Open the season / send reminders",
+      "openAmount": "Membership fee (€)",
+      "openSubmit": "Open {season} for all members",
+      "remind": "Remind late payers",
+      "remindHint": "Reminders also go out automatically every Monday, at most once a week per member.",
+      "search": "Search for a member",
+      "status": "Status",
+      "statusAll": "All",
+      "statusUnpaid": "Unpaid",
+      "statusPartial": "Partial",
+      "statusPaid": "Paid",
+      "empty": "No memberships match these filters.",
+      "deletedAccount": "deleted account",
+      "collect": "Record payment",
+      "payments": "{n} payments | {n} payment | {n} payments",
+      "cancelledReason": "cancelled: {reason}",
+      "opened": "{n} memberships opened for {season}. | {n} membership opened for {season}. | {n} memberships opened for {season}.",
+      "reminded": "{n} reminders sent. | {n} reminder sent. | {n} reminders sent.",
+      "paid": "Payment recorded for {name}.",
+      "cancelled": "Payment cancelled for {name}."
+    },
+    "paymentForm": {
+      "title": "Record payment · {name}",
+      "remaining": "Left to pay: {amount}",
+      "amount": "Amount (€)",
+      "method": "Payment method",
+      "paidAt": "Payment date",
+      "reference": "Reference (cheque no., transfer…)"
+    },
+    "cancelDialog": {
+      "title": "Cancel a payment",
+      "summary": "{amount} · {method} on {date}.",
+      "history": "The payment stays visible in the history, struck through, with its reason.",
+      "reason": "Reason",
+      "back": "Back",
+      "submit": "Cancel the payment"
+    }
+  }
+}

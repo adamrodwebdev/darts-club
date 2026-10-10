@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import BaseField from '@/components/BaseField.vue'
 import EventCard from '@/components/events/EventCard.vue'
@@ -8,6 +9,7 @@ import type { EventSummary } from '@/models/ClubEvent'
 import { currentSeason } from '@/models/Membership'
 import { services } from '@/services'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -49,29 +51,29 @@ onMounted(refresh)
 <template>
   <section class="page stack">
     <div class="head">
-      <h1>Événements</h1>
-      <RouterLink v-if="canManage" to="/evenements/nouveau" class="cta">Nouvel événement</RouterLink>
+      <h1>{{ t('events.list.title') }}</h1>
+      <RouterLink v-if="canManage" to="/evenements/nouveau" class="cta">{{ t('events.list.create') }}</RouterLink>
     </div>
 
-    <div class="tabs" role="tablist" aria-label="Période">
-      <button type="button" role="tab" :aria-selected="period === 'upcoming'" class="tab" @click="period = 'upcoming'">À venir</button>
-      <button type="button" role="tab" :aria-selected="period === 'past'" class="tab" @click="period = 'past'">Archives</button>
+    <div class="tabs" role="tablist" :aria-label="t('events.list.periodLabel')">
+      <button type="button" role="tab" :aria-selected="period === 'upcoming'" class="tab" @click="period = 'upcoming'">{{ t('events.list.upcoming') }}</button>
+      <button type="button" role="tab" :aria-selected="period === 'past'" class="tab" @click="period = 'past'">{{ t('events.list.past') }}</button>
     </div>
 
     <div v-if="period === 'past'" class="filters">
       <label class="field">
-        <span>Saison</span>
+        <span>{{ t('events.list.season') }}</span>
         <select v-model="season">
-          <option value="">Toutes</option>
+          <option value="">{{ t('events.list.allSeasons') }}</option>
           <option v-for="s in seasons" :key="s" :value="s">{{ s }}</option>
         </select>
       </label>
-      <BaseField v-model="search" label="Rechercher (titre, lieu)" />
+      <BaseField v-model="search" :label="t('events.list.search')" />
     </div>
 
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
     <p v-else-if="!load.pending.value && !events.length" class="muted">
-      {{ period === 'upcoming' ? 'Aucun événement prévu pour le moment.' : 'Aucune archive pour ces critères.' }}
+      {{ period === 'upcoming' ? t('events.list.emptyUpcoming') : t('events.list.emptyPast') }}
     </p>
 
     <!-- Rôle porté par un conteneur : un <ul> avec un autre rôle perd sa sémantique de liste -->

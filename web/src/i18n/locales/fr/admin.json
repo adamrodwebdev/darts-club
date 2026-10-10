@@ -1,0 +1,69 @@
+{
+  "admin": {
+    "layout": {
+      "nav": "Sections de la présidence"
+    },
+    "members": {
+      "search": "Rechercher (pseudo ou email)",
+      "unverified": "Email non vérifié",
+      "admin": "Admin",
+      "twoFactorMissing": "2FA à activer",
+      "membershipTag": "Cotisation : {status}",
+      "membership": {
+        "payee": "Payée",
+        "partielle": "Partielle",
+        "impayee": "Non payée"
+      },
+      "suspendedTag": "Suspendu : {reason}",
+      "roles": "Rôles",
+      "reactivate": "Réactiver",
+      "suspend": "Suspendre",
+      "rolesTitle": "Rôles de {name}",
+      "rolesLegend": "Rôles du bureau",
+      "rolesHint": "Les membres du bureau doivent activer la double authentification.",
+      "rolesSaved": "Rôles de {name} mis à jour. Un nouveau membre du bureau devra activer la double authentification.",
+      "suspendTitle": "Suspendre {name}",
+      "suspendHint": "La personne est déconnectée immédiatement, ne peut plus se connecter ni être contactée. Action réversible et journalisée.",
+      "reason": "Motif",
+      "suspended": "{name} est suspendu(e) et déconnecté(e).",
+      "reactivated": "{name} est réactivé(e)."
+    },
+    "broadcast": {
+      "title": "Nouveau message",
+      "label": "Label",
+      "subject": "Titre",
+      "body": "Message",
+      "recipients": "Destinataires",
+      "allMembers": "Tous les adhérents",
+      "selection": "Une sélection",
+      "filter": "Filtrer les adhérents",
+      "selected": "{n} sélectionné(s) | {n} sélectionné(s) | {n} sélectionné(s)",
+      "delivery": "Livré dans le centre de notifications de chacun, et par email / push selon ses préférences.",
+      "send": "Envoyer",
+      "sent": "Message envoyé à {n} adhérent(s). | Message envoyé à {n} adhérent(s). | Message envoyé à {n} adhérent(s).",
+      "history": "Messages envoyés",
+      "toAll": "Tous",
+      "recipientCount": "{n} adhérent(s) | {n} adhérent(s) | {n} adhérent(s)"
+    },
+    "announcements": {
+      "title": "Publier une annonce",
+      "subject": "Titre",
+      "body": "Texte",
+      "pin": "Épingler en haut du fil",
+      "notifyHint": "Tous les adhérents sont prévenus (centre de notifications, email / push selon leurs préférences).",
+      "publish": "Publier",
+      "pinnedTitle": "📌 {title}",
+      "pinAction": "Épingler",
+      "unpinAction": "Désépingler",
+      "editTitle": "Modifier l’annonce",
+      "editHint": "La correction ne renvoie pas de notification.",
+      "deleteTitle": "Supprimer l’annonce ?",
+      "deleteText": "« {title} » disparaîtra du fil des adhérents."
+    },
+    "audit": {
+      "intro": "Toutes les actions de la présidence et de l’administration sont enregistrées ici, sans possibilité de modification.",
+      "by": "par {actor}",
+      "detail": "{key} : {value}"
+    }
+  }
+}

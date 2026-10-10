@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
@@ -10,6 +11,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -41,33 +43,48 @@ async function deleteAccount(): Promise<void> {
 <template>
   <div class="stack">
     <section v-if="auth.user?.hasPassword" class="card" aria-labelledby="pwd-title">
-      <h2 id="pwd-title">Mot de passe</h2>
+      <h2 id="pwd-title">{{ t('common.password') }}</h2>
       <form class="stack" novalidate @submit.prevent="changePassword">
-        <BaseField v-model="currentPassword" label="Mot de passe actuel" type="password" autocomplete="current-password" required :error="password.fieldErrors.value.currentPassword" />
-        <BaseField v-model="newPassword" label="Nouveau mot de passe" type="password" autocomplete="new-password" required hint="12 caractères minimum." :error="password.fieldErrors.value.newPassword" />
+        <BaseField
+          v-model="currentPassword"
+          :label="t('account.security.currentPassword')"
+          type="password"
+          autocomplete="current-password"
+          required
+          :error="password.fieldErrors.value.currentPassword"
+        />
+        <BaseField
+          v-model="newPassword"
+          :label="t('account.security.newPassword')"
+          type="password"
+          autocomplete="new-password"
+          required
+          :hint="t('account.security.newPasswordHint')"
+          :error="password.fieldErrors.value.newPassword"
+        />
         <p v-if="password.error.value" class="notice notice--error" role="alert">{{ password.error.value }}</p>
-        <p v-if="changed" class="notice notice--success" role="status">Mot de passe modifié. Tes autres appareils ont été déconnectés.</p>
-        <BaseButton type="submit" :pending="password.pending.value">Modifier</BaseButton>
+        <p v-if="changed" class="notice notice--success" role="status">{{ t('account.security.passwordChanged') }}</p>
+        <BaseButton type="submit" :pending="password.pending.value">{{ t('common.edit') }}</BaseButton>
       </form>
     </section>
 
     <TwoFactorSettings />
 
     <section class="card" aria-labelledby="data-title">
-      <h2 id="data-title">Mes données</h2>
-      <p class="muted">Télécharge une copie de toutes les données que le club conserve sur toi (format JSON).</p>
-      <a class="link-button" :href="services.profile.exportUrl()" download>Télécharger mes données</a>
+      <h2 id="data-title">{{ t('account.security.dataTitle') }}</h2>
+      <p class="muted">{{ t('account.security.dataText') }}</p>
+      <a class="link-button" :href="services.profile.exportUrl()" download>{{ t('account.security.dataDownload') }}</a>
     </section>
 
     <section class="card card--danger" aria-labelledby="delete-title">
-      <h2 id="delete-title">Supprimer mon compte</h2>
-      <p class="muted">Action définitive. Tes messages restent visibles des autres sous le nom « Ancien adhérent ».</p>
+      <h2 id="delete-title">{{ t('account.security.deleteTitle') }}</h2>
+      <p class="muted">{{ t('account.security.deleteText') }}</p>
       <form class="stack" novalidate @submit.prevent="deleteAccount">
-        <BaseField v-model="confirmation" label="Tape SUPPRIMER pour confirmer" autocomplete="off" />
-        <BaseField v-if="auth.user?.hasPassword" v-model="deletePassword" label="Mot de passe" type="password" autocomplete="current-password" />
+        <BaseField v-model="confirmation" :label="t('account.security.deleteConfirm', { word: t('account.security.deleteWord') })" autocomplete="off" />
+        <BaseField v-if="auth.user?.hasPassword" v-model="deletePassword" :label="t('common.password')" type="password" autocomplete="current-password" />
         <p v-if="removal.error.value" class="notice notice--error" role="alert">{{ removal.error.value }}</p>
-        <BaseButton type="submit" variant="danger" :disabled="confirmation !== 'SUPPRIMER'" :pending="removal.pending.value">
-          Supprimer définitivement
+        <BaseButton type="submit" variant="danger" :disabled="confirmation !== t('account.security.deleteWord')" :pending="removal.pending.value">
+          {{ t('account.security.deleteSubmit') }}
         </BaseButton>
       </form>
     </section>

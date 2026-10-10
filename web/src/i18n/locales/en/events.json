@@ -1,0 +1,83 @@
+{
+  "events": {
+    "list": {
+      "title": "Events",
+      "create": "New event",
+      "periodLabel": "Period",
+      "upcoming": "Upcoming",
+      "past": "Archive",
+      "season": "Season",
+      "allSeasons": "All",
+      "search": "Search (title, venue)",
+      "emptyUpcoming": "No events planned for now.",
+      "emptyPast": "No archived events match these filters."
+    },
+    "detail": {
+      "back": "← Events",
+      "meta": "Season {season} · organised by {organizer}",
+      "cancelled": "Cancelled: {reason}",
+      "unregister": "Cancel my registration",
+      "full": "Full",
+      "register": "Sign me up",
+      "addToCalendar": "Add to my calendar",
+      "registered": "nobody registered | {n} registered | {n} registered",
+      "registeredOf": "nobody registered out of {capacity} | {n} registered out of {capacity} | {n} registered out of {capacity}",
+      "description": "About",
+      "summary": "Summary",
+      "editSummary": "Edit the summary",
+      "writeSummary": "Write the summary",
+      "posts": "Members’ memories",
+      "sharePost": "Share a memory",
+      "publish": "Post",
+      "manage": "Organisation",
+      "cancelEvent": "Cancel the event",
+      "participants": "Registered ({count})",
+      "cancelNotice": "All members will be notified, along with the reason.",
+      "cancelReason": "Reason",
+      "dismiss": "Back",
+      "summaryDialog": "Event summary",
+      "summaryLabel": "Summary (results, highlights…)"
+    },
+    "form": {
+      "editTitle": "Edit the event",
+      "createTitle": "New event",
+      "editHint": "Changing the date notifies everyone registered.",
+      "createHint": "All members will be notified, then reminded 7 days before; registered members 1 day before.",
+      "title": "Title",
+      "location": "Venue",
+      "startsAt": "Start",
+      "endsAt": "End",
+      "capacity": "Number of places (empty = unlimited)",
+      "description": "Description",
+      "publish": "Publish the event"
+    },
+    "card": {
+      "registered": "Registered",
+      "full": "Full",
+      "placesLeft": "no places left | {n} place left | {n} places left",
+      "summary": "Summary"
+    },
+    "calendar": {
+      "title": "Club calendar in my own calendar",
+      "intro": "Subscribe your calendar (Google, Apple, Outlook…) to the club’s events: it updates itself. The link is personal, so don’t share it. Generating a new one disables the old one.",
+      "copied": "Link copied ✓",
+      "copy": "Copy the link",
+      "open": "Open in my calendar",
+      "regenerate": "Generate a new link",
+      "create": "Get my subscription link",
+      "revoke": "Disable my link"
+    },
+    "gallery": {
+      "title": "Photos",
+      "uploading": "Uploading…",
+      "upload": "Add photos",
+      "empty": "No photos yet.",
+      "enlarge": "Enlarge photo {index} of {total}",
+      "photoBy": "Photo by {name}",
+      "position": "Photo {index} / {total}",
+      "addedBy": "Added by {name}",
+      "previous": "← Previous",
+      "next": "Next →"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import BaseField from '@/components/BaseField.vue'
@@ -9,7 +10,19 @@ import { useAsyncAction } from '@/composables/useAsyncAction'
 import { BOARD_ROLE_OPTIONS, type AdminMember } from '@/models/Admin'
 import { services } from '@/services'
 
-const MEMBERSHIP_LABELS: Record<string, string> = { payee: 'Payée', partielle: 'Partielle', impayee: 'Non payée' }
+const { t } = useI18n()
+
+const MEMBERSHIP_KEYS: Record<string, 'admin.members.membership.payee' | 'admin.members.membership.partielle' | 'admin.members.membership.impayee'> = {
+  payee: 'admin.members.membership.payee',
+  partielle: 'admin.members.membership.partielle',
+  impayee: 'admin.members.membership.impayee',
+}
+
+function membershipLabel(status: string | null): string {
+  if (!status) return '—'
+  const key = MEMBERSHIP_KEYS[status]
+  return key ? t(key) : status
+}
 
 const members = ref<AdminMember[]>([])
 const search = ref('')
@@ -47,7 +60,7 @@ async function saveRoles(): Promise<void> {
     return true
   })
   if (ok) {
-    info.value = `Rôles de ${member.displayName} mis à jour. Un nouveau membre du bureau devra activer la double authentification.`
+    info.value = t('admin.members.rolesSaved', { name: member.displayName })
     editing.value = null
     await refresh()
   }
@@ -61,7 +74,7 @@ async function confirmSuspend(): Promise<void> {
     return true
   })
   if (ok) {
-    info.value = `${member.displayName} est suspendu(e) et déconnecté(e).`
+    info.value = t('admin.members.suspended', { name: member.displayName })
     suspending.value = null
     reason.value = ''
     await refresh()
@@ -74,7 +87,7 @@ async function reactivate(member: AdminMember): Promise<void> {
     return true
   })
   if (ok) {
-    info.value = `${member.displayName} est réactivé(e).`
+    info.value = t('admin.members.reactivated', { name: member.displayName })
     await refresh()
   }
 }
@@ -82,7 +95,7 @@ async function reactivate(member: AdminMember): Promise<void> {
 
 <template>
   <div class="stack">
-    <BaseField v-model="search" label="Rechercher (pseudo ou email)" />
+    <BaseField v-model="search" :label="t('admin.members.search')" />
     <p v-if="info" class="notice notice--success" role="status">{{ info }}</p>
     <p v-if="action.error.value && !editing && !suspending" class="notice notice--error" role="alert">{{ action.error.value }}</p>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
@@ -94,46 +107,46 @@ async function reactivate(member: AdminMember): Promise<void> {
           <strong>{{ m.displayName }}</strong> <MemberBadges :badges="m.badges" compact />
           <span class="muted">{{ m.email }}<template v-if="m.phone"> · {{ m.phone }}</template></span>
           <span class="tags">
-            <span v-if="!m.verified" class="tag">Email non vérifié</span>
-            <span v-if="m.admin" class="tag">Admin</span>
-            <span v-if="m.roles.length && !m.twoFactorEnabled" class="tag tag--warn">2FA à activer</span>
-            <span class="tag">Cotisation : {{ m.membership ? MEMBERSHIP_LABELS[m.membership] : '—' }}</span>
-            <span v-if="m.suspended" class="tag tag--warn">Suspendu : {{ m.suspensionReason }}</span>
+            <span v-if="!m.verified" class="tag">{{ t('admin.members.unverified') }}</span>
+            <span v-if="m.admin" class="tag">{{ t('admin.members.admin') }}</span>
+            <span v-if="m.roles.length && !m.twoFactorEnabled" class="tag tag--warn">{{ t('admin.members.twoFactorMissing') }}</span>
+            <span class="tag">{{ t('admin.members.membershipTag', { status: membershipLabel(m.membership) }) }}</span>
+            <span v-if="m.suspended" class="tag tag--warn">{{ t('admin.members.suspendedTag', { reason: m.suspensionReason }) }}</span>
           </span>
         </div>
         <div class="member__actions">
-          <BaseButton variant="ghost" :disabled="!m.verified" @click="editRoles(m)">Rôles</BaseButton>
-          <BaseButton v-if="m.suspended" variant="ghost" :pending="action.pending.value" @click="reactivate(m)">Réactiver</BaseButton>
-          <BaseButton v-else variant="danger" @click="suspending = m">Suspendre</BaseButton>
+          <BaseButton variant="ghost" :disabled="!m.verified" @click="editRoles(m)">{{ t('admin.members.roles') }}</BaseButton>
+          <BaseButton v-if="m.suspended" variant="ghost" :pending="action.pending.value" @click="reactivate(m)">{{ t('admin.members.reactivate') }}</BaseButton>
+          <BaseButton v-else variant="danger" @click="suspending = m">{{ t('admin.members.suspend') }}</BaseButton>
         </div>
       </li>
     </ul>
 
-    <BaseDialog v-if="editing" :title="`Rôles de ${editing.displayName}`" @close="editing = null">
+    <BaseDialog v-if="editing" :title="t('admin.members.rolesTitle', { name: editing.displayName })" @close="editing = null">
       <form class="stack" @submit.prevent="saveRoles">
         <fieldset class="roles">
-          <legend class="visually-hidden">Rôles du bureau</legend>
+          <legend class="visually-hidden">{{ t('admin.members.rolesLegend') }}</legend>
           <label v-for="r in BOARD_ROLE_OPTIONS" :key="r.id">
             <input v-model="draftRoles" type="checkbox" :value="r.id" /> {{ r.label }}
           </label>
         </fieldset>
-        <p class="muted">Les membres du bureau doivent activer la double authentification.</p>
+        <p class="muted">{{ t('admin.members.rolesHint') }}</p>
         <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
         <div class="buttons">
-          <BaseButton variant="ghost" @click="editing = null">Annuler</BaseButton>
-          <BaseButton type="submit" :pending="action.pending.value">Enregistrer</BaseButton>
+          <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
+          <BaseButton type="submit" :pending="action.pending.value">{{ t('common.save') }}</BaseButton>
         </div>
       </form>
     </BaseDialog>
 
-    <BaseDialog v-if="suspending" :title="`Suspendre ${suspending.displayName}`" @close="suspending = null">
+    <BaseDialog v-if="suspending" :title="t('admin.members.suspendTitle', { name: suspending.displayName })" @close="suspending = null">
       <form class="stack" @submit.prevent="confirmSuspend">
-        <p class="muted">La personne est déconnectée immédiatement, ne peut plus se connecter ni être contactée. Action réversible et journalisée.</p>
-        <BaseField v-model="reason" label="Motif" required :maxlength="200" />
+        <p class="muted">{{ t('admin.members.suspendHint') }}</p>
+        <BaseField v-model="reason" :label="t('admin.members.reason')" required :maxlength="200" />
         <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
         <div class="buttons">
-          <BaseButton variant="ghost" @click="suspending = null">Annuler</BaseButton>
-          <BaseButton type="submit" variant="danger" :pending="action.pending.value" :disabled="!reason.trim()">Suspendre</BaseButton>
+          <BaseButton variant="ghost" @click="suspending = null">{{ t('common.cancel') }}</BaseButton>
+          <BaseButton type="submit" variant="danger" :pending="action.pending.value" :disabled="!reason.trim()">{{ t('admin.members.suspend') }}</BaseButton>
         </div>
       </form>
     </BaseDialog>

@@ -76,12 +76,29 @@
     "email": "Email",
     "password": "Mot de passe",
     "cancel": "Annuler",
-    "avatarOf": "Avatar de {name}"
+    "avatarOf": "Avatar de {name}",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "loading": "Chargement…",
+    "justNow": "à l’instant",
+    "badges": "Badges",
+    "overdue": "en retard",
+    "board": "Bureau"
   },
   "errors": {
     "fields": "Vérifie les champs indiqués.",
     "unexpected": "Une erreur inattendue est survenue.",
-    "network": "Connexion impossible, vérifie ton réseau."
+    "network": "Connexion impossible, vérifie ton réseau.",
+    "tooManyRequests": "Trop de tentatives, réessaie dans quelques minutes.",
+    "server": "Le serveur rencontre un problème, réessaie plus tard.",
+    "requestFailed": "La requête a échoué.",
+    "invalidResponse": "Réponse inattendue du serveur ({what}).",
+    "invalidQrCode": "QR code invalide.",
+    "pushUnavailable": "Les notifications push ne sont pas encore configurées sur le serveur.",
+    "pushDenied": "Autorise les notifications dans ton navigateur pour les recevoir."
   },
   "landing": {
     "kicker": "Club de fléchettes",
@@ -145,9 +162,18 @@
       "outro": "Outro"
     },
     "directions": {
-      "intro": ["Basse fuzz seule sur le riff, 4 mesures", "Entrée batterie : charleston ouvert, puis tout le groupe"],
-      "solo": ["Wah grand ouvert sur la gamme blues de do", "Montée post-metal : la batterie double, tout le monde à l’unisson"],
-      "outro": ["Larsen tenu sur le do grave", "Dernier coup de grosse caisse… et le bruit d’une fléchette dans le mille"]
+      "intro": [
+        "Basse fuzz seule sur le riff, 4 mesures",
+        "Entrée batterie : charleston ouvert, puis tout le groupe"
+      ],
+      "solo": [
+        "Wah grand ouvert sur la gamme blues de do",
+        "Montée post-metal : la batterie double, tout le monde à l’unisson"
+      ],
+      "outro": [
+        "Larsen tenu sur le do grave",
+        "Dernier coup de grosse caisse… et le bruit d’une fléchette dans le mille"
+      ]
     }
   },
   "auth": {
@@ -183,5 +209,69 @@
     "title": "Page introuvable",
     "text": "Raté, la fléchette est à côté de la cible.",
     "back": "Retour à l’accueil"
+  },
+  "enums": {
+    "role": {
+      "ROLE_MEMBER": "Adhérent",
+      "ROLE_SECRETARY": "Secrétaire",
+      "ROLE_TREASURER": "Trésorier",
+      "ROLE_PRESIDENT": "Président",
+      "ROLE_ADMIN": "Administrateur"
+    },
+    "badge": {
+      "president": "Président",
+      "tresorier": "Trésorier",
+      "secretaire": "Secrétaire",
+      "cotisant": "Cotisant"
+    },
+    "category": {
+      "cotisation": "Cotisation",
+      "evenement": "Événement",
+      "reunion": "Réunion",
+      "annulation": "Annulation",
+      "information": "Information",
+      "message": "Message"
+    },
+    "channel": {
+      "in_app": "Sur le site",
+      "email": "Email",
+      "push": "Notification push"
+    },
+    "mailbox": {
+      "secretaire": "Secrétariat",
+      "tresorier": "Trésorerie",
+      "president": "Présidence"
+    },
+    "membershipStatus": {
+      "payee": "Payée",
+      "partielle": "Partiellement payée",
+      "impayee": "Non payée"
+    },
+    "paymentMethod": {
+      "especes": "Espèces",
+      "cheque": "Chèque",
+      "virement": "Virement",
+      "carte": "Carte bancaire",
+      "en_ligne": "Paiement en ligne"
+    },
+    "eventStatus": {
+      "prevu": "Prévu",
+      "annule": "Annulé"
+    },
+    "audit": {
+      "member": {
+        "roles": "Rôles modifiés",
+        "suspend": "Compte suspendu",
+        "reactivate": "Compte réactivé"
+      },
+      "broadcast": {
+        "send": "Message diffusé"
+      },
+      "announcement": {
+        "publish": "Annonce publiée",
+        "edit": "Annonce modifiée",
+        "delete": "Annonce supprimée"
+      }
+    }
   }
 }

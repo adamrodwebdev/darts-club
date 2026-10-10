@@ -1,15 +1,14 @@
+import { formatEuro } from '@/i18n/format'
+import { labelled, type LabelledOption } from '@/i18n/labels'
 import { bool, list, num, obj, optStr, str } from './guards'
 
 export type MembershipStatusId = 'payee' | 'partielle' | 'impayee'
 
-export interface Option {
-  id: string
-  label: string
-}
+export type Option = LabelledOption
 
-function option(value: unknown): Option {
+function paymentMethod(value: unknown): Option {
   const d = obj(value)
-  return { id: str(d.id), label: str(d.label) }
+  return labelled('paymentMethod', str(d.id), str(d.label))
 }
 
 export class PaymentRecord {
@@ -29,7 +28,7 @@ export class PaymentRecord {
     return new PaymentRecord(
       str(d.id),
       str(d.amount),
-      option(d.method),
+      paymentMethod(d.method),
       str(d.paidAt),
       bool(d.cancelled),
       optStr(d.reference),
@@ -47,7 +46,7 @@ export class MembershipRecord {
     readonly amountDue: string,
     readonly paid: string,
     readonly remaining: string,
-    readonly status: { id: MembershipStatusId; label: string },
+    readonly status: LabelledOption<MembershipStatusId>,
     readonly overdue: boolean,
     readonly dueDate: string,
     readonly payments: PaymentRecord[],
@@ -56,7 +55,7 @@ export class MembershipRecord {
   static parse(value: unknown): MembershipRecord {
     const d = obj(value, 'cotisation')
     const holder = obj(d.holder)
-    const status = option(d.status)
+    const status = obj(d.status)
     return new MembershipRecord(
       str(d.id),
       str(d.season),
@@ -64,7 +63,7 @@ export class MembershipRecord {
       str(d.amountDue),
       str(d.paid),
       str(d.remaining),
-      { id: status.id as MembershipStatusId, label: status.label },
+      labelled('membershipStatus', str(status.id) as MembershipStatusId, str(status.label)),
       bool(d.overdue),
       str(d.dueDate),
       list(d.payments, PaymentRecord.parse),
@@ -100,7 +99,7 @@ export function parseDashboard(value: unknown): TreasuryDashboard {
 
 export function parseMembershipList(value: unknown): { season: string; items: MembershipRecord[]; methods: Option[] } {
   const d = obj(value)
-  return { season: str(d.season), items: list(d.items, MembershipRecord.parse), methods: list(d.methods, option) }
+  return { season: str(d.season), items: list(d.items, MembershipRecord.parse), methods: list(d.methods, paymentMethod) }
 }
 
 export function parseMyMembership(value: unknown): { season: string; current: MembershipRecord | null; history: MembershipRecord[] } {
@@ -112,11 +111,8 @@ export function parseMyMembership(value: unknown): { season: string; current: Me
   }
 }
 
-/** « 30.50 » → « 30,50 € » */
-const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' })
-export function formatEuro(decimal: string): string {
-  return euro.format(Number(decimal))
-}
+/** Montants formatés dans la langue courante (voir i18n/format) */
+export { formatEuro }
 
 /** Saison sportive courante (septembre → août), comme l'API. */
 export function currentSeason(now = new Date()): string {

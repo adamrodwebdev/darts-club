@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -8,6 +9,7 @@ import { services } from '@/services'
 
 const props = defineProps<{ membership: MembershipRecord; methods: Option[] }>()
 const emit = defineEmits<{ saved: [MembershipRecord]; close: [] }>()
+const { t } = useI18n()
 
 const today = new Date().toISOString().slice(0, 10)
 const amount = ref(props.membership.remaining)
@@ -36,23 +38,23 @@ async function submit(): Promise<void> {
 <template>
   <dialog ref="dialog" class="dialog" aria-labelledby="payment-title" @close="emit('close')">
     <form class="stack" novalidate @submit.prevent="submit">
-      <h2 id="payment-title">Encaisser · {{ membership.holder.displayName }}</h2>
-      <p class="muted">Reste à payer : {{ formatEuro(membership.remaining) }}</p>
+      <h2 id="payment-title">{{ t('treasury.paymentForm.title', { name: membership.holder.displayName }) }}</h2>
+      <p class="muted">{{ t('treasury.paymentForm.remaining', { amount: formatEuro(membership.remaining) }) }}</p>
 
-      <BaseField v-model="amount" label="Montant (€)" required :error="fieldErrors.amount" />
+      <BaseField v-model="amount" :label="t('treasury.paymentForm.amount')" required :error="fieldErrors.amount" />
       <label class="field">
-        <span>Moyen de paiement</span>
+        <span>{{ t('treasury.paymentForm.method') }}</span>
         <select v-model="method">
           <option v-for="m in methods" :key="m.id" :value="m.id">{{ m.label }}</option>
         </select>
       </label>
-      <BaseField v-model="paidAt" label="Date du paiement" type="date" required :error="fieldErrors.paidAt" />
-      <BaseField v-model="reference" label="Référence (n° de chèque, virement…)" :maxlength="80" />
+      <BaseField v-model="paidAt" :label="t('treasury.paymentForm.paidAt')" type="date" required :error="fieldErrors.paidAt" />
+      <BaseField v-model="reference" :label="t('treasury.paymentForm.reference')" :maxlength="80" />
 
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
       <div class="buttons">
-        <BaseButton variant="ghost" @click="dialog?.close()">Annuler</BaseButton>
-        <BaseButton type="submit" :pending="pending">Enregistrer</BaseButton>
+        <BaseButton variant="ghost" @click="dialog?.close()">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton type="submit" :pending="pending">{{ t('common.save') }}</BaseButton>
       </div>
     </form>
   </dialog>
