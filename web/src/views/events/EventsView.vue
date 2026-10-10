@@ -74,9 +74,12 @@ onMounted(refresh)
       {{ period === 'upcoming' ? 'Aucun événement prévu pour le moment.' : 'Aucune archive pour ces critères.' }}
     </p>
 
-    <ul class="list" role="tabpanel">
-      <li v-for="e in events" :key="e.id"><EventCard :event="e" /></li>
-    </ul>
+    <!-- Rôle porté par un conteneur : un <ul> avec un autre rôle perd sa sémantique de liste -->
+    <div role="tabpanel">
+      <ul class="list">
+        <li v-for="e in events" :key="e.id"><EventCard :event="e" /></li>
+      </ul>
+    </div>
   </section>
 </template>
 
