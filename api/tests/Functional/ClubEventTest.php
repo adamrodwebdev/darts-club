@@ -140,7 +140,7 @@ final class ClubEventTest extends ApiTestCase
         $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
         $this->client->request('GET', $path);
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('X-WR-CALNAME:Darts Club', (string) $this->client->getResponse()->getContent());
+        self::assertStringContainsString('X-WR-CALNAME:Skull Darts 71', (string) $this->client->getResponse()->getContent());
 
         $this->client->request('GET', '/api/calendar/'.str_repeat('a', 48).'.ics');
         self::assertResponseStatusCodeSame(404);

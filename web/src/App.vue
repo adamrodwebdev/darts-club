@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
+import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
@@ -30,6 +31,7 @@ watch(
   <main id="main" tabindex="-1">
     <RouterView />
   </main>
+  <AppFooter />
 </template>
 
 <style scoped>

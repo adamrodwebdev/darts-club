@@ -58,9 +58,10 @@
 - À faire : liste d'attente quand l'événement est complet
 
 ## 9. Landing page « metal » (S7)
-- Identité visuelle unique : typographie display, textures, cible de fléchettes animée (SVG/Canvas léger)
-- Références musicales légales : noms de groupes + liens officiels (Bandcamp/site), embeds en **façade** (chargés au clic), aucune image/paroles protégées
-- Pré-rendu statique (SSG) pour la perf et le SEO
+- ✅ Identité visuelle unique : titres chromés, cible SVG animée (fléchette qui se plante), apparitions au défilement, hymne original « Triple Vingt » + riff synthétisé (Web Audio)
+- ✅ Section « Groupe ami » (Blind to Deaf) ; ambiances musicales reprises dans le design et l’hymne, sans citer d’artistes
+- ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
+- À faire : pré-rendu statique (SSG) de la landing (FR/EN, avec l'étape 10 bis)
 
 ## 10. Performance (Lighthouse ≥ 95)
 - SSG landing, code-splitting par route, preload des polices (subset, `font-display: swap`)

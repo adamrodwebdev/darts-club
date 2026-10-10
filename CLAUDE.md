@@ -1,6 +1,8 @@
-# Directives du projet Darts Club
+# Directives du projet Skull Darts 71
 
 Monorepo : `api/` (Symfony 7.4 LTS, PHP 8.4) + `web/` (Vue 3, TypeScript). Feuille de route : [ROADMAP.md](ROADMAP.md).
+
+Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.svg`, Facebook dans `web/src/content/landing.ts`). Les groupes de musique qui inspirent le design et l’hymne ne sont jamais cités sur le site.
 
 ## Programmation orientée objet
 

@@ -1,5 +1,5 @@
 api_platform:
-    title: Darts Club API
+    title: Skull Darts 71 API
     version: 1.0.0
     defaults:
         stateless: false

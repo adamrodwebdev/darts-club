@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { LANDING } from '@/content/landing'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import UserAvatar from './UserAvatar.vue'
@@ -14,13 +15,10 @@ const { unread } = storeToRefs(useNotificationStore())
   <header class="header">
     <a class="skip-link" href="#main">Aller au contenu</a>
     <nav class="header__inner" aria-label="Navigation principale">
-      <RouterLink to="/" class="brand" aria-label="Darts Club, accueil">
-        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5" />
-          <circle cx="16" cy="16" r="8" fill="none" stroke="currentColor" stroke-width="2.5" />
-          <circle cx="16" cy="16" r="2.5" fill="var(--color-accent)" />
-        </svg>
-        <span class="brand__name" :class="{ 'brand__name--member': user }">Darts Club</span>
+      <RouterLink to="/" class="brand" aria-label="Skull Darts 71, accueil">
+        <img class="brand__logo" :src="LANDING.logo" width="38" height="38" alt="" />
+
+        <span class="brand__name" :class="{ 'brand__name--member': user }">Skull Darts 71</span>
       </RouterLink>
 
       <ul v-if="user" class="nav">
@@ -104,6 +102,13 @@ const { unread } = storeToRefs(useNotificationStore())
   letter-spacing: 0.02em;
   text-decoration: none;
   text-transform: uppercase;
+}
+
+.brand__logo {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
 }
 
 .nav {

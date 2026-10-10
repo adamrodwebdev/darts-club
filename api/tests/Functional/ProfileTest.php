@@ -97,7 +97,7 @@ final class ProfileTest extends ApiTestCase
 
         $this->client->request('GET', '/api/me/export');
         self::assertResponseIsSuccessful();
-        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename="mes-donnees-darts-club.json"');
+        self::assertResponseHeaderSame('Content-Disposition', 'attachment; filename="mes-donnees-skull-darts-71.json"');
         $data = $this->json();
         self::assertIsArray($data['account']);
         self::assertSame('alice@example.com', $data['account']['email']);

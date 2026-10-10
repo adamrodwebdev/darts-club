@@ -62,7 +62,7 @@ final class CalendarFeedController extends AbstractController
 
         $now = $clock->now();
 
-        return new Response($calendar->render($events->forCalendarFeed($now), 'Darts Club', $now), headers: [
+        return new Response($calendar->render($events->forCalendarFeed($now), 'Skull Darts 71', $now), headers: [
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Cache-Control' => 'private, max-age=3600',
             'X-Robots-Tag' => 'noindex',
