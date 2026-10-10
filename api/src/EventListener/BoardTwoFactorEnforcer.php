@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Entity\User;
+use App\Translation\ErrorMessages;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,7 @@ final class BoardTwoFactorEnforcer
     private const ALLOWED = ['/api/auth/', '/api/me', '/api/realtime/', '/api/notifications', '/api/push/'];
 
     public function __construct(
+        private readonly ErrorMessages $messages,
         private readonly Security $security,
     ) {
     }
@@ -40,7 +42,7 @@ final class BoardTwoFactorEnforcer
         $user = $this->security->getUser();
         if ($user instanceof User && $this->security->isGranted('IS_AUTHENTICATED_FULLY') && $user->mustSetUpTwoFactor()) {
             $event->setResponse(new JsonResponse(
-                ['error' => 'Active la double authentification pour accéder aux fonctions du bureau.', 'code' => 'two_factor_setup_required'],
+                ['error' => $this->messages->trans('Active la double authentification pour accéder aux fonctions du bureau.', $event->getRequest()), 'code' => 'two_factor_setup_required'],
                 Response::HTTP_FORBIDDEN,
             ));
         }

@@ -4,11 +4,12 @@ namespace App\ClubEvent;
 
 use App\Notification\Category;
 use App\Notification\MemberNotifier;
-use App\Notification\NotificationContent;
 use App\Notification\Recipients;
+use App\Notification\TranslatedNotification;
 use App\Repository\ClubEventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Uid\Uuid;
 
 /** Rappels J-7 (tous les adhérents) et J-1 (inscrits), une seule fois chacun. */
@@ -35,12 +36,12 @@ final class EventReminders
                 $event->markDayReminderSent($now);
                 $participants = $event->participants();
                 if ([] !== $participants) {
-                    $this->send($event, 'Demain : %s', Recipients::users(...array_map(static fn ($u): Uuid => $u->getId(), $participants)));
+                    $this->send($event, 'event.reminder_day', Recipients::users(...array_map(static fn ($u): Uuid => $u->getId(), $participants)));
                     ++$sent;
                 }
             } elseif ($event->isDueForWeekReminder($now)) {
                 $event->markWeekReminderSent($now);
-                $this->send($event, 'Dans une semaine : %s', Recipients::allMembers());
+                $this->send($event, 'event.reminder_week', Recipients::allMembers());
                 ++$sent;
             }
         }
@@ -50,12 +51,12 @@ final class EventReminders
         return $sent;
     }
 
-    private function send(\App\Entity\ClubEvent $event, string $format, Recipients $recipients): void
+    private function send(\App\Entity\ClubEvent $event, string $titleKey, Recipients $recipients): void
     {
         $this->notifier->notify(
-            new NotificationContent(
+            new TranslatedNotification(
                 Category::Event,
-                mb_substr(\sprintf($format, $event->getTitle()), 0, 120),
+                new TranslatableMessage($titleKey, ['%title%' => $event->getTitle()], 'notifications'),
                 NotifyOnClubEventChanges::body($event),
                 NotifyOnClubEventChanges::link($event),
             ),

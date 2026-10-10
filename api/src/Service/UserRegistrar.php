@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Dto\Registration;
 use App\Entity\User;
 use App\Message\SendAccountExistsEmail;
+use App\Preference\Language;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\PhoneNumber;
@@ -26,7 +27,8 @@ final class UserRegistrar
      * Le résultat n'est volontairement pas exposé à l'appelant HTTP :
      * un email déjà pris ne doit pas être détectable.
      */
-    public function register(Registration $registration): void
+    /** La langue de la requête devient celle du compte (emails, notifications). */
+    public function register(Registration $registration, Language $language = Language::French): void
     {
         $email = EmailAddress::fromString($registration->email);
 
@@ -41,6 +43,7 @@ final class UserRegistrar
             $email,
             $this->hashers->getPasswordHasher(User::class)->hash($registration->password),
             null !== $registration->phone && '' !== trim($registration->phone) ? PhoneNumber::fromInput($registration->phone) : null,
+            $language,
         );
 
         // UserRegistered est publié après le flush (DomainEventPublisher)

@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Preference\Language;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
 use League\OAuth2\Client\Provider\GoogleUser;
@@ -42,11 +43,13 @@ final class OAuthAuthenticator extends OAuth2Authenticator
         $owner = $client->fetchUserFromToken($this->fetchAccessToken($client));
         $subject = self::subject($owner->getId());
         [$email, $verified] = self::extractEmail($owner);
+        // Navigation complète : Accept-Language du navigateur
+        $language = Language::fromLocale($request->getLocale());
 
         // Identifiant du badge : jamais le jeton d'accès (journaux, limiteur)
         return new SelfValidatingPassport(new UserBadge(
             $provider.':'.$subject,
-            fn () => $this->resolver->resolve($provider, $subject, $email, $verified),
+            fn () => $this->resolver->resolve($provider, $subject, $email, $verified, $language),
         ));
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use App\Translation\ErrorMessages;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +25,7 @@ final class OriginCheckListener
 
     /** @param array<mixed> $trustedOrigins */
     public function __construct(
+        private readonly ErrorMessages $messages,
         #[Autowire('%env(csv:TRUSTED_ORIGINS)%')]
         array $trustedOrigins,
     ) {
@@ -52,7 +54,7 @@ final class OriginCheckListener
             : \in_array($request->headers->get('Sec-Fetch-Site'), [null, 'same-origin', 'none'], true);
 
         if (!$allowed) {
-            $event->setResponse(new JsonResponse(['error' => 'Origine non autorisée.'], Response::HTTP_FORBIDDEN));
+            $event->setResponse(new JsonResponse(['error' => $this->messages->trans('Origine non autorisée.', $request)], Response::HTTP_FORBIDDEN));
         }
     }
 }

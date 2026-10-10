@@ -1,0 +1,17 @@
+# Domaine « notifications » (fr), mêmes clés dans chaque langue.
+'event.scheduled': 'Nouvel événement : %title%'
+'event.rescheduled': 'Changement d''horaire : %title%'
+'event.cancelled': 'Annulé : %title%'
+'event.reminder_day': 'Demain : %title%'
+'event.reminder_week': 'Dans une semaine : %title%'
+'event.body': '%date% · %location%'
+'event.body_cancelled': "%date% · %location%\nMotif : %reason%"
+'membership.reminder_title': 'Cotisation %season% en attente'
+'membership.reminder_body': 'Il reste %amount% à régler (échéance du %date%). Contacte la trésorerie pour toute question.'
+'membership.paid_title': 'Cotisation %season% réglée'
+'membership.paid_body': 'Merci ! Ta cotisation de %amount% est enregistrée. Ton badge « Cotisant » est actif.'
+'message.direct': 'Message de %author%'
+'message.direct_with_subject': 'Message de %author% : %subject%'
+'message.to_mailbox': '%author% → %mailbox%'
+'message.to_mailbox_with_subject': '%author% → %mailbox% : %subject%'
+'message.body': '%preview%'

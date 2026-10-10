@@ -6,6 +6,7 @@ use App\Announcement\AnnouncementPublished;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Repository\AnnouncementRepository;
+use App\Translation\InvalidValue;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -112,10 +113,10 @@ class Announcement implements RecordsDomainEvents
         $body = trim(str_replace("\r\n", "\n", $body));
 
         if ('' === $title || mb_strlen($title) > self::TITLE_MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le titre doit faire entre 1 et %d caractères.', self::TITLE_MAX));
+            throw new InvalidValue('Le titre doit faire entre 1 et %max% caractères.', ['%max%' => self::TITLE_MAX]);
         }
         if ('' === $body || mb_strlen($body) > self::BODY_MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le texte doit faire entre 1 et %d caractères.', self::BODY_MAX));
+            throw new InvalidValue('Le texte doit faire entre 1 et %max% caractères.', ['%max%' => self::BODY_MAX]);
         }
 
         $this->title = $title;

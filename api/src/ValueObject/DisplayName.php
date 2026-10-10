@@ -2,6 +2,8 @@
 
 namespace App\ValueObject;
 
+use App\Translation\InvalidValue;
+
 /** Pseudo affiché aux autres adhérents (messagerie, événements). */
 final readonly class DisplayName implements \Stringable
 {
@@ -19,7 +21,7 @@ final readonly class DisplayName implements \Stringable
         $length = mb_strlen($normalized);
 
         if ($length < self::MIN || $length > self::MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le pseudo doit faire entre %d et %d caractères.', self::MIN, self::MAX));
+            throw new InvalidValue('Le pseudo doit faire entre %min% et %max% caractères.', ['%min%' => self::MIN, '%max%' => self::MAX]);
         }
         if (1 !== preg_match("/^[\\p{L}\\p{N}][\\p{L}\\p{N} ._'-]*$/u", $normalized)) {
             throw new \InvalidArgumentException('Le pseudo contient des caractères non autorisés.');

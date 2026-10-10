@@ -47,7 +47,7 @@ jobs:
       - run: composer install --prefer-dist --no-progress
       - run: composer audit
       - run: vendor/bin/php-cs-fixer check --diff
-      - run: vendor/bin/phpstan analyse --no-progress
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
       - run: bin/console lint:container
       - run: bin/console lint:yaml config
       - name: Migrations + validation du schéma (PostgreSQL)

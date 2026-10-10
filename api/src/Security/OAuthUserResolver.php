@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\OAuthIdentity;
 use App\Entity\User;
+use App\Preference\Language;
 use App\Repository\OAuthIdentityRepository;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
@@ -23,7 +24,7 @@ final class OAuthUserResolver
     ) {
     }
 
-    public function resolve(string $provider, string $subject, ?string $email, bool $emailVerified): User
+    public function resolve(string $provider, string $subject, ?string $email, bool $emailVerified, Language $language = Language::French): User
     {
         $identity = $this->identities->findOneByProviderSubject($provider, $subject);
         if (null !== $identity) {
@@ -45,7 +46,7 @@ final class OAuthUserResolver
 
         if (null === $user) {
             // Enregistre UserRegistered(viaOAuth), publié après le flush
-            $user = User::registerViaOAuth($address);
+            $user = User::registerViaOAuth($address, $language);
             $this->em->persist($user);
         } else {
             // Le fournisseur prouve la possession de l'adresse

@@ -2,8 +2,8 @@
 
 namespace App\Security\TwoFactor;
 
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use App\Translation\UnprocessableException;
 
-final class TwoFactorException extends UnprocessableEntityHttpException
+final class TwoFactorException extends UnprocessableException
 {
 }

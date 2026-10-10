@@ -46,6 +46,37 @@ test.describe('theme', () => {
   })
 })
 
+test.describe('account preferences', () => {
+  test('are applied at login and saved when changed', async ({ page }) => {
+    const profile = {
+      id: '01a1b2c3-0000-7000-8000-000000000001', email: 'alice@example.com', displayName: 'Alice', phone: null, avatarUrl: null,
+      roles: ['ROLE_MEMBER'], hasPassword: true, twoFactorEnabled: false, twoFactorSetupRequired: false, badges: [],
+      preferences: { language: 'en', theme: 'dark' },
+    }
+    const saved: unknown[] = []
+    await page.route('**/api/auth/login', (route) => route.fulfill({ json: profile }))
+    await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+    await page.route('**/api/notifications*', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+    await page.route('**/api/me/preferences', (route) => {
+      saved.push(route.request().postDataJSON())
+      return route.fulfill({ json: { ...profile, preferences: route.request().postDataJSON() } })
+    })
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/connexion')
+    await page.getByLabel('Email').fill('alice@example.com')
+    await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+    await page.getByRole('button', { name: 'Se connecter' }).click()
+
+    // Choix faits sur un autre appareil : anglais, thème sombre
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('My account')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+
+    await page.getByRole('region', { name: 'Display' }).getByRole('radio', { name: 'Light' }).check()
+    await expect.poll(() => saved).toContainEqual({ language: 'en', theme: 'light' })
+  })
+})
+
 test.describe('language', () => {
   test('switches the home page to its English URL and remembers it', async ({ page }) => {
     await page.goto('/')

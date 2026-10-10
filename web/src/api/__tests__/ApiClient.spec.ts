@@ -39,12 +39,21 @@ describe('ApiClient', () => {
     expect((error as ApiError).violations).toEqual({ email: 'Email invalide.' })
   })
 
-  it('uses the API error message when present', async () => {
-    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(401, { error: 'Adresse email non vérifiée.' }))
+  it('uses the API error message and its stable code when present', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(401, { error: 'Email address not verified.', code: 'email_not_verified' }))
     const error = (await new ApiClient('', fetchFn).get('/api/auth/me').catch((e: unknown) => e)) as ApiError
 
     expect(error.isUnauthorized).toBe(true)
-    expect(error.message).toBe('Adresse email non vérifiée.')
+    expect(error.message).toBe('Email address not verified.')
+    expect(error.code).toBe('email_not_verified')
+  })
+
+  it('tells the API which language to answer in', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(200, {}))
+    await new ApiClient('', fetchFn, () => 'en').get('/api/x')
+
+    const init = fetchFn.mock.calls[0]?.[1] as RequestInit
+    expect((init.headers as Record<string, string>)['Accept-Language']).toBe('en')
   })
 
   it('turns network failures into a readable error', async () => {

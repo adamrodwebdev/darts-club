@@ -86,7 +86,10 @@ Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace
 - ✅ Libellés des énumérations de l'API (rôles, badges, statuts, moyens de paiement, boîtes, catégories, journal) traduits côté front, repli sur le libellé de l'API (b)
 - ✅ Dates, nombres et montants formatés selon la langue (`Intl`, module `i18n/format`) (b)
 - ✅ Garde-fou CI (b) : règle ESLint `@intlify/vue-i18n/no-raw-text`, aucun texte en dur dans les gabarits ; parcours adhérent audité en anglais
-- À faire (c) : messages d'erreur, validations et emails traduits côté API (Symfony Translation, `Accept-Language` puis langue enregistrée sur le compte) ; thème et langue enregistrés sur le compte
+- ✅ API traduite (c) : langue de la requête via `Accept-Language` (envoyé par le front), messages d'erreur et validations en français et en anglais, codes d'erreur stables pour le front (`email_not_verified`…)
+- ✅ Langue et thème enregistrés sur le compte (c) : un choix fait sur l'appareil prime à la connexion, sinon celui du compte s'applique ; la langue est fixée à l'inscription
+- ✅ Emails, notifications (centre, email, push), calendrier ICS et export CSV dans la langue de chaque destinataire (c)
+- ✅ Contrôle en CI (c) : test PHPUnit qui vérifie que chaque message français a sa traduction anglaise et que les catalogues à clés sont complets
 - À faire (étape 11) : rendu complet du contenu au build (SSG) et `hreflang` en dur une fois le domaine connu
 
 ## 11. Livraison (S8)

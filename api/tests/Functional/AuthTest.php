@@ -60,9 +60,11 @@ final class AuthTest extends ApiTestCase
 
         $this->login('member@example.com', self::PASSWORD);
         self::assertResponseStatusCodeSame(401);
-        $error = $this->json()['error'];
-        self::assertIsString($error);
-        self::assertStringContainsString('Too many failed login attempts', $error);
+        $response = $this->json();
+        self::assertSame('too_many_attempts', $response['code']);
+        self::assertIsString($response['error']);
+        // Message traduit par Symfony (domaine « security »)
+        self::assertStringContainsString('Trop de tentatives', $response['error']);
     }
 
     public function testLogoutEndsSession(): void

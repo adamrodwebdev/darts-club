@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Dto\AccountDeletion;
+use App\Dto\DisplayPreferencesInput;
 use App\Dto\PasswordChange;
 use App\Dto\ProfileUpdate;
 use App\Entity\User;
 use App\Media\ImageProcessor;
 use App\Media\ImageStorage;
 use App\Media\InvalidImageException;
+use App\Preference\Language;
+use App\Preference\Theme;
 use App\Profile\AccountDeleter;
 use App\Profile\PersonalDataExporter;
 use App\Profile\ProfileView;
@@ -62,6 +65,16 @@ final class ProfileController extends AbstractController
             $user->changePhone(null === $phone || '' === trim($phone) ? null : self::valid(static fn () => PhoneNumber::fromInput($phone)));
         }
 
+        $this->em->flush();
+
+        return $this->show($user);
+    }
+
+    /** Langue et thème choisis dans l'interface ; la langue sert aussi aux emails et notifications. */
+    #[Route('/preferences', name: 'preferences', methods: ['PUT'])]
+    public function updatePreferences(#[CurrentUser] User $user, #[MapRequestPayload] DisplayPreferencesInput $input): JsonResponse
+    {
+        $user->changeDisplayPreferences(Language::from($input->language), Theme::from($input->theme));
         $this->em->flush();
 
         return $this->show($user);

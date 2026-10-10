@@ -17,6 +17,7 @@ use App\Repository\ClubEventRepository;
 use App\Repository\EventPhotoRepository;
 use App\Repository\EventPostRepository;
 use App\Security\Voter\ClubEventVoter;
+use App\Translation\InvalidValue;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -136,9 +137,9 @@ final class ClubEventController extends AbstractController
     }
 
     #[Route('/api/events/{id}/calendar.ics', name: 'events_ics', requirements: ['id' => self::UUID], methods: ['GET'])]
-    public function ics(ClubEvent $event, IcsCalendar $calendar): Response
+    public function ics(ClubEvent $event, IcsCalendar $calendar, #[CurrentUser] User $user): Response
     {
-        return new Response($calendar->render([$event], 'Skull Darts 71', $this->events->now()), headers: [
+        return new Response($calendar->render([$event], 'Skull Darts 71', $this->events->now(), $user->language()->value), headers: [
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="evenement-skull-darts-71.ics"',
         ]);
@@ -224,7 +225,7 @@ final class ClubEventController extends AbstractController
             $value = \DateTimeImmutable::createFromFormat(\DATE_ATOM, $text($key))
                 ?: \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.vP', $text($key));
             if (false === $value) {
-                throw new \InvalidArgumentException(\sprintf('Date « %s » invalide (format ISO 8601 attendu).', $key));
+                throw new InvalidValue('Date « %field% » invalide (format ISO 8601 attendu).', ['%field%' => $key]);
             }
 
             return $value;

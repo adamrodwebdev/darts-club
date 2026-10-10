@@ -2,8 +2,8 @@
 
 namespace App\Media;
 
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use App\Translation\UnprocessableException;
 
-final class InvalidImageException extends UnprocessableEntityHttpException
+final class InvalidImageException extends UnprocessableException
 {
 }

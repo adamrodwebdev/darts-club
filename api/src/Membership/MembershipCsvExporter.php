@@ -3,23 +3,28 @@
 namespace App\Membership;
 
 use App\Repository\MembershipRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /** Export CSV pour le tableur du trésorier (séparateur « ; », UTF-8 avec BOM pour Excel). */
 final class MembershipCsvExporter
 {
-    private const HEADER = ['Saison', 'Adhérent', 'Email', 'Montant dû', 'Payé', 'Reste', 'Statut', 'Date', 'Moyen', 'Montant', 'Référence', 'Annulé'];
+    /** Clés des colonnes (domaine « exports ») */
+    private const HEADER = ['season', 'member', 'email', 'amount_due', 'paid', 'remaining', 'status', 'date', 'method', 'amount', 'reference', 'cancelled'];
 
     public function __construct(
         private readonly MembershipRepository $memberships,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
-    public function export(Season $season): string
+    /** @param string $locale langue du trésorier (en-têtes, statuts, moyens de paiement) */
+    public function export(Season $season, string $locale = 'fr'): string
     {
         $out = fopen('php://temp', 'r+');
         \assert(false !== $out);
         fwrite($out, "\u{FEFF}");
-        fputcsv($out, self::HEADER, ';', escape: '');
+        $header = array_map(fn (string $key): string => $this->translator->trans('csv.'.$key, [], 'exports', $locale), self::HEADER);
+        fputcsv($out, $header, ';', escape: '');
 
         foreach ($this->memberships->forSeason($season) as $m) {
             $base = [
@@ -29,7 +34,7 @@ final class MembershipCsvExporter
                 $m->amountDue()->toDecimal(),
                 $m->paidAmount()->toDecimal(),
                 $m->remaining()->toDecimal(),
-                $m->status()->label(),
+                $this->translator->trans('membership_status.'.$m->status()->value, [], 'enums', $locale),
             ];
 
             $payments = $m->payments();
@@ -40,10 +45,10 @@ final class MembershipCsvExporter
                 fputcsv($out, array_map(self::cell(...), [
                     ...$base,
                     $p->paidAt()->format('d/m/Y'),
-                    $p->method()->label(),
+                    $this->translator->trans('payment_method.'.$p->method()->value, [], 'enums', $locale),
                     $p->amount()->toDecimal(),
                     $p->reference() ?? '',
-                    $p->isCancelled() ? 'oui : '.$p->cancelReason() : '',
+                    $p->isCancelled() ? $this->translator->trans('csv.cancelled_yes', ['%reason%' => (string) $p->cancelReason()], 'exports', $locale) : '',
                 ]), ';', escape: '');
             }
         }

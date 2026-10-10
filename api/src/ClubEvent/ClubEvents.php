@@ -85,13 +85,13 @@ final class ClubEvents
     {
         $this->assertArchiveOpen($event);
         if ($this->photos->countForEvent($event) + \count($files) > self::MAX_PHOTOS_PER_EVENT) {
-            throw new InvalidImageException(\sprintf('La galerie est limitée à %d photos.', self::MAX_PHOTOS_PER_EVENT));
+            throw new InvalidImageException('La galerie est limitée à %max% photos.', null, ['%max%' => self::MAX_PHOTOS_PER_EVENT]);
         }
 
         $added = [];
         foreach ($files as $file) {
             if (!$file->isValid() || $file->getSize() > self::MAX_PHOTO_BYTES) {
-                throw new InvalidImageException(\sprintf('« %s » : fichier invalide ou trop lourd (10 Mo maximum).', mb_substr($file->getClientOriginalName(), 0, 60)));
+                throw new InvalidImageException('« %file% » : fichier invalide ou trop lourd (10 Mo maximum).', null, ['%file%' => mb_substr($file->getClientOriginalName(), 0, 60)]);
             }
 
             $processed = $this->images->photo($file->getPathname());

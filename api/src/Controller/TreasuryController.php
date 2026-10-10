@@ -84,7 +84,7 @@ final class TreasuryController extends AbstractController
 
         try {
             $membership = $this->treasury->openFor($user, $this->season(\is_string($data['season'] ?? null) ? $data['season'] : null), self::money($data['amountDue'] ?? null));
-        } catch (\DomainException $e) {
+        } catch (\InvalidArgumentException|\DomainException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
 
@@ -139,11 +139,11 @@ final class TreasuryController extends AbstractController
     }
 
     #[Route('/export', name: 'export', methods: ['GET'], format: 'csv')]
-    public function export(MembershipCsvExporter $exporter, #[MapQueryParameter] ?string $season = null): Response
+    public function export(MembershipCsvExporter $exporter, #[CurrentUser] User $user, #[MapQueryParameter] ?string $season = null): Response
     {
         $season = $this->season($season);
 
-        return new Response($exporter->export($season), headers: [
+        return new Response($exporter->export($season, $user->language()->value), headers: [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => \sprintf('attachment; filename="cotisations-%s.csv"', $season->label()),
             'Cache-Control' => 'no-store',

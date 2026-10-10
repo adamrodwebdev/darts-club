@@ -4,10 +4,12 @@ namespace App\Membership;
 
 use App\Notification\Category;
 use App\Notification\MemberNotifier;
-use App\Notification\NotificationContent;
 use App\Notification\Recipients;
+use App\Notification\TranslatedNotification;
 use App\Repository\MembershipRepository;
+use App\Translation\LocalizedMoney;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Translation\TranslatableMessage;
 
 #[AsEventListener]
 final class NotifyOnMembershipPaid
@@ -27,10 +29,10 @@ final class NotifyOnMembershipPaid
         }
 
         $this->notifier->notify(
-            new NotificationContent(
+            new TranslatedNotification(
                 Category::Membership,
-                \sprintf('Cotisation %s réglée', $membership->season()),
-                \sprintf('Merci ! Ta cotisation de %s est enregistrée. Ton badge « Cotisant » est actif.', $membership->amountDue()),
+                new TranslatableMessage('membership.paid_title', ['%season%' => (string) $membership->season()], 'notifications'),
+                new TranslatableMessage('membership.paid_body', ['%amount%' => new LocalizedMoney($membership->amountDue())], 'notifications'),
                 '/compte/cotisation',
             ),
             Recipients::users($user->getId()),

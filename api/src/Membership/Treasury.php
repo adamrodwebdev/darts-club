@@ -7,6 +7,7 @@ use App\Entity\Payment;
 use App\Entity\User;
 use App\Repository\MembershipRepository;
 use App\Repository\UserRepository;
+use App\Translation\InvalidValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
@@ -55,7 +56,7 @@ final class Treasury
     public function openFor(User $user, Season $season, Money $amountDue): Membership
     {
         if (null !== $this->memberships->findOneFor($user, $season)) {
-            throw new \DomainException(\sprintf('Une cotisation %s existe déjà pour cet adhérent.', $season));
+            throw new InvalidValue('Une cotisation %season% existe déjà pour cet adhérent.', ['%season%' => (string) $season]);
         }
 
         $membership = Membership::open($user, $season, $amountDue);

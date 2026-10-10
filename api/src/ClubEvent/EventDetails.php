@@ -2,6 +2,8 @@
 
 namespace App\ClubEvent;
 
+use App\Translation\InvalidValue;
+
 /** Informations modifiables d'un événement, validées ensemble. */
 final readonly class EventDetails
 {
@@ -21,13 +23,13 @@ final readonly class EventDetails
     ) {
         $title = trim($title);
         if ('' === $title || mb_strlen($title) > self::TITLE_MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le titre doit faire entre 1 et %d caractères.', self::TITLE_MAX));
+            throw new InvalidValue('Le titre doit faire entre 1 et %max% caractères.', ['%max%' => self::TITLE_MAX]);
         }
         if (mb_strlen($description) > self::DESCRIPTION_MAX) {
-            throw new \InvalidArgumentException(\sprintf('La description ne doit pas dépasser %d caractères.', self::DESCRIPTION_MAX));
+            throw new InvalidValue('La description ne doit pas dépasser %max% caractères.', ['%max%' => self::DESCRIPTION_MAX]);
         }
         if ('' === trim($location) || mb_strlen($location) > self::LOCATION_MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le lieu doit faire entre 1 et %d caractères.', self::LOCATION_MAX));
+            throw new InvalidValue('Le lieu doit faire entre 1 et %max% caractères.', ['%max%' => self::LOCATION_MAX]);
         }
         if ($endsAt <= $startsAt) {
             throw new \InvalidArgumentException('La fin doit être postérieure au début.');
