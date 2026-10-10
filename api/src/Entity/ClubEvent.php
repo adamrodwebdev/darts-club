@@ -12,6 +12,7 @@ use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Membership\Season;
 use App\Repository\ClubEventRepository;
+use App\Translation\InvalidValue;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -103,7 +104,7 @@ class ClubEvent implements RecordsDomainEvents
     {
         $this->assertScheduled();
         if (null !== $details->capacity && $details->capacity < $this->registrationCount()) {
-            throw new \InvalidArgumentException(\sprintf('%d personnes sont déjà inscrites.', $this->registrationCount()));
+            throw new InvalidValue('Impossible de descendre sous le nombre d\'inscrits actuel (%count%).', ['%count%' => $this->registrationCount()]);
         }
 
         $rescheduled = !$details->sameSchedule($this->startsAt, $this->endsAt);

@@ -13,7 +13,7 @@ final class MemberNotifier
     ) {
     }
 
-    public function notify(NotificationContent $content, Recipients $recipients): void
+    public function notify(NotificationMessage $content, Recipients $recipients): void
     {
         $this->bus->dispatch(new Notify($content, $recipients));
     }

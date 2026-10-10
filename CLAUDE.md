@@ -14,6 +14,7 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - **Dépendre d'abstractions** (interfaces) aux frontières : notifications, paiement, stockage, horloge (`ClockInterface`).
 - **Polymorphisme plutôt que `switch`** : stratégies taguées (`#[AutoconfigureTag]` + `#[AutowireIterator]`) pour les canaux de notification, les fournisseurs OAuth, les types de messages…
 - **Enums PHP** pour les ensembles fermés (rôles, statuts de cotisation, labels de message).
+- **Traductions** : un message d'erreur s'écrit en français, ce texte sert de clé (domaine `errors`, version anglaise dans `translations/errors.en.yaml`) ; paramètres `%nom%` via `InvalidValue` / `UnprocessableException`. Textes rédigés par l'application (emails, notifications, exports) : domaines à clés, fichiers `fr` et `en`. Tout ce qui part vers un adhérent (email, notification) est rendu dans **sa** langue (`User::language()`).
 - **Événements de domaine** pour les effets de bord (emails, push, journal) : le code métier publie, des listeners/handlers Messenger réagissent.
 - Autorisations dans des **Voters**, jamais en `if` dans les contrôleurs.
 - Organisation par domaine quand un domaine grossit : `src/Membership/`, `src/Event/`, `src/Messaging/`…

@@ -1,5 +1,6 @@
-<p>Salut,</p>
-<p>Bienvenue au club ! Confirme ton adresse email pour activer ton compte :</p>
-<p><a href="{{ signedUrl }}">Confirmer mon adresse</a></p>
-<p>Ce lien expire le {{ expiresAt|date('d/m/Y à H:i') }}.</p>
-<p>Si tu n'es pas à l'origine de cette inscription, ignore ce message.</p>
+{% trans_default_domain 'emails' %}
+<p>{{ 'greeting'|trans }}</p>
+<p>{{ 'verify.intro'|trans }}</p>
+<p><a href="{{ signedUrl }}">{{ 'verify.button'|trans }}</a></p>
+<p>{{ 'verify.expires'|trans({'%date%': expiresAt|date('d/m/Y H:i', 'Europe/Paris')}) }}</p>
+<p>{{ 'verify.ignore'|trans }}</p>

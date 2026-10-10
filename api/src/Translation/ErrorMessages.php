@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Translation;
+
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+/**
+ * Messages d'erreur des réponses construites hors contrôleur (pare-feu, écouteurs) :
+ * certains s'exécutent avant que la langue de la requête soit posée, d'où la
+ * négociation directe sur Accept-Language.
+ */
+final class ErrorMessages
+{
+    /** @param list<string> $locales */
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+        #[Autowire('%kernel.enabled_locales%')]
+        private readonly array $locales,
+    ) {
+    }
+
+    /** @param array<string, string|int> $parameters */
+    public function trans(string $message, Request $request, array $parameters = [], string $domain = 'errors'): string
+    {
+        return $this->translator->trans($message, $parameters, $domain, $request->getPreferredLanguage($this->locales));
+    }
+}

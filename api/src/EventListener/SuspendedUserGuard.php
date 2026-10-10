@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Entity\User;
+use App\Translation\ErrorMessages;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class SuspendedUserGuard
 {
     public function __construct(
+        private readonly ErrorMessages $messages,
         private readonly Security $security,
     ) {
     }
@@ -31,7 +33,7 @@ final class SuspendedUserGuard
 
         $this->security->logout(validateCsrfToken: false);
         $event->setResponse(new JsonResponse(
-            ['error' => 'Compte suspendu. Contacte le bureau du club.', 'code' => 'account_suspended'],
+            ['error' => $this->messages->trans('Compte suspendu. Contacte le bureau du club.', $event->getRequest()), 'code' => 'account_suspended'],
             Response::HTTP_UNAUTHORIZED,
         ));
     }

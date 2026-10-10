@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Notification\Category;
 use App\Notification\Channel;
+use App\Translation\Unprocessable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,7 +38,7 @@ final class NotificationPreferencesController extends AbstractController
         foreach ($input as $categoryValue => $channelValues) {
             $category = Category::tryFrom((string) $categoryValue);
             if (null === $category || !\is_array($channelValues)) {
-                throw new UnprocessableEntityHttpException(\sprintf('Catégorie inconnue : "%s".', $categoryValue));
+                throw new Unprocessable('Catégorie inconnue : « %category% ».', null, ['%category%' => $categoryValue]);
             }
 
             $channels = [];

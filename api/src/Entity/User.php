@@ -8,6 +8,8 @@ use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
 use App\Notification\NotificationPreferences;
+use App\Preference\Language;
+use App\Preference\Theme;
 use App\Repository\UserRepository;
 use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
@@ -96,6 +98,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(type: Types::JSON)]
     private array $backupCodes = [];
 
+    /** Langue des emails et notifications (et de l'interface à la connexion) */
+    #[ORM\Column(length: 2, enumType: Language::class, options: ['default' => 'fr'])]
+    private Language $language = Language::French;
+
+    #[ORM\Column(length: 6, enumType: Theme::class, options: ['default' => 'system'])]
+    private Theme $theme = Theme::System;
+
     private function __construct(EmailAddress $email)
     {
         $this->id = Uuid::v7();
@@ -104,9 +113,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     }
 
     /** Inscription classique : le compte reste inactif jusqu'à la vérification de l'email. */
-    public static function register(EmailAddress $email, string $hashedPassword, ?PhoneNumber $phone = null): self
+    public static function register(EmailAddress $email, string $hashedPassword, ?PhoneNumber $phone = null, Language $language = Language::French): self
     {
         $user = new self($email);
+        $user->language = $language;
         $user->password = $hashedPassword;
         $user->phone = $phone?->e164;
         $user->recordThat(new UserRegistered($user->id));
@@ -115,9 +125,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     }
 
     /** Inscription via un fournisseur OAuth qui a déjà vérifié l'email. */
-    public static function registerViaOAuth(EmailAddress $email): self
+    public static function registerViaOAuth(EmailAddress $email, Language $language = Language::French): self
     {
         $user = new self($email);
+        $user->language = $language;
         $user->verified = true;
         $user->recordThat(new UserRegistered($user->id, viaOAuth: true));
 
@@ -209,6 +220,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     public function rename(DisplayName $name): void
     {
         $this->displayName = $name->value;
+    }
+
+    public function language(): Language
+    {
+        return $this->language;
+    }
+
+    public function theme(): Theme
+    {
+        return $this->theme;
+    }
+
+    /** Préférences d'affichage choisies dans l'interface ; la langue sert aussi aux emails. */
+    public function changeDisplayPreferences(Language $language, Theme $theme): void
+    {
+        $this->language = $language;
+        $this->theme = $theme;
     }
 
     public function avatar(): ?string

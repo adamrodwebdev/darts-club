@@ -2,6 +2,8 @@
 
 namespace App\Membership;
 
+use App\Translation\InvalidValue;
+
 /** Saison sportive du club : du 1er septembre au 31 août (« 2026-2027 »). */
 final readonly class Season implements \Stringable
 {
@@ -24,7 +26,7 @@ final readonly class Season implements \Stringable
     public static function fromLabel(string $label): self
     {
         if (1 !== preg_match('/^(\d{4})-(\d{4})$/', $label, $m) || (int) $m[2] !== (int) $m[1] + 1) {
-            throw new \InvalidArgumentException(\sprintf('Saison invalide : "%s" (format attendu : 2026-2027).', $label));
+            throw new InvalidValue('Saison invalide : « %season% » (format attendu : 2026-2027).', ['%season%' => $label]);
         }
 
         return new self((int) $m[1]);

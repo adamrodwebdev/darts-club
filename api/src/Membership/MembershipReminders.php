@@ -4,11 +4,14 @@ namespace App\Membership;
 
 use App\Notification\Category;
 use App\Notification\MemberNotifier;
-use App\Notification\NotificationContent;
 use App\Notification\Recipients;
+use App\Notification\TranslatedNotification;
 use App\Repository\MembershipRepository;
+use App\Translation\LocalizedDate;
+use App\Translation\LocalizedMoney;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Translation\TranslatableMessage;
 
 /** Relance des cotisations en retard (au plus une fois par semaine et par adhérent). */
 final class MembershipReminders
@@ -35,10 +38,13 @@ final class MembershipReminders
             }
 
             $this->notifier->notify(
-                new NotificationContent(
+                new TranslatedNotification(
                     Category::Membership,
-                    \sprintf('Cotisation %s en attente', $season),
-                    \sprintf('Il reste %s à régler (échéance du %s). Contacte la trésorerie pour toute question.', $membership->remaining(), $season->dueDate()->format('d/m/Y')),
+                    new TranslatableMessage('membership.reminder_title', ['%season%' => (string) $season], 'notifications'),
+                    new TranslatableMessage('membership.reminder_body', [
+                        '%amount%' => new LocalizedMoney($membership->remaining()),
+                        '%date%' => new LocalizedDate($season->dueDate(), withTime: false),
+                    ], 'notifications'),
                     '/compte/cotisation',
                 ),
                 Recipients::users($user->getId()),

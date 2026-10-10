@@ -1,7 +1,7 @@
 import { i18n } from '@/i18n'
 import type { ApiClient } from '@/api/ApiClient'
 import { list, obj, str } from '@/models/guards'
-import { Profile } from '@/models/Profile'
+import { Profile, type DisplayPreferences } from '@/models/Profile'
 import type { TwoFactorSetup } from './AuthService'
 
 export interface ProfileChanges {
@@ -15,6 +15,11 @@ export class ProfileService {
 
   async update(changes: ProfileChanges): Promise<Profile> {
     return Profile.parse(await this.api.patch('/api/me', { ...changes }))
+  }
+
+  /** Langue et thème du compte ; la langue sert aussi aux emails et notifications. */
+  async updatePreferences(preferences: DisplayPreferences): Promise<Profile> {
+    return Profile.parse(await this.api.put('/api/me/preferences', { ...preferences }))
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {

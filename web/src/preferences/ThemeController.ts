@@ -20,9 +20,14 @@ export class ThemeController {
     private readonly prefersLight: MediaQueryList | null,
   ) {}
 
-  get preference(): ThemePreference {
+  /** Choix explicite mémorisé sur cet appareil, null si jamais choisi */
+  get stored(): ThemePreference | null {
     const stored = this.storage.get(THEME_STORAGE_KEY)
-    return (THEME_PREFERENCES as readonly string[]).includes(stored ?? '') ? (stored as ThemePreference) : 'system'
+    return (THEME_PREFERENCES as readonly string[]).includes(stored ?? '') ? (stored as ThemePreference) : null
+  }
+
+  get preference(): ThemePreference {
+    return this.stored ?? 'system'
   }
 
   resolve(preference: ThemePreference): Theme {

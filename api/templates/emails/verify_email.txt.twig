@@ -1,7 +1,8 @@
-Salut,
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
 
-Bienvenue au club ! Confirme ton adresse email pour activer ton compte :
+{{ 'verify.intro'|trans }}
 {{ signedUrl }}
 
-Ce lien expire le {{ expiresAt|date('d/m/Y à H:i') }}.
-Si tu n'es pas à l'origine de cette inscription, ignore ce message.
+{{ 'verify.expires'|trans({'%date%': expiresAt|date('d/m/Y H:i', 'Europe/Paris')}) }}
+{{ 'verify.ignore'|trans }}

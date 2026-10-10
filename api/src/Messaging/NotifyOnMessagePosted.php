@@ -5,12 +5,13 @@ namespace App\Messaging;
 use App\Entity\User;
 use App\Notification\Category;
 use App\Notification\MemberNotifier;
-use App\Notification\NotificationContent;
 use App\Notification\Recipients;
+use App\Notification\TranslatedNotification;
 use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Translation\TranslatableMessage;
 
 /** Prévient les autres participants (et les titulaires de la boîte du bureau). */
 #[AsEventListener]
@@ -46,22 +47,25 @@ final class NotifyOnMessagePosted
         }
 
         $this->notifier->notify(
-            new NotificationContent(
+            new TranslatedNotification(
                 Category::Message,
                 self::title($author, $mailbox, $conversation->getSubject()),
-                $message->body()->preview(),
+                new TranslatableMessage('message.body', ['%preview%' => $message->body()->preview()], 'notifications'),
                 '/messages/'.$conversation->getId()->toRfc4122(),
             ),
             Recipients::users(...array_values($recipients)),
         );
     }
 
-    private static function title(User $author, ?Mailbox $mailbox, ?string $subject): string
+    /** « Alice → Trésorerie : Cotisation », « Message de Bob » (tronqué à la livraison) */
+    private static function title(User $author, ?Mailbox $mailbox, ?string $subject): TranslatableMessage
     {
-        $title = null !== $mailbox
-            ? \sprintf('%s → %s', $author->displayName(), $mailbox->label())
-            : \sprintf('Message de %s', $author->displayName());
+        $key = (null !== $mailbox ? 'message.to_mailbox' : 'message.direct').(null !== $subject ? '_with_subject' : '');
+        $parameters = ['%author%' => $author->displayName()->value, '%subject%' => (string) $subject];
+        if (null !== $mailbox) {
+            $parameters['%mailbox%'] = $mailbox;
+        }
 
-        return mb_substr(null !== $subject ? $title.' : '.$subject : $title, 0, 120);
+        return new TranslatableMessage($key, $parameters, 'notifications');
     }
 }

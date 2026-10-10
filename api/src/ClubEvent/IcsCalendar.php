@@ -4,6 +4,7 @@ namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /** Export iCalendar (RFC 5545) : fichier d'un événement ou flux d'abonnement. */
 final class IcsCalendar
@@ -11,11 +12,15 @@ final class IcsCalendar
     public function __construct(
         #[Autowire('%env(FRONTEND_URL)%')]
         private readonly string $frontendUrl,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
-    /** @param list<ClubEvent> $events */
-    public function render(array $events, string $name, \DateTimeImmutable $now): string
+    /**
+     * @param list<ClubEvent> $events
+     * @param string          $locale langue de l'abonné (mentions d'annulation)
+     */
+    public function render(array $events, string $name, \DateTimeImmutable $now, string $locale = 'fr'): string
     {
         $lines = [
             'BEGIN:VCALENDAR',
@@ -31,7 +36,7 @@ final class IcsCalendar
         foreach ($events as $event) {
             $description = $event->getDescription();
             if ($event->isCancelled()) {
-                $description = 'ANNULÉ : '.$event->getCancelReason()."\n\n".$description;
+                $description = $this->translator->trans('calendar.cancelled_reason', ['%reason%' => (string) $event->getCancelReason()], 'exports', $locale)."\n\n".$description;
             }
 
             array_push(
@@ -41,7 +46,7 @@ final class IcsCalendar
                 'DTSTAMP:'.self::utc($now),
                 'DTSTART:'.self::utc($event->getStartsAt()),
                 'DTEND:'.self::utc($event->getEndsAt()),
-                'SUMMARY:'.self::escape(($event->isCancelled() ? '[Annulé] ' : '').$event->getTitle()),
+                'SUMMARY:'.self::escape(($event->isCancelled() ? $this->translator->trans('calendar.cancelled_prefix', [], 'exports', $locale).' ' : '').$event->getTitle()),
                 'LOCATION:'.self::escape($event->getLocation()),
                 'DESCRIPTION:'.self::escape(trim($description)),
                 'URL:'.rtrim($this->frontendUrl, '/').NotifyOnClubEventChanges::link($event),

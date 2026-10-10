@@ -18,7 +18,7 @@ const email = ref('')
 const password = ref('')
 const step = ref<'password' | 'code'>('password')
 const code = ref('')
-const { pending, error, run } = useAsyncAction()
+const { pending, error, errorCode, run } = useAsyncAction()
 const resend = useAsyncAction()
 const resent = ref(false)
 
@@ -35,7 +35,7 @@ const notice = computed(() => {
   return null
 })
 
-const unverified = computed(() => error.value?.includes('non vérifiée') ?? false)
+const unverified = computed(() => errorCode.value === 'email_not_verified')
 
 async function goToRedirect(): Promise<void> {
   const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/compte'

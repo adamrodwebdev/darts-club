@@ -2,6 +2,8 @@
 
 namespace App\ValueObject;
 
+use App\Translation\InvalidValue;
+
 /** Adresse email normalisée (minuscules, sans espaces). */
 final readonly class EmailAddress implements \Stringable
 {
@@ -16,7 +18,7 @@ final readonly class EmailAddress implements \Stringable
         $normalized = mb_strtolower(trim($email));
 
         if ('' === $normalized || false === filter_var($normalized, \FILTER_VALIDATE_EMAIL) || mb_strlen($normalized) > 180) {
-            throw new \InvalidArgumentException(\sprintf('Adresse email invalide : "%s".', $email));
+            throw new InvalidValue('Adresse email invalide : « %email% ».', ['%email%' => $email]);
         }
 
         return new self($normalized);

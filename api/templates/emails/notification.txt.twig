@@ -1,8 +1,9 @@
-[{{ content.category.label }}] {{ content.title }}
+{% trans_default_domain 'emails' %}
+{{ content.labelledTitle }}
 
 {{ content.body }}
 
-Voir sur le site du club : {{ url }}
+{{ 'notification.view'|trans }} : {{ url }}
 
 --
-Gérer mes notifications : {{ preferencesUrl }}
+{{ 'notification.preferences'|trans }} : {{ preferencesUrl }}

@@ -94,7 +94,7 @@ final class AdminController extends AbstractController
 
         $roles = [];
         foreach ($ids as $id) {
-            $roles[] = self::ROLE_IDS[\is_string($id) ? $id : ''] ?? throw new AdministrationException(\sprintf('Rôle inconnu : « %s ».', \is_scalar($id) ? $id : '?'));
+            $roles[] = self::ROLE_IDS[\is_string($id) ? $id : ''] ?? throw new AdministrationException('Rôle inconnu : « %role% ».', null, ['%role%' => \is_scalar($id) ? (string) $id : '?']);
         }
 
         $administration->changeBoardRoles($actor, $member, $roles);

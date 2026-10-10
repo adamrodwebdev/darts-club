@@ -2,8 +2,8 @@
 
 namespace App\Admin;
 
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use App\Translation\UnprocessableException;
 
-final class AdministrationException extends UnprocessableEntityHttpException
+final class AdministrationException extends UnprocessableException
 {
 }

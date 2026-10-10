@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Dto\EmailRequest;
 use App\Dto\Registration;
 use App\Message\SendVerificationEmail;
+use App\Preference\Language;
 use App\Repository\UserRepository;
 use App\Service\UserRegistrar;
 use App\ValueObject\EmailAddress;
@@ -41,7 +42,7 @@ final class RegistrationController extends AbstractController
     ): JsonResponse {
         self::throttle($registrationLimiter, (string) $request->getClientIp());
 
-        $registrar->register($registration);
+        $registrar->register($registration, Language::fromLocale($request->getLocale()));
 
         return $this->accepted();
     }

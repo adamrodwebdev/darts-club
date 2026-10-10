@@ -1,0 +1,17 @@
+# Domaine « notifications » (en), mêmes clés dans chaque langue.
+'event.scheduled': 'New event: %title%'
+'event.rescheduled': 'Time change: %title%'
+'event.cancelled': 'Cancelled: %title%'
+'event.reminder_day': 'Tomorrow: %title%'
+'event.reminder_week': 'In one week: %title%'
+'event.body': '%date% · %location%'
+'event.body_cancelled': "%date% · %location%\nReason: %reason%"
+'membership.reminder_title': '%season% membership fee pending'
+'membership.reminder_body': '%amount% left to pay (due %date%). Contact the treasury with any questions.'
+'membership.paid_title': '%season% membership fee paid'
+'membership.paid_body': 'Thank you! Your %amount% membership fee has been recorded. Your “Paid-up member” badge is active.'
+'message.direct': 'Message from %author%'
+'message.direct_with_subject': 'Message from %author%: %subject%'
+'message.to_mailbox': '%author% → %mailbox%'
+'message.to_mailbox_with_subject': '%author% → %mailbox%: %subject%'
+'message.body': '%preview%'

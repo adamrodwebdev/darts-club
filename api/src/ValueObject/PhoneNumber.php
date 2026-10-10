@@ -2,6 +2,7 @@
 
 namespace App\ValueObject;
 
+use App\Translation\InvalidValue;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -22,11 +23,11 @@ final readonly class PhoneNumber implements \Stringable
         try {
             $number = $util->parse($input, $defaultRegion);
         } catch (NumberParseException $e) {
-            throw new \InvalidArgumentException(\sprintf('Numéro de téléphone invalide : "%s".', $input), previous: $e);
+            throw new InvalidValue('Numéro de téléphone invalide : « %phone% ».', ['%phone%' => $input], $e);
         }
 
         if (!$util->isValidNumber($number)) {
-            throw new \InvalidArgumentException(\sprintf('Numéro de téléphone invalide : "%s".', $input));
+            throw new InvalidValue('Numéro de téléphone invalide : « %phone% ».', ['%phone%' => $input]);
         }
 
         return new self($util->format($number, PhoneNumberFormat::E164));

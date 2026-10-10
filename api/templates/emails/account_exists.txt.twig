@@ -1,6 +1,7 @@
-Salut,
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
 
-Quelqu'un a tenté de créer un compte avec ton adresse, mais tu en as déjà un.
-Me connecter : {{ loginUrl }}
+{{ 'account_exists.intro'|trans }}
+{{ 'account_exists.button'|trans }} : {{ loginUrl }}
 
-Si ce n'était pas toi, tu peux ignorer ce message : ton compte n'a pas été modifié.
+{{ 'account_exists.ignore'|trans }}

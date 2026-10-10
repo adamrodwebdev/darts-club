@@ -1,0 +1,10 @@
+framework:
+    # Français : langue de référence (les messages d'erreur sources sont en français)
+    default_locale: fr
+    enabled_locales: [fr, en]
+    # Langue de la requête : en-tête Accept-Language envoyé par le front (langue de l'interface)
+    set_locale_from_accept_language: true
+    set_content_language_from_locale: true
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+        fallbacks: [fr]

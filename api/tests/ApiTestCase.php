@@ -23,7 +23,8 @@ abstract class ApiTestCase extends WebTestCase
 
     protected function setUp(): void
     {
-        $this->client = self::createClient();
+        // Request::create() annonce « en-us » par défaut : les parcours sont écrits en français
+        $this->client = self::createClient(server: ['HTTP_ACCEPT_LANGUAGE' => 'fr-FR,fr;q=0.9']);
 
         $this->service('cache.rate_limiter', CacheItemPoolInterface::class)->clear();
 

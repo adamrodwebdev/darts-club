@@ -1,0 +1,6 @@
+# Messages de connexion personnalisés. Texte source français = clé ; ce fichier donne la version anglaise.
+'Adresse email non vérifiée.': 'Email address not verified.'
+'Compte suspendu. Contacte le bureau du club.': 'Account suspended. Please contact the club board.'
+'Email du fournisseur invalide.': 'Invalid email from the provider.'
+'Email non vérifié par le fournisseur.': 'Email not verified by the provider.'
+'Identité OAuth invalide.': 'Invalid OAuth identity.'

@@ -9,12 +9,15 @@ import { i18n } from '@/i18n'
 export function useAsyncAction() {
   const pending = ref(false)
   const error = ref<string | null>(null)
+  /** Code d'erreur stable de l'API, pour réagir sans dépendre du texte traduit */
+  const errorCode = ref<string | null>(null)
   const fieldErrors = ref<Record<string, string>>({})
 
   async function run<T>(action: () => Promise<T>): Promise<T | undefined> {
     if (pending.value) return undefined
     pending.value = true
     error.value = null
+    errorCode.value = null
     fieldErrors.value = {}
 
     try {
@@ -22,6 +25,7 @@ export function useAsyncAction() {
     } catch (e) {
       if (e instanceof ApiError) {
         fieldErrors.value = { ...e.violations }
+        errorCode.value = e.code
         const { t } = i18n.global
         if (e.status === 0) error.value = t('errors.network')
         else error.value = Object.keys(e.violations).length > 0 ? t('errors.fields') : e.message
@@ -34,5 +38,5 @@ export function useAsyncAction() {
     }
   }
 
-  return { pending, error, fieldErrors, run }
+  return { pending, error, errorCode, fieldErrors, run }
 }

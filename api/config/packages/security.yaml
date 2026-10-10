@@ -33,6 +33,7 @@ security:
                 username_path: email
                 password_path: password
                 success_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
+                failure_handler: App\Security\JsonLoginFailureHandler
             two_factor:
                 check_path: auth_2fa_check
                 auth_form_path: auth_2fa

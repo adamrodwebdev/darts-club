@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use App\Translation\ErrorMessages;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +19,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 final class TwoFactorCheckThrottle
 {
     public function __construct(
+        private readonly ErrorMessages $messages,
         private readonly RateLimiterFactoryInterface $twoFactorCheckLimiter,
     ) {
     }
@@ -34,7 +36,7 @@ final class TwoFactorCheckThrottle
 
         if (!$limit->isAccepted()) {
             $event->setResponse(new JsonResponse(
-                ['error' => 'Trop de codes incorrects, réessaie dans quelques minutes.'],
+                ['error' => $this->messages->trans('Trop de codes incorrects, réessaie dans quelques minutes.', $request)],
                 Response::HTTP_TOO_MANY_REQUESTS,
                 ['Retry-After' => (string) max(1, $limit->getRetryAfter()->getTimestamp() - time())],
             ));

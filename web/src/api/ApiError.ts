@@ -6,6 +6,8 @@ export class ApiError extends Error {
     readonly status: number,
     message: string,
     readonly violations: Readonly<Record<string, string>> = {},
+    /** Code stable fourni par l'API (« email_not_verified »…), indépendant de la langue */
+    readonly code: string | null = null,
   ) {
     super(message)
     this.name = 'ApiError'
@@ -42,7 +44,9 @@ export class ApiError extends Error {
 
     const message = [data.error, data.detail, data.title].find((m): m is string => typeof m === 'string' && m !== '')
 
-    return new ApiError(status, message ?? ApiError.defaultMessage(status), violations)
+    const code = typeof data.code === 'string' ? data.code : null
+
+    return new ApiError(status, message ?? ApiError.defaultMessage(status), violations, code)
   }
 
   private static defaultMessage(status: number): string {

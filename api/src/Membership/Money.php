@@ -2,6 +2,8 @@
 
 namespace App\Membership;
 
+use App\Translation\InvalidValue;
+
 /** Montant en euros, stocké en centimes (jamais de flottants pour la compta). */
 final readonly class Money implements \Stringable
 {
@@ -28,7 +30,7 @@ final readonly class Money implements \Stringable
     {
         $normalized = str_replace([' ', ','], ['', '.'], trim($amount));
         if (1 !== preg_match('/^(\d{1,6})(?:\.(\d{1,2}))?$/', $normalized, $m)) {
-            throw new \InvalidArgumentException(\sprintf('Montant invalide : "%s".', $amount));
+            throw new InvalidValue('Montant invalide : « %amount% ».', ['%amount%' => $amount]);
         }
 
         return new self((int) $m[1] * 100 + (int) str_pad($m[2] ?? '0', 2, '0'));

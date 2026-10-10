@@ -4,6 +4,7 @@ namespace App\Security\TwoFactor;
 
 use App\Entity\User;
 use App\Profile\ProfileView;
+use App\Translation\ErrorMessages;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Scheb\TwoFactorBundle\Security\Http\Authentication\AuthenticationRequiredHandlerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,6 +24,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationSuccessHandlerI
 final class JsonTwoFactorHandlers implements AuthenticationSuccessHandlerInterface, AuthenticationFailureHandlerInterface, AuthenticationRequiredHandlerInterface
 {
     public function __construct(
+        private readonly ErrorMessages $messages,
         private readonly ProfileView $view,
     ) {
     }
@@ -43,13 +45,13 @@ final class JsonTwoFactorHandlers implements AuthenticationSuccessHandlerInterfa
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
-        return new JsonResponse(['error' => 'Code de vérification incorrect.'], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(['error' => $this->messages->trans('Code de vérification incorrect.', $request)], Response::HTTP_UNAUTHORIZED);
     }
 
     public function onAuthenticationRequired(Request $request, TokenInterface $token): Response
     {
         return new JsonResponse(
-            ['error' => 'Code de double authentification requis.', 'twoFactorRequired' => true],
+            ['error' => $this->messages->trans('Code de double authentification requis.', $request), 'twoFactorRequired' => true],
             Response::HTTP_UNAUTHORIZED,
         );
     }

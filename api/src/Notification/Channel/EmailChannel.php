@@ -30,6 +30,7 @@ final class EmailChannel implements NotificationChannelInterface
 
         $this->mailer->send((new TemplatedEmail())
             ->to($recipient->getEmail())
+            ->locale($recipient->language()->value)
             ->subject($content->labelledTitle())
             ->htmlTemplate('emails/notification.html.twig')
             ->textTemplate('emails/notification.txt.twig')

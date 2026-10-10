@@ -2,6 +2,8 @@
 
 namespace App\Messaging;
 
+use App\Translation\InvalidValue;
+
 /** Texte brut d'un message (jamais interprété comme HTML). */
 final readonly class MessageBody implements \Stringable
 {
@@ -22,7 +24,7 @@ final readonly class MessageBody implements \Stringable
             throw new \InvalidArgumentException('Le message est vide.');
         }
         if ($length > self::MAX) {
-            throw new \InvalidArgumentException(\sprintf('Le message ne doit pas dépasser %d caractères.', self::MAX));
+            throw new InvalidValue('Le message ne doit pas dépasser %max% caractères.', ['%max%' => self::MAX]);
         }
 
         return new self($clean);
