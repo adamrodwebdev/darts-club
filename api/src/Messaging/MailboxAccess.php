@@ -44,7 +44,7 @@ final class MailboxAccess
     public function holdersOf(Mailbox $mailbox): array
     {
         return array_values(array_filter(
-            $this->users->findBy(['verified' => true]),
+            $this->users->findActive(),
             fn (User $user): bool => \in_array($mailbox, $this->mailboxesManagedBy($user), true),
         ));
     }

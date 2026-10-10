@@ -48,9 +48,9 @@
 - À faire : paiement en ligne optionnel (HelloAsso ou Stripe) — webhooks signés, nécessite un compte de l'association
 
 ## 7. Interface président / administration (S5)
-- Gestion des membres et rôles, modération
-- Messagerie présidentielle avec labels `[cotisation, événement, réunion, annulation]` → 1 / sélection / tous
-- Canal d'informations (annonces épinglées, temps réel + push)
+- ✅ Gestion des membres et rôles du bureau, modération (suspension réversible, sessions coupées), journal d'audit
+- ✅ Messagerie présidentielle avec labels `[cotisation, événement, réunion, annulation]` → 1 / sélection / tous
+- ✅ Canal d'informations (annonces épinglées, temps réel + push)
 
 ## 8. Calendrier & événements (S6)
 - Planification, inscriptions, export iCal, rappels J-7 / J-1 (mail + push)

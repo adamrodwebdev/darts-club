@@ -24,10 +24,23 @@ const { unread } = storeToRefs(useNotificationStore())
       </RouterLink>
 
       <ul v-if="user" class="nav">
-        <li v-if="user.canManageTreasury">
+        <!-- Liens du bureau : en-tête à partir de 768 px, sinon dans « Mon compte » -->
+        <li v-if="user.canAdminister" class="nav__item--board">
+          <RouterLink to="/admin" class="nav__link" aria-label="Présidence">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.5-.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            <span class="nav__label">Présidence</span>
+          </RouterLink>
+        </li>
+        <li v-if="user.canManageTreasury" class="nav__item--board">
           <RouterLink to="/tresorerie" class="nav__link" aria-label="Trésorerie">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 7h18v12H3zM3 7l2-3h14l2 3M12 11v4M9 13h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
             <span class="nav__label">Trésorerie</span>
+          </RouterLink>
+        </li>
+        <li>
+          <RouterLink to="/infos" class="nav__link" aria-label="Infos du club">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 5h12v14H6a2 2 0 0 1-2-2zM16 9h4v8a2 2 0 0 1-4 0M7 9h6M7 13h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+            <span class="nav__label">Infos</span>
           </RouterLink>
         </li>
         <li>
@@ -150,7 +163,18 @@ const { unread } = storeToRefs(useNotificationStore())
   text-decoration: none;
 }
 
+.nav__item--board {
+  display: none;
+}
+
 @media (min-width: 768px) {
+  .nav__item--board {
+    display: list-item;
+  }
+}
+
+/* Libellés visibles seulement quand toute la barre tient sur une ligne */
+@media (min-width: 1100px) {
   .nav__label {
     position: static;
     width: auto;

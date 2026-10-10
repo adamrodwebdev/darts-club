@@ -26,6 +26,12 @@ async function logout(): Promise<void> {
       <BaseButton variant="ghost" @click="logout">Se déconnecter</BaseButton>
     </div>
 
+    <!-- Accès bureau (sur mobile, ces liens ne sont pas dans l'en-tête) -->
+    <nav v-if="auth.user?.canAdminister || auth.user?.canManageTreasury" class="board-links" aria-label="Espace bureau">
+      <RouterLink v-if="auth.user?.canAdminister" to="/admin">Présidence →</RouterLink>
+      <RouterLink v-if="auth.user?.canManageTreasury" to="/tresorerie">Trésorerie →</RouterLink>
+    </nav>
+
     <nav class="tabs" aria-label="Sections du compte">
       <RouterLink v-for="tab in tabs" :key="tab.to" :to="tab.to" class="tabs__link" exact-active-class="tabs__link--active">
         {{ tab.label }}
@@ -37,6 +43,24 @@ async function logout(): Promise<void> {
 </template>
 
 <style scoped>
+.board-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.board-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .account__head {
   display: flex;
   flex-wrap: wrap;

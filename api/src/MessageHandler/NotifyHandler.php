@@ -20,7 +20,7 @@ final class NotifyHandler
     public function __invoke(Notify $message): void
     {
         $ids = $message->recipients->allMembers
-            ? $this->users->findVerifiedIds()
+            ? $this->users->findActiveIds()
             : $message->recipients->userIds;
 
         foreach ($ids as $id) {

@@ -104,3 +104,31 @@ test('treasurer records a payment from the treasury screen', async ({ page }) =>
   await expect(page.getByRole('status')).toContainText('Paiement enregistré pour Bob')
   expect(recorded).toMatchObject({ amount: '30.00', method: 'especes' })
 })
+
+test('president broadcasts a labelled message to all members', async ({ page }) => {
+  const president = { ...profile, roles: ['ROLE_PRESIDENT', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: president }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route('**/api/admin/members*', (route) => route.fulfill({ json: { season: '2026-2027', items: [] } }))
+  await page.route('**/api/admin/broadcasts', async (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { items: [], labels: [] } })
+    const draft = route.request().postDataJSON() as { label: string; title: string; body: string; userIds?: string[] }
+    expect(draft.userIds).toBeUndefined()
+    return route.fulfill({
+      status: 201,
+      json: { id: 'b1', label: draft.label, labelText: 'Annulation', title: draft.title, body: draft.body, author: 'Alice', toAllMembers: true, recipientCount: 42, sentAt: '2026-10-15T10:00:00+00:00' },
+    })
+  })
+
+  await page.goto('/connexion?redirect=/admin/diffusion')
+  await page.getByLabel('Email').fill('president@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+
+  await page.getByText('Annulation', { exact: true }).click()
+  await page.getByLabel('Titre').fill('Tournoi annulé')
+  await page.getByLabel('Message').fill('Le tournoi de samedi est reporté.')
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+  await expect(page.getByRole('status')).toContainText('envoyé à 42 adhérent(s)')
+})

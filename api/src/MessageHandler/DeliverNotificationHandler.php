@@ -24,7 +24,7 @@ final class DeliverNotificationHandler
     public function __invoke(DeliverNotification $message): void
     {
         $user = $this->users->find($message->userId);
-        if (null === $user || !$user->isVerified()) {
+        if (null === $user || !$user->isActive()) {
             return;
         }
 

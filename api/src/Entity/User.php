@@ -77,6 +77,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column]
     private bool $totpEnabled = false;
 
+    /** Modération : compte suspendu par le président */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $suspendedAt = null;
+
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $suspensionReason = null;
+
     /**
      * Empreintes SHA-256 des codes de secours non utilisés.
      *
@@ -247,6 +254,50 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $this->totpSecret = null;
         $this->totpEnabled = false;
         $this->backupCodes = [];
+    }
+
+    public function suspend(string $reason): void
+    {
+        $reason = trim($reason);
+        if ('' === $reason) {
+            throw new \InvalidArgumentException('Le motif de suspension est obligatoire.');
+        }
+
+        $this->suspendedAt = new \DateTimeImmutable();
+        $this->suspensionReason = mb_substr($reason, 0, 200);
+    }
+
+    public function reactivate(): void
+    {
+        $this->suspendedAt = null;
+        $this->suspensionReason = null;
+    }
+
+    public function isSuspended(): bool
+    {
+        return null !== $this->suspendedAt;
+    }
+
+    public function suspensionReason(): ?string
+    {
+        return $this->suspensionReason;
+    }
+
+    public function suspendedAt(): ?\DateTimeImmutable
+    {
+        return $this->suspendedAt;
+    }
+
+    /** Peut se connecter, être contacté et notifié. */
+    public function isActive(): bool
+    {
+        return $this->verified && !$this->isSuspended();
+    }
+
+    /** @return list<Role> rôles attribués explicitement (hors ROLE_MEMBER implicite) */
+    public function assignedRoles(): array
+    {
+        return array_values(array_filter(array_map(Role::tryFrom(...), $this->roles)));
     }
 
     public function isBoardMember(): bool
