@@ -5,7 +5,9 @@ framework:
     session:
         cookie_secure: auto
         cookie_httponly: true
-        cookie_samesite: strict
+        # Lax (et non Strict) : le cookie doit revenir lors du retour OAuth.
+        # Les écritures restent protégées par OriginCheckListener.
+        cookie_samesite: lax
         cookie_lifetime: 0
         gc_maxlifetime: 7200
 
@@ -14,6 +16,9 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+        validation:
+            # Pas d'appel à l'API Have I Been Pwned pendant les tests
+            not_compromised_password: false
 
 when@prod:
     framework:
