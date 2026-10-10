@@ -38,6 +38,8 @@ abstract class ApiTestCase extends WebTestCase
             ->getPasswordHasher(User::class);
 
         $user = User::register(EmailAddress::fromString($email), $hasher->hash(self::PASSWORD));
+        // Donnée de test : pas d'email de vérification pour les comptes préexistants
+        $user->releaseEvents();
         if ($verified) {
             $user->markVerified();
         }

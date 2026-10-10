@@ -8,6 +8,9 @@ services:
       MESSENGER_TRANSPORT_DSN: redis://redis:6379/messages
       MESSENGER_FAILED_TRANSPORT_DSN: redis://redis:6379/failed
       MAILER_DSN: smtp://mailer:1025
+      MERCURE_URL: http://mercure/.well-known/mercure
+      MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL:-http://localhost:3000/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       SERVER_NAME: ${SERVER_NAME:-localhost}
     volumes:
       - caddy_data:/data
@@ -35,6 +38,20 @@ services:
     volumes:
       - database_data:/var/lib/postgresql/data
 
+  mercure:
+    image: dunglas/mercure:v0.21
+    environment:
+      SERVER_NAME: ":80"
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins ${FRONTEND_URL:-http://localhost:5173}
+    ports:
+      - "3000:80"
+    volumes:
+      - mercure_data:/data
+      - mercure_config:/config
+
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
@@ -46,3 +63,5 @@ volumes:
   caddy_config:
   database_data:
   redis_data:
+  mercure_data:
+  mercure_config:
