@@ -130,7 +130,7 @@ final class MessagingTest extends ApiTestCase
         $this->client->request('GET', '/api/members?q=bo');
         $items = $this->items();
         self::assertCount(1, $items);
-        self::assertSame(['id', 'displayName', 'avatarUrl'], array_keys($items[0]));
+        self::assertSame(['id', 'displayName', 'avatarUrl', 'badges'], array_keys($items[0]));
     }
 
     public function testDeletedAuthorIsAnonymized(): void

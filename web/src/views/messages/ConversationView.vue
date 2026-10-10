@@ -2,6 +2,7 @@
 import { nextTick, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
+import MemberBadges from '@/components/MemberBadges.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -79,6 +80,7 @@ onUnmounted(stop)
         <div class="bubble__content">
           <p class="bubble__meta">
             <strong v-if="!m.mine">{{ m.author.displayName }}</strong>
+            <MemberBadges v-if="!m.mine" :badges="m.author.badges" compact />
             <RelativeTime :date="m.at" />
           </p>
           <!-- Texte brut : interpolation Vue échappée, jamais de v-html -->

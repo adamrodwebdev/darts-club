@@ -2,6 +2,7 @@
 import { ref, useTemplateRef } from 'vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import MemberBadges from '@/components/MemberBadges.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Profile } from '@/models/Profile'
@@ -46,6 +47,7 @@ async function removeAvatar(): Promise<void> {
     <section class="card avatar-card" aria-labelledby="avatar-title">
       <h2 id="avatar-title">Avatar</h2>
       <UserAvatar :name="auth.user?.displayName ?? ''" :src="auth.user?.avatarUrl" :size="112" />
+      <MemberBadges :badges="auth.user?.badges ?? []" />
       <div class="avatar-actions">
         <label class="upload">
           <input ref="file" type="file" accept="image/jpeg,image/png,image/webp" class="visually-hidden" @change="onFile" />

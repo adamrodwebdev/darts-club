@@ -1,9 +1,11 @@
+import { parseBadges, type Badge } from './Badge'
 import { bool, list, num, obj, optStr, str } from './guards'
 
 export interface Member {
   id: string | null
   displayName: string
   avatarUrl: string | null
+  badges: Badge[]
 }
 
 export interface Mailbox {
@@ -13,7 +15,7 @@ export interface Mailbox {
 
 export function parseMember(value: unknown): Member {
   const d = obj(value, 'adhérent')
-  return { id: optStr(d.id), displayName: str(d.displayName), avatarUrl: optStr(d.avatarUrl) }
+  return { id: optStr(d.id), displayName: str(d.displayName), avatarUrl: optStr(d.avatarUrl), badges: parseBadges(d.badges) }
 }
 
 function parseMailbox(value: unknown): Mailbox {

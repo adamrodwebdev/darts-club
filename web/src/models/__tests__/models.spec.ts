@@ -47,3 +47,20 @@ describe('ConversationSummary.title', () => {
     expect(board.title).toBe('Présidence · Cotisation')
   })
 })
+
+describe('Badges & cotisations', () => {
+  it('keeps known badges only', async () => {
+    const { parseBadges } = await import('../Badge')
+    expect(parseBadges([{ id: 'cotisant', label: 'Cotisant' }, { id: 'inconnu', label: '?' }])).toEqual([
+      { id: 'cotisant', label: 'Cotisant' },
+    ])
+    expect(parseBadges(undefined)).toEqual([])
+  })
+
+  it('computes the club season like the API', async () => {
+    const { currentSeason, formatEuro } = await import('../Membership')
+    expect(currentSeason(new Date('2026-09-01T10:00:00'))).toBe('2026-2027')
+    expect(currentSeason(new Date('2026-08-31T10:00:00'))).toBe('2025-2026')
+    expect(formatEuro('30.50').replace(/\s/g, ' ')).toBe('30,50 €')
+  })
+})

@@ -41,9 +41,11 @@
 - Messagerie membre ↔ membre et membre ↔ bureau (boîtes de rôle : secrétaire, trésorier, président)
 
 ## 6. Cotisations & trésorerie (S4)
-- Suivi des cotisations (saison, statut, échéances), relances auto (`MembershipExpiring`, Scheduler)
-- Interface trésorier : encaissements, export CSV/PDF, tableau de bord
-- Paiement en ligne optionnel (Stripe/HelloAsso) — webhooks signés
+- ✅ Suivi des cotisations (saison sept. → août, statut, échéance), relances auto hebdomadaires (Scheduler)
+- ✅ Interface trésorier : encaissements, annulations motivées, export CSV, tableau de bord
+- ✅ Badges : « Cotisant » (saison en cours payée), Président, Trésorier, Secrétaire
+- À faire : export PDF (reçu de cotisation / attestation fiscale)
+- À faire : paiement en ligne optionnel (HelloAsso ou Stripe) — webhooks signés, nécessite un compte de l'association
 
 ## 7. Interface président / administration (S5)
 - Gestion des membres et rôles, modération

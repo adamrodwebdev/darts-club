@@ -1,3 +1,4 @@
+import { parseBadges, type Badge } from './Badge'
 import { bool, obj, optStr, str, strList } from './guards'
 
 export const BOARD_ROLES = ['ROLE_SECRETARY', 'ROLE_TREASURER', 'ROLE_PRESIDENT', 'ROLE_ADMIN'] as const
@@ -14,6 +15,7 @@ export class Profile {
     readonly twoFactorEnabled: boolean,
     /** Membre du bureau sans 2FA : fonctions du club bloquées */
     readonly twoFactorSetupRequired: boolean,
+    readonly badges: readonly Badge[] = [],
   ) {}
 
   static parse(value: unknown): Profile {
@@ -28,11 +30,17 @@ export class Profile {
       bool(d.hasPassword),
       bool(d.twoFactorEnabled),
       bool(d.twoFactorSetupRequired),
+      parseBadges(d.badges),
     )
   }
 
   get initials(): string {
     return initialsOf(this.displayName)
+  }
+
+  /** Accès à la trésorerie (trésorier, ou président / admin par hiérarchie) */
+  get canManageTreasury(): boolean {
+    return ['ROLE_TREASURER', 'ROLE_PRESIDENT', 'ROLE_ADMIN'].some((role) => this.roles.includes(role))
   }
 
   get isBoardMember(): boolean {

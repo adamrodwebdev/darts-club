@@ -15,16 +15,16 @@ final class AuthController extends AbstractController
 {
     /** Atteint uniquement après authentification réussie par json_login. */
     #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login(#[CurrentUser] User $user): JsonResponse
+    public function login(#[CurrentUser] User $user, ProfileView $view): JsonResponse
     {
-        return $this->me($user);
+        return $this->me($user, $view);
     }
 
     #[Route('/me', name: 'me', methods: ['GET'])]
     #[IsGranted('ROLE_MEMBER')]
-    public function me(#[CurrentUser] User $user): JsonResponse
+    public function me(#[CurrentUser] User $user, ProfileView $view): JsonResponse
     {
-        return $this->json(ProfileView::of($user));
+        return $this->json($view->of($user));
     }
 
     /** Intercepté par le pare-feu (logout). */

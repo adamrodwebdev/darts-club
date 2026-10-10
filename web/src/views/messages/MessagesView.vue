@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import MemberBadges from '@/components/MemberBadges.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -79,6 +80,7 @@ onUnmounted(stop)
         <div v-if="recipient" class="chosen">
           <UserAvatar :name="recipient.displayName" :src="recipient.avatarUrl" :size="32" />
           <strong>{{ recipient.displayName }}</strong>
+          <MemberBadges :badges="recipient.badges" />
           <BaseButton variant="ghost" @click="recipient = null">Changer</BaseButton>
         </div>
         <template v-else>
@@ -88,6 +90,7 @@ onUnmounted(stop)
               <button type="button" class="result" role="option" :aria-selected="false" @click="recipient = m">
                 <UserAvatar :name="m.displayName" :src="m.avatarUrl" :size="32" />
                 {{ m.displayName }}
+                <MemberBadges :badges="m.badges" compact />
               </button>
             </li>
           </ul>
@@ -117,7 +120,7 @@ onUnmounted(stop)
         <RouterLink :to="`/messages/${c.id}`" class="conversation" :class="{ 'conversation--unread': c.unread > 0 }">
           <UserAvatar :name="c.counterpart?.displayName ?? c.mailbox?.label ?? 'Bureau'" :src="c.counterpart?.avatarUrl" :size="44" />
           <span class="conversation__main">
-            <span class="conversation__title">{{ c.title }}</span>
+            <span class="conversation__title">{{ c.title }} <MemberBadges v-if="c.counterpart" :badges="c.counterpart.badges" compact /></span>
             <span v-if="c.lastMessage" class="conversation__preview">{{ c.lastMessage.preview }}</span>
           </span>
           <span class="conversation__meta">

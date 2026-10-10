@@ -5,24 +5,30 @@ namespace App\Messaging;
 use App\Entity\Conversation;
 use App\Entity\Message;
 use App\Entity\User;
+use App\Membership\MemberBadges;
+use App\Profile\ProfileView;
 
 /** Représentations JSON de la messagerie (aucun email exposé entre adhérents). */
 final class MessagingView
 {
-    /** @return array{id: string, displayName: string, avatarUrl: ?string} */
-    public static function member(User $user): array
-    {
-        $id = $user->getId()->toRfc4122();
+    public function __construct(
+        private readonly MemberBadges $badges,
+    ) {
+    }
 
+    /** @return array{id: string, displayName: string, avatarUrl: ?string, badges: list<array{id: string, label: string}>} */
+    public function member(User $user): array
+    {
         return [
-            'id' => $id,
+            'id' => $user->getId()->toRfc4122(),
             'displayName' => $user->displayName()->value,
-            'avatarUrl' => null !== $user->avatar() ? '/api/users/'.$id.'/avatar?v='.substr((string) $user->avatar(), 0, 8) : null,
+            'avatarUrl' => ProfileView::avatarUrl($user),
+            'badges' => $this->badges->present($user),
         ];
     }
 
     /** @return array<string, mixed> */
-    public static function conversation(Conversation $conversation, User $viewer, ?Message $last, int $unread): array
+    public function conversation(Conversation $conversation, User $viewer, ?Message $last, int $unread): array
     {
         $mailbox = $conversation->getMailbox();
         $counterpart = $conversation->counterpartOf($viewer);
@@ -31,14 +37,14 @@ final class MessagingView
             'id' => $conversation->getId()->toRfc4122(),
             'mailbox' => null !== $mailbox ? ['id' => $mailbox->value, 'label' => $mailbox->label()] : null,
             'subject' => $conversation->getSubject(),
-            'with' => null !== $counterpart ? self::member($counterpart) : null,
+            'with' => null !== $counterpart ? $this->member($counterpart) : null,
             'lastMessage' => null !== $last ? ['preview' => $last->body()->preview(80), 'at' => $last->getCreatedAt()->format(\DATE_ATOM)] : null,
             'unread' => $unread,
         ];
     }
 
     /** @return array<string, mixed> */
-    public static function message(Message $message, User $viewer): array
+    public function message(Message $message, User $viewer): array
     {
         $author = $message->getAuthor();
 
@@ -47,7 +53,9 @@ final class MessagingView
             'body' => $message->body()->value,
             'at' => $message->getCreatedAt()->format(\DATE_ATOM),
             'mine' => $message->isFrom($viewer),
-            'author' => null !== $author ? self::member($author) : ['id' => null, 'displayName' => 'Ancien adhérent', 'avatarUrl' => null],
+            'author' => null !== $author
+                ? $this->member($author)
+                : ['id' => null, 'displayName' => 'Ancien adhérent', 'avatarUrl' => null, 'badges' => []],
         ];
     }
 }

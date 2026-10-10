@@ -31,7 +31,14 @@ final class DomainEventPublisher
     {
         $uow = $args->getObjectManager()->getUnitOfWork();
 
-        foreach ([...$uow->getScheduledEntityInsertions(), ...$uow->getScheduledEntityUpdates()] as $entity) {
+        // Entités gérées + nouvelles : un agrégat peut enregistrer un événement
+        // sans qu'aucune de ses colonnes ne change (ex. ajout d'un paiement)
+        $entities = $uow->getScheduledEntityInsertions();
+        foreach ($uow->getIdentityMap() as $managed) {
+            array_push($entities, ...array_values($managed));
+        }
+
+        foreach ($entities as $entity) {
             if ($entity instanceof RecordsDomainEvents) {
                 array_push($this->pending, ...$entity->releaseEvents());
             }
