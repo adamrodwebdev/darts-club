@@ -11,7 +11,7 @@ chaque fusion sur `main` avec une CI verte déploie automatiquement la nouvelle 
 | Élément | Recommandation | Coût |
 |---|---|---|
 | Serveur | Hetzner CX22 (2 vCPU, 4 Go, Allemagne/Finlande) ou OVH VPS-1 (France), Debian 12 | ~4 à 6 €/mois |
-| Domaine | `skulldarts71.fr` (à confirmer) chez OVH, Gandi… | ~7 €/an |
+| Domaine | `skulldarts71.fr` (à réserver chez OVH, Gandi… si ce n’est pas déjà fait) | ~7 €/an |
 | Emails | Compte Brevo gratuit (300 emails/jour) | 0 € |
 | Sonde | UptimeRobot gratuit (vérifie `/api/health` toutes les 5 min) | 0 € |
 
