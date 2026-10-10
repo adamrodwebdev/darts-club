@@ -1,0 +1,138 @@
+import { parseMember, type Member } from './Conversation'
+import { bool, list, num, obj, optStr, str, type Json } from './guards'
+
+export class EventSummary {
+  constructor(
+    readonly id: string,
+    readonly title: string,
+    readonly location: string,
+    readonly startsAt: Date,
+    readonly endsAt: Date,
+    readonly season: string,
+    readonly cancelled: boolean,
+    readonly cancelReason: string | null,
+    readonly capacity: number | null,
+    readonly registered: number,
+    readonly isRegistered: boolean,
+    readonly full: boolean,
+    readonly started: boolean,
+    readonly past: boolean,
+    readonly hasSummary: boolean,
+  ) {}
+
+  static parse(value: unknown): EventSummary {
+    return EventSummary.fromJson(obj(value, 'événement'))
+  }
+
+  protected static fromJson(d: Json): EventSummary {
+    const capacity = d.capacity === null ? null : num(d.capacity)
+    return new EventSummary(
+      str(d.id),
+      str(d.title),
+      str(d.location),
+      new Date(str(d.startsAt)),
+      new Date(str(d.endsAt)),
+      str(d.season),
+      str(d.status) === 'annule',
+      optStr(d.cancelReason),
+      capacity,
+      num(d.registered),
+      bool(d.isRegistered),
+      bool(d.full),
+      bool(d.started),
+      bool(d.past),
+      bool(d.hasSummary),
+    )
+  }
+
+  get placesLeft(): number | null {
+    return this.capacity === null ? null : Math.max(0, this.capacity - this.registered)
+  }
+
+  get canRegister(): boolean {
+    return !this.cancelled && !this.started && !this.isRegistered && !this.full
+  }
+}
+
+export interface EventPhoto {
+  id: string
+  thumbUrl: string
+  largeUrl: string
+  width: number
+  height: number
+  caption: string | null
+  uploader: string
+  mine: boolean
+}
+
+export interface EventPost {
+  id: string
+  body: string
+  at: Date
+  mine: boolean
+  author: Member
+}
+
+export interface EventDetail {
+  summary: EventSummary
+  description: string
+  organizer: string
+  report: string | null
+  canManage: boolean
+  photos: EventPhoto[]
+  posts: EventPost[]
+  participants: Member[] | null
+}
+
+export function parseEventDetail(value: unknown): EventDetail {
+  const d = obj(value, 'événement')
+  return {
+    summary: EventSummary.parse(d),
+    description: str(d.description),
+    organizer: str(d.organizer),
+    report: optStr(d.summary),
+    canManage: bool(d.canManage),
+    photos: list(d.photos, (p) => {
+      const x = obj(p, 'photo')
+      return {
+        id: str(x.id),
+        thumbUrl: str(x.thumbUrl),
+        largeUrl: str(x.largeUrl),
+        width: num(x.width),
+        height: num(x.height),
+        caption: optStr(x.caption),
+        uploader: str(x.uploader),
+        mine: bool(x.mine),
+      }
+    }),
+    posts: list(d.posts, (p) => {
+      const x = obj(p, 'post')
+      return { id: str(x.id), body: str(x.body), at: new Date(str(x.at)), mine: bool(x.mine), author: parseMember(x.author) }
+    }),
+    participants: d.participants === null ? null : list(d.participants, parseMember),
+  }
+}
+
+const dateFormat = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
+const dayFormat = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', timeZone: 'Europe/Paris' })
+const monthFormat = new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'Europe/Paris' })
+
+export function formatEventDate(date: Date): string {
+  const text = dateFormat.format(date)
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+export function dateBlock(date: Date): { day: string; month: string } {
+  return { day: dayFormat.format(date), month: monthFormat.format(date).replace('.', '') }
+}
+
+/** Valeur d'un <input type="datetime-local"> (heure locale) → ISO 8601 UTC pour l'API */
+export function localInputToIso(value: string): string {
+  return new Date(value).toISOString()
+}
+
+/** Date → valeur d'un <input type="datetime-local"> en heure locale */
+export function toLocalInput(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}

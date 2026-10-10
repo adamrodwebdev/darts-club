@@ -64,3 +64,17 @@ describe('Badges & cotisations', () => {
     expect(formatEuro('30.50').replace(/\s/g, ' ')).toBe('30,50 €')
   })
 })
+
+describe('ClubEvent', () => {
+  it('parses an event and derives registration state', async () => {
+    const { EventSummary, dateBlock } = await import('../ClubEvent')
+    const event = EventSummary.parse({
+      id: 'e1', title: 'Tournoi', location: 'Lyon', startsAt: '2026-10-24T12:00:00+00:00', endsAt: '2026-10-24T18:00:00+00:00',
+      season: '2026-2027', status: 'prevu', cancelReason: null, capacity: 16, registered: 15, isRegistered: false,
+      full: false, started: false, past: false, hasSummary: false,
+    })
+    expect(event.placesLeft).toBe(1)
+    expect(event.canRegister).toBe(true)
+    expect(dateBlock(event.startsAt)).toEqual({ day: '24', month: 'oct' })
+  })
+})

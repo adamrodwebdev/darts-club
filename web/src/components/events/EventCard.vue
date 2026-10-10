@@ -1,0 +1,111 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { dateBlock, formatEventDate, type EventSummary } from '@/models/ClubEvent'
+
+const props = defineProps<{ event: EventSummary }>()
+const block = computed(() => dateBlock(props.event.startsAt))
+</script>
+
+<template>
+  <RouterLink :to="`/evenements/${event.id}`" class="card-link" :class="{ 'card-link--cancelled': event.cancelled }">
+    <span class="date" aria-hidden="true">
+      <span class="date__day">{{ block.day }}</span>
+      <span class="date__month">{{ block.month }}</span>
+    </span>
+    <span class="info">
+      <span class="info__title">
+        <span v-if="event.cancelled" class="tag tag--danger">Annulé</span>
+        {{ event.title }}
+      </span>
+      <span class="muted">{{ formatEventDate(event.startsAt) }} · {{ event.location }}</span>
+      <span class="tags">
+        <span v-if="event.isRegistered" class="tag tag--ok">Inscrit(e)</span>
+        <span v-else-if="event.full && !event.past" class="tag">Complet</span>
+        <span v-else-if="event.placesLeft !== null && !event.past" class="tag">{{ event.placesLeft }} place(s)</span>
+        <span v-if="event.past && event.hasSummary" class="tag">Résumé</span>
+      </span>
+    </span>
+  </RouterLink>
+</template>
+
+<style scoped>
+.card-link {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.card-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+}
+
+.card-link--cancelled {
+  opacity: 0.75;
+}
+
+.date {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  line-height: 1;
+}
+
+.date__day {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.date__month {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.info {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.info__title {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tag {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tag--ok {
+  color: var(--color-success);
+}
+
+.tag--danger {
+  color: var(--color-danger);
+}
+</style>

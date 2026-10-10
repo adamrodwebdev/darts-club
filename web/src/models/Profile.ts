@@ -43,6 +43,11 @@ export class Profile {
     return ['ROLE_TREASURER', 'ROLE_PRESIDENT', 'ROLE_ADMIN'].some((role) => this.roles.includes(role))
   }
 
+  /** Organisation des événements (secrétariat, ou président / admin par hiérarchie) */
+  get canOrganizeEvents(): boolean {
+    return ['ROLE_SECRETARY', 'ROLE_PRESIDENT', 'ROLE_ADMIN'].some((role) => this.roles.includes(role))
+  }
+
   /** Interface de la présidence (président, ou admin par hiérarchie) */
   get canAdminister(): boolean {
     return ['ROLE_PRESIDENT', 'ROLE_ADMIN'].some((role) => this.roles.includes(role))
