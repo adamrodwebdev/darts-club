@@ -53,6 +53,7 @@ jobs:
       - name: Migrations + validation du schéma (PostgreSQL)
         env:
           MESSENGER_TRANSPORT_DSN: in-memory://
+          MESSENGER_FAILED_TRANSPORT_DSN: in-memory://
         run: |
           bin/console doctrine:database:create --if-not-exists
           bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
