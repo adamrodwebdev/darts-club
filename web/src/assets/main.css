@@ -92,6 +92,14 @@ main:focus {
   outline: none;
 }
 
+/* Le pied de page reste sous la ligne de flottaison pendant le chargement
+   des pages (code chargé à la demande) : aucun décalage de mise en page */
+main {
+  display: block;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 /* Mise en page */
 .page {
   max-width: var(--max-width);

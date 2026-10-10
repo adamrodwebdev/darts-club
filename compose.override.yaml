@@ -5,14 +5,27 @@ services:
       target: dev
     volumes:
       - ./api:/app
-    environment:
+    environment: &dev-env
       APP_ENV: dev
+      FRONTEND_URL: http://localhost:5173
+      TRUSTED_ORIGINS: http://localhost:5173
+      DEFAULT_URI: http://localhost:5173
+      MERCURE_PUBLIC_URL: http://localhost:3000/.well-known/mercure
 
   worker:
     build:
       target: dev
     volumes:
       - ./api:/app
+    environment: *dev-env
+
+  # Dev : front servi par Vite (localhost:5173), hub exposé sur le port 3000
+  mercure:
+    environment:
+      MERCURE_EXTRA_DIRECTIVES: |
+        cors_origins http://localhost:5173
+    ports:
+      - "3000:80"
 
   database:
     ports:
