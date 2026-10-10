@@ -69,9 +69,11 @@ final class AuthTest extends ApiTestCase
     {
         $this->createUser('member@example.com');
         $this->login('member@example.com', self::PASSWORD);
+        self::assertResponseCookieValueSame('dc_session', '1');
 
         $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
         self::assertResponseStatusCodeSame(204);
+        self::assertSame('', $this->client->getCookieJar()->get('dc_session')?->getValue() ?? '');
 
         $this->client->request('GET', '/api/auth/me');
         self::assertResponseStatusCodeSame(401);
