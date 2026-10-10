@@ -2,19 +2,19 @@
 
 namespace App\Entity;
 
+use App\Enum\Role;
 use App\Repository\UserRepository;
+use App\ValueObject\EmailAddress;
+use App\ValueObject\PhoneNumber;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -23,20 +23,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /** @var non-empty-string */
     #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank]
-    #[Assert\Email(mode: Assert\Email::VALIDATION_MODE_STRICT)]
-    #[Assert\Length(max: 180)]
     private string $email;
 
     /** Format E.164 */
     #[ORM\Column(length: 20, nullable: true)]
-    #[Assert\Regex('/^\+[1-9]\d{6,14}$/')]
     private ?string $phone = null;
 
-    /** @var list<string> */
+    /**
+     * Rôles accordés en plus de ROLE_MEMBER.
+     *
+     * @var list<string>
+     */
     #[ORM\Column(type: Types::JSON)]
     private array $roles = [];
 
+    /** Hash Argon2id ; vide pour un compte créé via OAuth (aucun mot de passe utilisable). */
     #[ORM\Column]
     private string $password = '';
 
@@ -46,16 +47,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(string $email)
+    private function __construct(EmailAddress $email)
     {
-        $email = mb_strtolower(trim($email));
-        if ('' === $email) {
-            throw new \InvalidArgumentException('Email requis.');
-        }
-
         $this->id = Uuid::v7();
-        $this->email = $email;
+        $this->email = $email->value;
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    /** Inscription classique : le compte reste inactif jusqu'à la vérification de l'email. */
+    public static function register(EmailAddress $email, string $hashedPassword, ?PhoneNumber $phone = null): self
+    {
+        $user = new self($email);
+        $user->password = $hashedPassword;
+        $user->phone = $phone?->e164;
+
+        return $user;
+    }
+
+    /** Inscription via un fournisseur OAuth qui a déjà vérifié l'email. */
+    public static function registerViaOAuth(EmailAddress $email): self
+    {
+        $user = new self($email);
+        $user->verified = true;
+
+        return $user;
     }
 
     public function getId(): Uuid
@@ -80,25 +95,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->phone;
     }
 
-    public function setPhone(?string $phone): static
+    public function changePhone(?PhoneNumber $phone): void
     {
-        $this->phone = $phone;
-
-        return $this;
+        $this->phone = $phone?->e164;
     }
 
     /** @return list<string> */
     public function getRoles(): array
     {
-        return array_values(array_unique([...$this->roles, 'ROLE_MEMBER']));
+        return array_values(array_unique([...$this->roles, Role::Member->value]));
     }
 
-    /** @param list<string> $roles */
-    public function setRoles(array $roles): static
+    public function hasRole(Role $role): bool
     {
-        $this->roles = $roles;
+        return \in_array($role->value, $this->getRoles(), true);
+    }
 
-        return $this;
+    public function grantRole(Role $role): void
+    {
+        if (Role::Member !== $role && !\in_array($role->value, $this->roles, true)) {
+            $this->roles[] = $role->value;
+        }
+    }
+
+    public function revokeRole(Role $role): void
+    {
+        $this->roles = array_values(array_filter($this->roles, static fn (string $r): bool => $r !== $role->value));
     }
 
     public function getPassword(): string
@@ -106,11 +128,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function changePassword(string $hashedPassword): void
     {
-        $this->password = $password;
-
-        return $this;
+        $this->password = $hashedPassword;
     }
 
     public function isVerified(): bool
@@ -118,11 +138,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->verified;
     }
 
-    public function markVerified(): static
+    public function markVerified(): void
     {
         $this->verified = true;
-
-        return $this;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

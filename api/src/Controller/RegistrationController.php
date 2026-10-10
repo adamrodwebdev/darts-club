@@ -7,6 +7,7 @@ use App\Dto\Registration;
 use App\Message\SendVerificationEmail;
 use App\Repository\UserRepository;
 use App\Service\UserRegistrar;
+use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -80,9 +81,10 @@ final class RegistrationController extends AbstractController
         Request $request,
         RateLimiterFactoryInterface $verificationResendLimiter,
     ): JsonResponse {
-        self::throttle($verificationResendLimiter, $request->getClientIp().'|'.mb_strtolower($payload->email));
+        $email = EmailAddress::fromString($payload->email);
+        self::throttle($verificationResendLimiter, $request->getClientIp().'|'.$email);
 
-        $user = $users->findOneBy(['email' => mb_strtolower(trim($payload->email))]);
+        $user = $users->findOneByEmail($email);
         if (null !== $user && !$user->isVerified()) {
             $bus->dispatch(new SendVerificationEmail($user->getId()->toRfc4122()));
         }

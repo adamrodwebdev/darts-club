@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Event\UserRegistered;
 use App\Repository\OAuthIdentityRepository;
 use App\Repository\UserRepository;
+use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
@@ -37,14 +38,22 @@ final class OAuthUserResolver
             throw new CustomUserMessageAuthenticationException('Email non vérifié par le fournisseur.');
         }
 
-        $user = $this->users->findOneBy(['email' => mb_strtolower(trim($email))]);
+        try {
+            $address = EmailAddress::fromString($email);
+        } catch (\InvalidArgumentException) {
+            throw new CustomUserMessageAuthenticationException('Email du fournisseur invalide.');
+        }
+
+        $user = $this->users->findOneByEmail($address);
         $isNew = null === $user;
 
-        if ($isNew) {
-            $user = new User($email);
+        if (null === $user) {
+            $user = User::registerViaOAuth($address);
             $this->em->persist($user);
+        } else {
+            // Le fournisseur prouve la possession de l'adresse
+            $user->markVerified();
         }
-        $user->markVerified();
 
         $this->em->persist(new OAuthIdentity($user, $provider, $subject));
         $this->em->flush();

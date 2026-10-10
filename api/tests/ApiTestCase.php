@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\Entity\User;
+use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Psr\Cache\CacheItemPoolInterface;
@@ -36,8 +37,7 @@ abstract class ApiTestCase extends WebTestCase
         $hasher = $this->service(PasswordHasherFactoryInterface::class, PasswordHasherFactoryInterface::class)
             ->getPasswordHasher(User::class);
 
-        $user = new User($email);
-        $user->setPassword($hasher->hash(self::PASSWORD));
+        $user = User::register(EmailAddress::fromString($email), $hasher->hash(self::PASSWORD));
         if ($verified) {
             $user->markVerified();
         }
