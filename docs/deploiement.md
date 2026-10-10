@@ -65,14 +65,19 @@ docker run --rm $img php bin/console app:push:generate-vapid-keys   # VAPID_PUBL
 ## 5. Emails avec Brevo
 
 1. Créer le compte Brevo de l'association, puis **Expéditeurs, domaines → Domaines → Ajouter** `skulldarts71.fr`.
-2. Ajouter chez le registraire les enregistrements DNS proposés (code Brevo, **DKIM**, **DMARC**) et l'inclusion **SPF** ; attendre la validation.
-3. **SMTP & API → Clés SMTP → Générer** ; noter l'identifiant SMTP (de la forme `xxxx@smtp-brevo.com`).
-4. Dans `.env`, en remplaçant `@` de l'identifiant par `%40` :
+2. Ajouter chez le registraire les enregistrements DNS proposés (code Brevo, **DKIM**, **DMARC**) ; attendre la validation (« Authentifié »).
+3. **SMTP et API → Clés SMTP → Générer** une clé (elle n'est affichée qu'une fois).
+4. Sur un terminal de l'ordinateur du bureau :
+   ```bash
+   ssh -t deploy@SERVEUR /opt/skull-darts-71/deploy/set-mailer.sh --visible
    ```
-   MAILER_DSN=smtp://xxxx%40smtp-brevo.com:CLE_SMTP@smtp-relay.brevo.com:587
-   MAILER_FROM=no-reply@skulldarts71.fr
-   ```
-5. Vérifier la délivrabilité après le premier déploiement avec [mail-tester.com](https://www.mail-tester.com) (viser ≥ 9/10).
+   Le script nettoie le collage (clé collée deux fois, espaces), **teste la clé auprès de Brevo**,
+   ne modifie rien si elle est refusée, sinon l'enregistre dans `.env` et redéploie.
+   Sans `--visible`, la saisie est invisible et un aperçu masqué permet de vérifier le collage.
+   Effacer ensuite l'écran du terminal (`cls` / `clear`).
+   `MAILER_FROM=no-reply@skulldarts71.fr` (expéditeur à déclarer et vérifier dans Brevo).
+5. **Sécurité › IP autorisées** : autoriser l'IPv4 et l'IPv6 du serveur, puis activer le blocage pour les clés SMTP.
+6. Vérifier la délivrabilité après le premier déploiement avec [mail-tester.com](https://www.mail-tester.com) (viser ≥ 9/10).
 
 ## 6. GitHub : publication de l'image et déploiement automatique
 
