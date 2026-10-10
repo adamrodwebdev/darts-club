@@ -29,7 +29,7 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    command: ["php", "bin/console", "messenger:consume", "async", "scheduler_membership", "--time-limit=3600", "--memory-limit=256M"]
+    command: ["php", "bin/console", "messenger:consume", "async", "scheduler_default", "--time-limit=3600", "--memory-limit=256M"]
     environment: *app-env
     restart: unless-stopped
     depends_on:

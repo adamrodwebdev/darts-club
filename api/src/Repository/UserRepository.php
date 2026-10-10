@@ -25,6 +25,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['email' => $email->value]);
     }
 
+    public function findOneByCalendarToken(string $token): ?User
+    {
+        return 1 === preg_match('/^[a-f0-9]{48}$/', $token)
+            ? $this->findOneBy(['calendarTokenHash' => hash('sha256', $token)])
+            : null;
+    }
+
     /** @return list<User> comptes vérifiés et non suspendus */
     public function findActive(): array
     {

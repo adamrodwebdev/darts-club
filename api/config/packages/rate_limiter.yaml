@@ -20,3 +20,7 @@ framework:
             policy: fixed_window
             limit: 5
             interval: '5 minutes'
+        photo_upload:
+            policy: sliding_window
+            limit: 60
+            interval: '1 hour'

@@ -77,6 +77,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column]
     private bool $totpEnabled = false;
 
+    /** Empreinte SHA-256 du jeton d'abonnement calendrier (le jeton n'est jamais stocké) */
+    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    private ?string $calendarTokenHash = null;
+
     /** Modération : compte suspendu par le président */
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $suspendedAt = null;
@@ -254,6 +258,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $this->totpSecret = null;
         $this->totpEnabled = false;
         $this->backupCodes = [];
+    }
+
+    /**
+     * Nouveau lien d'abonnement calendrier ; l'ancien cesse de fonctionner.
+     *
+     * @return string jeton en clair, à transmettre une seule fois
+     */
+    public function rotateCalendarToken(): string
+    {
+        $token = bin2hex(random_bytes(24));
+        $this->calendarTokenHash = hash('sha256', $token);
+
+        return $token;
+    }
+
+    public function revokeCalendarToken(): void
+    {
+        $this->calendarTokenHash = null;
+    }
+
+    public function hasCalendarFeed(): bool
+    {
+        return null !== $this->calendarTokenHash;
     }
 
     public function suspend(string $reason): void
