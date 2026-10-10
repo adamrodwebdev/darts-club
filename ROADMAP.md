@@ -8,6 +8,8 @@
 ## Directives transverses
 - **Programmation orientée objet** : entités riches, objets valeur, services à responsabilité unique, interfaces aux frontières, stratégies polymorphes, événements de domaine (détail dans [CLAUDE.md](CLAUDE.md))
 - **Responsive design mobile-first** : 320 → 1920 px sans défilement horizontal, typographie fluide, cibles tactiles ≥ 44 px, tests Playwright mobile + desktop
+- **Mode sombre** : thème clair / sombre / système, sélecteur dans l'interface (voir étape 10 bis)
+- **Bilingue FR / EN** : aucun texte en dur, toute chaîne visible passe par les traductions (voir étape 10 bis)
 
 ## 1. Socle projet (S1)
 - Dépôt GitHub public, branche `main` protégée, PR obligatoires, Conventional Commits, Dependabot, CodeQL
@@ -61,6 +63,14 @@
 - SSG landing, code-splitting par route, preload des polices (subset, `font-display: swap`)
 - Images AVIF/WebP `srcset`, dimensions fixes (CLS ≈ 0), animations sur `transform/opacity` uniquement
 - Cache HTTP + Brotli, budget JS < 150 Ko gz initial, accessibilité WCAG 2.2 AA
+
+## 10 bis. Thème & internationalisation
+- **Mode sombre** : sélecteur clair / sombre / système dans l'en-tête et le compte, choix mémorisé (localStorage + préférence du compte), aucun flash au chargement (script inline avant le rendu), contrastes AA vérifiés dans les deux thèmes
+- **Traduction anglaise** : `vue-i18n` (fichiers `fr.json` / `en.json`, chargement paresseux de la langue), détection via `Accept-Language` puis choix mémorisé, sélecteur de langue
+- Côté API : messages d'erreur, validations et emails traduits (Symfony Translation, `Accept-Language` / langue du compte)
+- Dates, nombres et montants formatés selon la langue (`Intl`)
+- SEO : `lang` dynamique, `hreflang`, landing pré-rendue en FR et EN
+- Tests : Playwright exécuté dans les deux thèmes et les deux langues, contrôle des clés manquantes en CI
 
 ## 11. Livraison (S8)
 - Tests E2E complets, audit sécurité (OWASP ZAP), pentest léger
