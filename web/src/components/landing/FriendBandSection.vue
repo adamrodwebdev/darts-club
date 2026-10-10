@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import SplitText from '@/components/motion/SplitText.vue'
 import { LANDING } from '@/content/landing'
 
 const { t } = useI18n()
@@ -9,7 +10,7 @@ const band = LANDING.friendBand
 <template>
   <section class="friend" aria-labelledby="friend-title" data-reveal>
     <p class="kicker">{{ t('landing.friend.kicker') }}</p>
-    <h2 id="friend-title" class="metal-title">{{ band.name }}</h2>
+    <SplitText id="friend-title" tag="h2" class="metal-title levitate" :text="band.name" />
     <p class="friend__text">{{ t('landing.friend.text') }}</p>
     <a :href="band.url" target="_blank" rel="noopener noreferrer external" class="friend__link">
       {{ t('landing.friend.link') }} <span aria-hidden="true">↗</span>

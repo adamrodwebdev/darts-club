@@ -63,6 +63,14 @@
     },
     "language": {
       "legend": "Langue"
+    },
+    "motion": {
+      "legend": "Animations",
+      "system": "Selon l’appareil",
+      "on": "Activées",
+      "off": "Désactivées",
+      "toggle": "Animations : {state}",
+      "toggleHint": "Activer ou couper les animations et effets de texte"
     }
   },
   "footer": {
@@ -136,7 +144,18 @@
       "kicker": "Groupe ami",
       "text": "Un groupe proche du club. Va découvrir leur musique et suivre leurs prochaines dates.",
       "link": "Leur page Facebook"
-    }
+    },
+    "marquee": [
+      "Fléchettes",
+      "Fuzz",
+      "Amitié",
+      "Triple vingt",
+      "Bullseye",
+      "Soirées",
+      "Stoner",
+      "Metal",
+      "Skull Darts 71"
+    ]
   },
   "song": {
     "kicker": "Bande-son du club",

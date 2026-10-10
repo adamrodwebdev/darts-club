@@ -5,6 +5,8 @@ import { RouterLink } from 'vue-router'
 import HeroDartboard from '@/components/landing/HeroDartboard.vue'
 import FriendBandSection from '@/components/landing/FriendBandSection.vue'
 import SongSection from '@/components/landing/SongSection.vue'
+import MarqueeBand from '@/components/motion/MarqueeBand.vue'
+import SplitText from '@/components/motion/SplitText.vue'
 import { useReveal } from '@/composables/useReveal'
 import { LANDING } from '@/content/landing'
 import { useAuthStore } from '@/stores/auth'
@@ -26,16 +28,16 @@ const ICONS: Record<string, string> = {
     <section class="hero">
       <div class="hero__text">
         <p class="kicker">{{ t('landing.kicker') }}</p>
-        <h1 class="metal-title hero__title">{{ LANDING.name }}</h1>
-        <p class="hero__tagline">{{ t('landing.tagline') }}</p>
+        <SplitText tag="h1" class="metal-title hero__title levitate" :text="LANDING.name" rise />
+        <SplitText tag="p" class="hero__tagline" :text="t('landing.tagline')" rise />
         <p class="hero__intro">{{ t('landing.intro') }}</p>
         <div class="hero__cta">
           <template v-if="auth.isAuthenticated">
-            <RouterLink to="/evenements" class="btn btn--primary">{{ t('landing.upcoming') }}</RouterLink>
+            <RouterLink to="/evenements" class="btn btn--primary sheen-button">{{ t('landing.upcoming') }}</RouterLink>
             <RouterLink to="/infos" class="btn btn--ghost">{{ t('landing.infos') }}</RouterLink>
           </template>
           <template v-else>
-            <RouterLink to="/inscription" class="btn btn--primary">{{ t('landing.join') }}</RouterLink>
+            <RouterLink to="/inscription" class="btn btn--primary sheen-button">{{ t('landing.join') }}</RouterLink>
             <RouterLink to="/connexion" class="btn btn--ghost">{{ t('landing.login') }}</RouterLink>
           </template>
           <a href="#hymne" class="btn btn--link">{{ t('landing.anthem') }}</a>
@@ -44,12 +46,14 @@ const ICONS: Record<string, string> = {
       <HeroDartboard class="hero__board" />
     </section>
 
+    <MarqueeBand />
+
     <section class="pillars" :aria-label="t('landing.pillarsLabel')">
-      <article v-for="pillar in LANDING.pillars" :key="pillar.key" class="pillar" data-reveal>
+      <article v-for="(pillar, i) in LANDING.pillars" :key="pillar.key" class="pillar" data-reveal :style="{ '--reveal-index': i }">
         <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
           <path :d="ICONS[pillar.icon]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-        <h2>{{ t(`landing.pillars.${pillar.key}.title`) }}</h2>
+        <SplitText tag="h2" class="levitate" :text="t(`landing.pillars.${pillar.key}.title`)" />
         <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
       </article>
     </section>
@@ -59,14 +63,14 @@ const ICONS: Record<string, string> = {
     <FriendBandSection />
 
     <section class="join" data-reveal aria-labelledby="join-title">
-      <h2 id="join-title" class="metal-title">{{ t('landing.cta.title') }}</h2>
+      <SplitText id="join-title" tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
       <p>{{ t('landing.cta.text') }}</p>
       <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
         <template #link>
           <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">{{ t('landing.cta.facebookLink') }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
         </template>
       </i18n-t>
-      <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary">
+      <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary sheen-button">
         {{ auth.isAuthenticated ? t('landing.cta.calendar') : t('landing.cta.signUp') }}
       </RouterLink>
     </section>
@@ -174,6 +178,19 @@ const ICONS: Record<string, string> = {
   background:
     radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 60%),
     var(--color-surface);
+}
+
+.pillar {
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+:root[data-motion='on'] .pillar.is-revealed:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-border));
+  box-shadow: 0 1.25rem 2.5rem -1.5rem color-mix(in srgb, var(--color-accent) 70%, transparent);
 }
 
 .pillar svg {

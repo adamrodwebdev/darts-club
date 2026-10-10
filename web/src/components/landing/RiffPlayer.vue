@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { RiffSynth } from '@/audio/RiffSynth'
+import { motionEnabled } from '@/preferences/MotionController'
 
 /** Joue le riff synthétisé ; le moteur audio n'est chargé qu'au premier clic. */
 const { t } = useI18n()
@@ -36,7 +37,7 @@ async function toggle(): Promise<void> {
   synth ??= new RiffSynth()
   await synth.start()
   playing.value = true
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) animate()
+  if (motionEnabled()) animate()
 }
 
 onBeforeUnmount(() => {

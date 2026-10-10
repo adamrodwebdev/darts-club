@@ -24,8 +24,7 @@ const router = createRouter({
   scrollBehavior: (to, _from, saved) => {
     if (saved) return saved
     if (to.hash) {
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      return { el: to.hash, top: 72, behavior: reduced ? 'auto' : 'smooth' }
+      return { el: to.hash, top: 72, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }
     }
     return { top: 0 }
   },

@@ -175,46 +175,225 @@ main {
   top: 0.5rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/*
+ * Animations : <html data-motion="on|off"> posé avant le rendu (public/theme-init.js),
+ * selon le choix du visiteur ou le réglage « réduire les animations » de l'appareil.
+ * Uniquement transform / opacity / background-position : aucun décalage de mise en page.
+ */
+:root[data-motion='off'] *,
+:root[data-motion='off'] *::before,
+:root[data-motion='off'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Titre « chromé » façon pochette metal (repli : couleur de texte normale) */
 .metal-title {
+  --metal: linear-gradient(180deg, #ffffff 0%, #d9d9e0 42%, #7a7a86 50%, #f3f3f6 72%, #b8b8c2 100%);
+  /* Reflet : bande de lumière qui balaie le texte (position animée) */
+  --sheen: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.95) 48%, rgb(255 230 230 / 0.6) 52%, transparent 62%);
   color: var(--color-text);
   font-weight: 900;
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
+:root[data-theme='light'] .metal-title {
+  --metal: linear-gradient(180deg, #2a2a30 0%, #55555f 45%, #0b0b0d 52%, #3a3a42 100%);
+  --sheen: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.9) 48%, rgb(214 40 57 / 0.55) 52%, transparent 62%);
+}
+
 @supports (background-clip: text) {
-  .metal-title {
-    background: linear-gradient(180deg, #ffffff 0%, #d9d9e0 42%, #7a7a86 50%, #f3f3f6 72%, #b8b8c2 100%);
+  /* Titre découpé en mots (SplitText) : chaque mot porte son propre dégradé */
+  .metal-title:not(.split),
+  .metal-title.split .split__word {
+    background-image: var(--sheen), var(--metal);
+    background-size: 300% 100%, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 160% 0, 0 0;
     background-clip: text;
+    -webkit-background-clip: text;
     color: transparent;
   }
 
-  :root[data-theme='light'] .metal-title {
-    background-image: linear-gradient(180deg, #2a2a30 0%, #55555f 45%, #0b0b0d 52%, #3a3a42 100%);
+  /* Reflet au chargement (titres visibles), à l'apparition (sections) et au survol */
+  :root[data-motion='on'] .metal-title:not(.split),
+  :root[data-motion='on'] .metal-title.split .split__word {
+    animation: sheen 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(0.5s + var(--i, 0) * 0.12s) 1 both;
+  }
+
+  /* Section pas encore apparue : le reflet attend son entrée à l'écran */
+  :root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) .metal-title,
+  :root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) .metal-title .split__word {
+    animation: none;
+  }
+
+  :root[data-motion='on'] .metal-title:hover:not(.split),
+  :root[data-motion='on'] .metal-title.split:hover .split__word {
+    animation: sheen-again 1.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(var(--i, 0) * 0.08s) 1 both;
   }
 }
 
-/* Apparition au défilement (activée par useReveal) */
-.reveal-armed [data-reveal] {
-  transition:
-    opacity 0.7s ease,
-    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+@keyframes sheen {
+  from {
+    background-position: 160% 0, 0 0;
+  }
+  to {
+    background-position: -60% 0, 0 0;
+  }
 }
 
-.reveal-armed [data-reveal]:not(.is-revealed) {
+/* Même effet sous un autre nom : relance l'animation au survol */
+@keyframes sheen-again {
+  from {
+    background-position: 160% 0, 0 0;
+  }
+  to {
+    background-position: -60% 0, 0 0;
+  }
+}
+
+/* Mots qui montent en cascade (SplitText) : visibles dès le premier rendu, seul le mouvement s'anime */
+.split__word {
+  display: inline-block;
+}
+
+:root[data-motion='on'] .split--rise .split__word {
+  animation:
+    word-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i, 0) * 0.09s) 1 both,
+    sheen 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(0.6s + var(--i, 0) * 0.12s) 1 both;
+}
+
+@keyframes word-rise {
+  from {
+    transform: translateY(0.45em) rotate(3deg) scale(0.96);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/*
+ * Lévitation : chaque mot flotte en 3D (perspective, translation sur l'axe Z, léger basculement),
+ * déphasé d'un mot à l'autre, avec une ombre portée qui marque la hauteur. Démarre après les
+ * animations d'entrée ; mouvement continu coupé par le réglage « Animations » (pied de page).
+ */
+.levitate {
+  perspective: 40rem;
+  transform-style: preserve-3d;
+}
+
+.levitate .split__word {
+  transform-origin: 50% 80%;
+  filter: drop-shadow(0 0.18em 0.16em rgb(0 0 0 / 0.55));
+  backface-visibility: hidden;
+}
+
+:root[data-theme='light'] .levitate .split__word {
+  filter: drop-shadow(0 0.18em 0.14em rgb(21 21 26 / 0.22));
+}
+
+@keyframes levitate {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateX(0deg);
+  }
+  50% {
+    transform: translate3d(0, -0.14em, 2.5rem) rotateX(9deg);
+  }
+}
+
+/* Le mouvement continu suit les autres animations du mot (même propriété « animation ») */
+:root[data-motion='on'] .levitate:not(.metal-title) .split__word {
+  animation: levitate 5.2s ease-in-out calc(0.8s + var(--i, 0) * 0.45s) infinite;
+}
+
+@supports (background-clip: text) {
+  :root[data-motion='on'] .metal-title.levitate .split__word {
+    animation:
+      sheen 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(0.5s + var(--i, 0) * 0.12s) 1 both,
+      levitate 5.2s ease-in-out calc(1.4s + var(--i, 0) * 0.45s) infinite;
+  }
+
+  :root[data-motion='on'] .metal-title.levitate.split--rise .split__word {
+    animation:
+      word-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--i, 0) * 0.09s) 1 both,
+      sheen 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(0.6s + var(--i, 0) * 0.12s) 1 both,
+      levitate 5.2s ease-in-out calc(1.6s + var(--i, 0) * 0.45s) infinite;
+  }
+
+  :root[data-motion='on'] .metal-title.levitate:hover .split__word {
+    animation:
+      sheen-again 1.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(var(--i, 0) * 0.08s) 1 both,
+      levitate 5.2s ease-in-out calc(var(--i, 0) * 0.45s) infinite;
+  }
+}
+
+/* Surtitres : l'espacement des lettres se resserre */
+:root[data-motion='on'] .kicker {
+  animation: kicker-in 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 1 both;
+}
+
+@keyframes kicker-in {
+  from {
+    letter-spacing: 0.6em;
+    transform: translateX(-0.5rem);
+  }
+}
+
+/* Reflet qui traverse les boutons principaux au survol */
+.sheen-button {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.sheen-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+
+:root[data-motion='on'] .sheen-button:hover::after,
+:root[data-motion='on'] .sheen-button:focus-visible::after {
+  transform: translateX(120%);
+  transition: transform 0.7s cubic-bezier(0.3, 0.6, 0.2, 1);
+}
+
+/* Apparition au défilement (activée par useReveal), décalée par --reveal-index */
+:root[data-motion='on'] .reveal-armed [data-reveal] {
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--reveal-index, 0) * 0.12s);
+}
+
+:root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) {
   opacity: 0;
-  transform: translateY(1.5rem);
+  transform: translateY(2rem) scale(0.98);
+}
+
+/* Transition entre les pages (App.vue) */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.22s ease,
+    transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}
+
+.page-leave-to {
+  opacity: 0;
 }
 
 /* Titres de section de la page d'accueil */
