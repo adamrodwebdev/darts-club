@@ -10,8 +10,8 @@ export interface SongSection {
 
 export const SONG = {
   title: 'Triple Vingt',
-  subtitle: 'Hymne du Darts Club',
-  credits: 'Paroles et musique : Darts Club. Libre de droits pour le club.',
+  subtitle: 'Hymne des Skull Darts 71',
+  credits: 'Paroles et musique : Skull Darts 71. Libre de droits pour le club.',
   tempo: 92,
   tuning: 'Drop C (C G C F A D)',
   mood: 'Stoner groove, fuzz chaud, montée post-metal, refrain à chanter le verre levé',
@@ -83,6 +83,10 @@ export const SONG = {
         'Cent quatre-vingts, la salle rugit,',
         'On lève les verres jusqu’au bout de la nuit !',
       ],
+    },
+    {
+      label: 'Cri de ralliement',
+      lines: ['Skull Darts ! Soixante et onze !', 'Skull Darts ! Jusqu’au dernier double !'],
     },
     {
       label: 'Outro',

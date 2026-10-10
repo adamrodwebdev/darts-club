@@ -48,9 +48,9 @@ async function deactivate(): Promise<void> {
 }
 
 function downloadCodes(): void {
-  const blob = new Blob([`Codes de secours Darts Club\n\n${backupCodes.value.join('\n')}\n`], { type: 'text/plain' })
+  const blob = new Blob([`Codes de secours Skull Darts 71\n\n${backupCodes.value.join('\n')}\n`], { type: 'text/plain' })
   const url = URL.createObjectURL(blob)
-  const link = Object.assign(document.createElement('a'), { href: url, download: 'darts-club-codes-de-secours.txt' })
+  const link = Object.assign(document.createElement('a'), { href: url, download: 'skull-darts-71-codes-de-secours.txt' })
   link.click()
   URL.revokeObjectURL(url)
 }

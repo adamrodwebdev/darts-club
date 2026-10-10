@@ -10,10 +10,10 @@ self.addEventListener('push', (event) => {
   const url = typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/'
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Darts Club', {
+    self.registration.showNotification(data.title || 'Skull Darts 71', {
       body: data.body || '',
       tag: data.tag,
-      icon: '/favicon.ico',
+      icon: '/logo.svg',
       data: { url },
     }),
   )

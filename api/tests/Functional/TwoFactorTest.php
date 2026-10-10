@@ -20,7 +20,7 @@ final class TwoFactorTest extends ApiTestCase
         self::assertIsString($setup['secret']);
         self::assertIsString($setup['uri']);
         self::assertIsString($setup['qrCode']);
-        self::assertStringStartsWith('otpauth://totp/Darts%20Club%3Aalice%40example.com', $setup['uri']);
+        self::assertStringStartsWith('otpauth://totp/Skull%20Darts%2071%3Aalice%40example.com', $setup['uri']);
         self::assertStringStartsWith('data:image/svg+xml;base64,', $setup['qrCode']);
 
         $this->postJson('/api/me/2fa/confirm', ['code' => '000000']);

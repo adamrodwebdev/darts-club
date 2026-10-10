@@ -24,7 +24,7 @@ const ICONS: Record<string, string> = {
     <section class="hero">
       <div class="hero__text">
         <p class="kicker">Club de fléchettes</p>
-        <h1 class="metal-title hero__title">Darts Club</h1>
+        <h1 class="metal-title hero__title">{{ LANDING.name }}</h1>
         <p class="hero__tagline">{{ LANDING.tagline }}</p>
         <p class="hero__intro">{{ LANDING.intro }}</p>
         <div class="hero__cta">
@@ -59,6 +59,10 @@ const ICONS: Record<string, string> = {
     <section class="join" data-reveal aria-labelledby="join-title">
       <h2 id="join-title" class="metal-title">Prêt à viser le 180 ?</h2>
       <p>Crée ton compte, choisis ton pseudo et rejoins la prochaine soirée.</p>
+      <p>
+        Actus et photos sur
+        <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">la page Facebook de l’association<span class="visually-hidden"> (nouvel onglet)</span></a>.
+      </p>
       <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary">
         {{ auth.isAuthenticated ? 'Voir le calendrier' : 'Je m’inscris' }}
       </RouterLink>
@@ -68,6 +72,8 @@ const ICONS: Record<string, string> = {
 
 <style scoped>
 .landing {
+  /* La fléchette arrive de hors écran : on la rogne sans créer de défilement */
+  overflow-x: clip;
   display: grid;
   gap: clamp(3.5rem, 9vw, 7rem);
   max-width: var(--max-width);
@@ -97,8 +103,10 @@ const ICONS: Record<string, string> = {
 
 .hero__title {
   margin: 0;
-  font-size: clamp(3rem, 13vw, 7.5rem);
-  line-height: 0.9;
+  /* « Skull Darts 71 » tient sur 2 lignes de 320 px à grand écran */
+  font-size: clamp(2.6rem, 11vw, 6.5rem);
+  line-height: 0.92;
+  overflow-wrap: anywhere;
 }
 
 .hero__tagline {

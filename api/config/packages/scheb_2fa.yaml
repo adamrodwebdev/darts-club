@@ -5,7 +5,7 @@ scheb_two_factor:
         - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
     totp:
         enabled: true
-        issuer: 'Darts Club'
+        issuer: 'Skull Darts 71'
         # Tolère un léger décalage d'horloge du téléphone
         leeway: 10
     backup_codes:

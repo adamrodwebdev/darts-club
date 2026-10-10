@@ -1,5 +1,7 @@
 <script setup lang="ts">
-/** Cible de fléchettes en SVG (20 secteurs, anneaux double/triple) + fléchette qui se plante. */
+/** Cible de fléchettes en SVG (20 secteurs, anneaux double/triple), écusson du club et fléchette qui se plante. */
+import { LANDING } from '@/content/landing'
+
 const SECTORS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5]
 
 function arc(r1: number, r2: number, start: number, end: number): string {
@@ -35,7 +37,9 @@ const segments = SECTORS.flatMap((value, i) => {
         <circle r="6.5" fill="var(--board-red)" stroke="var(--board-wire)" />
       </g>
     </svg>
-    <!-- Fléchette : vole puis se plante dans le triple 20 -->
+    <!-- Écusson de l'association, au centre de la cible -->
+    <img class="emblem" :src="LANDING.logo" width="673" height="673" alt="" fetchpriority="high" />
+    <!-- Fléchette : vole puis se plante dans l’anneau double -->
     <svg class="dart" viewBox="0 0 120 24" width="120" height="24">
       <path d="M0 12 L22 10 L22 14 Z" fill="var(--dart-tip)" />
       <rect x="22" y="8" width="40" height="8" rx="3" fill="var(--dart-barrel)" />
@@ -72,6 +76,26 @@ const segments = SECTORS.flatMap((value, i) => {
 .board__face {
   transform-origin: center;
   animation: spin 120s linear infinite;
+  opacity: 0.45;
+}
+
+.emblem {
+  position: absolute;
+  inset: 13%;
+  width: 74%;
+  height: auto;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px var(--board-frame),
+    0 1.5rem 3rem rgb(0 0 0 / 60%);
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: scale(0.85) rotate(-8deg);
+  }
 }
 
 .board__num {
@@ -82,9 +106,10 @@ const segments = SECTORS.flatMap((value, i) => {
 
 .dart {
   position: absolute;
-  /* Triple 20 : un peu au-dessus du centre */
-  top: 26%;
-  left: 50%;
+  /* Plantée dans l’anneau double, au-dessus de l’écusson */
+  z-index: 1;
+  top: 9%;
+  left: 63%;
   width: 34%;
   height: auto;
   transform-origin: 0 50%;
@@ -116,6 +141,7 @@ const segments = SECTORS.flatMap((value, i) => {
 
 @media (prefers-reduced-motion: reduce) {
   .board__face,
+  .emblem,
   .dart {
     animation: none;
   }

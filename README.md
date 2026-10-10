@@ -1,4 +1,4 @@
-# Darts Club
+# Skull Darts 71
 
 Plateforme full-stack du club de fléchettes — Symfony 7.4 LTS (`api/`) + Vue 3 (`web/`).
 Voir [ROADMAP.md](ROADMAP.md).

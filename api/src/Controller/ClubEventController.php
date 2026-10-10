@@ -138,9 +138,9 @@ final class ClubEventController extends AbstractController
     #[Route('/api/events/{id}/calendar.ics', name: 'events_ics', requirements: ['id' => self::UUID], methods: ['GET'])]
     public function ics(ClubEvent $event, IcsCalendar $calendar): Response
     {
-        return new Response($calendar->render([$event], 'Darts Club', $this->events->now()), headers: [
+        return new Response($calendar->render([$event], 'Skull Darts 71', $this->events->now()), headers: [
             'Content-Type' => 'text/calendar; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="evenement-darts-club.ics"',
+            'Content-Disposition' => 'attachment; filename="evenement-skull-darts-71.ics"',
         ]);
     }
 

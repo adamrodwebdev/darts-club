@@ -169,7 +169,7 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
 })
 
 router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · Darts Club` : 'Darts Club'
+  document.title = to.meta.title ? `${to.meta.title} · Skull Darts 71` : 'Skull Darts 71'
 })
 
 export default router

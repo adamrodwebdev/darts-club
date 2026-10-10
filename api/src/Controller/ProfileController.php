@@ -125,7 +125,7 @@ final class ProfileController extends AbstractController
         $response = new JsonResponse();
         $response->setEncodingOptions(\JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES);
         $response->setData($exporter->export($user));
-        $response->headers->set('Content-Disposition', 'attachment; filename="mes-donnees-darts-club.json"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="mes-donnees-skull-darts-71.json"');
 
         return $response;
     }

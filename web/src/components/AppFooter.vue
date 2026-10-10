@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { LANDING } from '@/content/landing'
 </script>
 
 <template>
   <footer class="footer">
     <div class="footer__inner">
-      <p class="footer__brand">Darts Club <span class="muted">· association loi 1901</span></p>
-      <nav aria-label="Informations légales">
+      <p class="footer__brand">
+        <img :src="LANDING.logo" width="32" height="32" alt="" loading="lazy" />
+        {{ LANDING.name }} <span class="muted">· association loi 1901</span>
+      </p>
+      <nav aria-label="Liens du pied de page">
         <ul>
+          <li><a :href="LANDING.facebook" rel="noopener noreferrer external" target="_blank">Facebook<span class="visually-hidden"> (nouvel onglet)</span></a></li>
           <li><RouterLink to="/mentions-legales">Mentions légales</RouterLink></li>
           <li><RouterLink to="/confidentialite">Confidentialité</RouterLink></li>
           <li><a href="https://github.com/adamrodwebdev/darts-club" rel="noopener noreferrer external" target="_blank">Code source</a></li>
@@ -35,8 +40,15 @@ import { RouterLink } from 'vue-router'
 }
 
 .footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0;
   font-weight: 800;
+}
+
+.footer__brand img {
+  border-radius: 50%;
 }
 
 ul {
