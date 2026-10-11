@@ -14,3 +14,6 @@
 'csv.reference': 'Référence'
 'csv.cancelled': 'Annulé'
 'csv.cancelled_yes': 'oui : %reason%'
+'audience.day': 'Jour'
+'audience.members': 'Adhérents (nouveaux)'
+'audience.visitors': 'Visiteurs anonymes (nouveaux, estimation)'

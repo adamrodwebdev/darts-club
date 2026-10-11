@@ -38,6 +38,11 @@ framework:
             policy: sliding_window
             limit: 30
             interval: '15 minutes'
+        # Mesure d'audience : au-delà, les vues sont ignorées sans erreur
+        event_view:
+            policy: sliding_window
+            limit: 120
+            interval: '1 hour'
         photo_upload:
             policy: sliding_window
             limit: 60

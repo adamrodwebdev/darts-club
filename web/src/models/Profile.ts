@@ -73,6 +73,11 @@ export class Profile {
     return ['ROLE_PRESIDENT', 'ROLE_ADMIN'].some((role) => this.roles.includes(role))
   }
 
+  /** Administrateur (sommet de la hiérarchie) : statistiques d'audience */
+  get isAdmin(): boolean {
+    return this.roles.includes('ROLE_ADMIN')
+  }
+
   get isBoardMember(): boolean {
     return this.roles.some((role) => (BOARD_ROLES as readonly string[]).includes(role))
   }

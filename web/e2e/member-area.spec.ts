@@ -181,3 +181,74 @@ test('an organizer publishes an event with its poster', async ({ page }) => {
   expect(uploads[0]).toMatch(/^multipart\/form-data/)
   await expect(page.getByRole('img', { name: 'Affiche de l’événement « Soirée cricket »' })).toBeVisible()
 })
+
+test('only the administrator sees the announcement audience', async ({ page }) => {
+  const admin = { ...profile, roles: ['ROLE_ADMIN', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const id = '01a1b2c3-0000-7000-8000-0000000000e2'
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: admin }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route(`**/api/events/${id}/view`, (route) => route.fulfill({ status: 204, body: '' }))
+  await page.route(`**/api/events/${id}`, (route) =>
+    route.fulfill({
+      json: {
+        id, title: 'Soirée cricket', location: 'Bar du Centre', startsAt: '2026-11-14T19:00:00+00:00', endsAt: '2026-11-14T23:00:00+00:00',
+        season: '2026-2027', status: 'prevu', cancelReason: null, capacity: null, registered: 5, maybe: 2, isRegistered: false, myAnswer: null,
+        full: false, started: false, past: false, hasSummary: false, poster: null, public: true, city: 'Louhans', publicPath: '/e/soiree-cricket-a1b2c3',
+        description: '', organizer: 'Alice', summary: null, canManage: true, photos: [], posts: [], participants: [], guests: [],
+      },
+    }),
+  )
+  await page.route(`**/api/admin/events/${id}/audience`, (route) =>
+    route.fulfill({
+      json: {
+        unique: 28, members: 12, visitors: 16, going: 5, maybe: 2, archived: false, closed: false,
+        days: [{ day: '2026-10-12', members: 8, visitors: 10 }, { day: '2026-10-13', members: 4, visitors: 6 }],
+      },
+    }),
+  )
+
+  await page.goto(`/evenements/${id}`)
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+
+  const panel = page.getByRole('region', { name: 'Audience de l’annonce' })
+  await expect(panel.getByText('Personnes uniques')).toBeVisible()
+  await expect(panel.getByText('28', { exact: true })).toBeVisible()
+  await expect(panel.getByText('≈ 16')).toBeVisible()
+  await expect(panel.getByText('25 %')).toBeVisible()
+  await expect(panel.getByRole('table', { name: 'Nouvelles personnes par jour' }).getByRole('row')).toHaveCount(3)
+  await expect(panel.getByRole('link', { name: 'Exporter (CSV)' })).toHaveAttribute('href', `/api/admin/events/${id}/audience.csv`)
+})
+
+test('the president does not get the audience panel', async ({ page }) => {
+  const president = { ...profile, roles: ['ROLE_PRESIDENT', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const id = '01a1b2c3-0000-7000-8000-0000000000e3'
+  const audienceCalls: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: president }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route('**/api/admin/events/**', (route) => {
+    audienceCalls.push(route.request().url())
+    return route.fulfill({ status: 403, json: {} })
+  })
+  await page.route(`**/api/events/${id}`, (route) =>
+    route.fulfill({
+      json: {
+        id, title: 'Soirée cricket', location: 'Bar du Centre', startsAt: '2026-11-14T19:00:00+00:00', endsAt: '2026-11-14T23:00:00+00:00',
+        season: '2026-2027', status: 'prevu', cancelReason: null, capacity: null, registered: 0, isRegistered: false,
+        full: false, started: false, past: false, hasSummary: false, description: '', organizer: 'Alice', summary: null,
+        canManage: true, photos: [], posts: [], participants: [], guests: [],
+      },
+    }),
+  )
+
+  await page.goto(`/evenements/${id}`)
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
+  await expect(page.getByRole('region', { name: 'Audience de l’annonce' })).toHaveCount(0)
+  expect(audienceCalls).toEqual([])
+})

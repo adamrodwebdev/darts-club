@@ -7,6 +7,7 @@ import BaseField from '@/components/BaseField.vue'
 import PublicEventCard from '@/components/events/PublicEventCard.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { usePageHead } from '@/composables/useDocumentHead'
+import { useViewBeacon } from '@/composables/useViewBeacon'
 import { formatEventDate, type Attendance } from '@/models/ClubEvent'
 import type { PublicEvent } from '@/models/PublicEvent'
 import { services } from '@/services'
@@ -17,6 +18,7 @@ const props = defineProps<{ slug: string }>()
 const { t } = useI18n()
 const auth = useAuthStore()
 const setHead = usePageHead()
+useViewBeacon(() => services.publicEvents.recordView(props.slug))
 
 const event = ref<PublicEvent | null>(null)
 const load = useAsyncAction()

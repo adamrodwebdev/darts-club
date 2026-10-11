@@ -69,3 +69,18 @@ test('an unknown link explains what to do', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('Ce lien n’est pas (ou plus) valable.')
   await expect(page.getByRole('link', { name: 'Revenir à l’événement' })).toHaveAttribute('href', `/e/${slug}`)
 })
+
+test('a view is counted after the page stays visible for 2 seconds, without cookies', async ({ page, context }) => {
+  const views: string[] = []
+  await page.route(`**/api/public/events/${slug}`, (route) => route.fulfill({ json: event }))
+  await page.route(`**/api/public/events/${slug}/view`, (route) => {
+    views.push(route.request().method())
+    return route.fulfill({ status: 204, body: '' })
+  })
+
+  await page.goto(`/e/${slug}`)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
+  expect(views).toEqual([])
+  await expect.poll(() => views, { timeout: 5000 }).toEqual(['POST'])
+  expect(await context.cookies()).toEqual([])
+})

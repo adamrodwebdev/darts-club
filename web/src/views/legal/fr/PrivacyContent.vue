@@ -55,6 +55,16 @@
     la CNIL (cnil.fr).
   </p>
 
+  <h2>Mesure d’audience des annonces d’événements</h2>
+  <p>
+    Pour savoir combien de personnes différentes voient l’annonce d’un événement, le site enregistre une empreinte
+    irréversible, sans cookie : celle de ton compte si tu es connecté(e), sinon celle de ton adresse IP et de ton
+    navigateur (l’adresse IP elle-même n’est jamais conservée). La clé qui permet de calculer ces empreintes est propre
+    à chaque événement et détruite 30 jours après lui ; le détail est supprimé au bout de 13 mois, seuls des totaux
+    restent. Ces statistiques ne sont visibles que de l’administrateur du site et ne servent qu’à la vie du club
+    (mesure d’audience exemptée de consentement selon les recommandations de la CNIL).
+  </p>
+
   <h2>Cookies</h2>
   <p>
     Uniquement des cookies techniques nécessaires au fonctionnement (session, indicateur de connexion, temps réel).
