@@ -24,7 +24,8 @@
 
   <h2>Intellectual property</h2>
   <p>
-    The texts, the “Triple Vingt” anthem and the website code belong to the association unless stated otherwise.
+    The texts, the lyrics of the “Triple Vingt” anthem and the website code belong to the association unless stated otherwise.
+    The anthem recording (music and vocals) was generated with the Suno tool.
     The name of the band featured under “Friend band” belongs to its members.
   </p>
 </template>

@@ -52,3 +52,9 @@ export function formatRelative(date: Date, now = Date.now()): string | null {
   }
   return null
 }
+
+/** Position dans un morceau : 95 → « 1:35 » (même écriture dans toutes les langues) */
+export function formatClock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds))
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`
+}

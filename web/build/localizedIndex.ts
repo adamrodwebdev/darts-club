@@ -47,6 +47,12 @@ function inlineThemeScript(html: string, scriptPath: string): string {
   return html.replace(tag, `<script>${readFileSync(scriptPath, 'utf8').trim()}</script>`)
 }
 
+/** Blocs JSON-LD insérés avant </head> ; « < » échappé pour ne jamais fermer la balise */
+function withStructuredData(html: string, blocks: object[]): string {
+  const scripts = blocks.map((block) => `<script type="application/ld+json">${JSON.stringify(block).replace(/</g, '\\u003c')}</script>`)
+  return blocks.length ? html.replace('</head>', `    ${scripts.join('\n    ')}\n  </head>`) : html
+}
+
 export function localizedIndex(options: {
   localesDir: string
   source: string
@@ -56,6 +62,8 @@ export function localizedIndex(options: {
   siteUrl?: string
   /** public/theme-init.js, intégré à la page au build */
   themeScript: string
+  /** Données structurées ajoutées aux accueils ; `url` rend un chemin absolu si l'URL publique est connue */
+  structuredData?: (url: (path: string) => string) => object[]
 }): Plugin {
   return {
     name: 'localized-index',
@@ -65,8 +73,9 @@ export function localizedIndex(options: {
       const index = bundle['index.html']
       if (!index || index.type !== 'asset') this.error('index.html introuvable dans le bundle')
 
-      const html = inlineThemeScript(String(index.source), options.themeScript)
       const siteUrl = (options.siteUrl ?? '').replace(/\/+$/, '')
+      const structured = options.structuredData?.((path) => siteUrl + path) ?? []
+      const html = withStructuredData(inlineThemeScript(String(index.source), options.themeScript), structured)
       const homes: Record<string, string> = { [options.source]: '/', ...Object.fromEntries(Object.entries(options.pages).map(([l, d]) => [l, `/${d}`])) }
       index.source = siteUrl ? withSiteUrl(html, siteUrl, '/', homes, options.source) : html
       const source = readMeta(options.localesDir, options.source)
