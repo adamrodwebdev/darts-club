@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { localizedIndex } from './build/localizedIndex.ts'
+import { songStructuredData } from './build/songStructuredData.ts'
 
 const locales = fileURLToPath(new URL('./src/i18n/locales', import.meta.url))
 
@@ -25,6 +26,7 @@ export default defineConfig(({ mode }) => {
         pages: { en: 'en' },
         siteUrl: env.VITE_SITE_URL,
         themeScript: fileURLToPath(new URL('./public/theme-init.js', import.meta.url)),
+        structuredData: (url) => [songStructuredData(url)],
       }),
     ],
     resolve: {

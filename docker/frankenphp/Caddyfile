@@ -37,7 +37,10 @@
 		# Fichiers versionnés par Vite (nom avec empreinte) : cache d'un an
 		@hashed path /assets/*
 		header @hashed Cache-Control "public, max-age=31536000, immutable"
-		@other not path /assets/*
+		# Enregistrement de l'hymne : lu par plages (Range), gardé une semaine (renommer le fichier s'il change)
+		@audio path /audio/*
+		header @audio Cache-Control "public, max-age=604800"
+		@other not path /assets/* /audio/*
 		header @other Cache-Control "no-cache"
 
 		header {

@@ -161,13 +161,10 @@
     "kicker": "Bande-son du club",
     "subtitle": "Hymne des Skull Darts 71",
     "mood": "Stoner groove, fuzz chaud, montée post-metal, refrain à chanter le verre levé.",
-    "credits": "Paroles et musique : Skull Darts 71. Libre de droits pour le club.",
-    "tabCaption": "Riff principal (tablature, corde grave en bas)",
+    "credits": "Paroles : Skull Darts 71. Musique et voix générées avec Suno.",
     "lyricsLanguage": "Paroles originales en français.",
-    "play": "Écouter le riff",
-    "stop": "Couper le riff",
-    "unsupported": "Ton navigateur ne gère pas la synthèse audio.",
-    "playerNote": "Riff joué en direct par ton navigateur (synthèse Web Audio, aucun fichier téléchargé). Attention au volume !",
+    "play": "Écouter l’hymne",
+    "playerNote": "Enregistrement complet ({duration}), chargé seulement quand tu lances la lecture. Attention au volume !",
     "sections": {
       "intro": "Intro",
       "verse1": "Couplet 1",
@@ -182,18 +179,23 @@
     },
     "directions": {
       "intro": [
-        "Basse fuzz seule sur le riff, 4 mesures",
-        "Entrée batterie : charleston ouvert, puis tout le groupe"
+        "Montée instrumentale : le fuzz s’installe, la batterie pousse, tout le groupe entre"
       ],
       "solo": [
         "Wah grand ouvert sur la gamme blues de do",
         "Montée post-metal : la batterie double, tout le monde à l’unisson"
       ],
       "outro": [
-        "Larsen tenu sur le do grave",
-        "Dernier coup de grosse caisse… et le bruit d’une fléchette dans le mille"
+        "Final instrumental à pleine puissance, puis coupure nette"
       ]
-    }
+    },
+    "pause": "Mettre en pause",
+    "position": "Position dans l’hymne",
+    "positionValue": "{time} sur {duration}",
+    "clock": "{time} / {duration}",
+    "unavailable": "Lecture impossible : ton navigateur n’a pas pu charger l’enregistrement.",
+    "chaptersHint": "Touche un minutage pour écouter directement cette partie.",
+    "playFrom": "Écouter « {section} » à partir de {time}"
   },
   "auth": {
     "oauthSeparator": "ou",

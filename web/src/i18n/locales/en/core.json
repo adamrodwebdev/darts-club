@@ -161,13 +161,10 @@
     "kicker": "Club soundtrack",
     "subtitle": "Skull Darts 71 anthem",
     "mood": "Stoner groove, warm fuzz, post-metal build-up, a chorus to sing with your glass raised.",
-    "credits": "Lyrics and music: Skull Darts 71. Royalty-free for the club.",
-    "tabCaption": "Main riff (tablature, low string at the bottom)",
+    "credits": "Lyrics: Skull Darts 71. Music and vocals generated with Suno.",
     "lyricsLanguage": "Original lyrics in French, as sung by the club.",
-    "play": "Play the riff",
-    "stop": "Stop the riff",
-    "unsupported": "Your browser does not support audio synthesis.",
-    "playerNote": "Riff played live by your browser (Web Audio synthesis, nothing downloaded). Mind the volume!",
+    "play": "Play the anthem",
+    "playerNote": "Full recording ({duration}), loaded only when you press play. Mind the volume!",
     "sections": {
       "intro": "Intro",
       "verse1": "Verse 1",
@@ -182,18 +179,23 @@
     },
     "directions": {
       "intro": [
-        "Fuzz bass alone on the riff, 4 bars",
-        "Drums come in: open hi-hat, then the whole band"
+        "Instrumental build-up: the fuzz settles in, the drums push, the whole band kicks in"
       ],
       "solo": [
         "Wide-open wah over the C blues scale",
         "Post-metal build-up: double-time drums, everyone in unison"
       ],
       "outro": [
-        "Sustained feedback on the low C",
-        "One last kick drum… and the sound of a dart hitting the bullseye"
+        "Full-power instrumental finale, then a hard stop"
       ]
-    }
+    },
+    "pause": "Pause",
+    "position": "Position in the anthem",
+    "positionValue": "{time} of {duration}",
+    "clock": "{time} / {duration}",
+    "unavailable": "Playback failed: your browser could not load the recording.",
+    "chaptersHint": "Tap a timestamp to jump straight to that part.",
+    "playFrom": "Play “{section}” from {time}"
   },
   "auth": {
     "oauthSeparator": "or",
