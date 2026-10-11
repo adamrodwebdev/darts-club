@@ -132,3 +132,52 @@ test('president broadcasts a labelled message to all members', async ({ page }) 
   await page.getByRole('button', { name: 'Envoyer' }).click()
   await expect(page.getByRole('status')).toContainText('envoyé à 42 adhérent(s)')
 })
+
+test('an organizer publishes an event with its poster', async ({ page }) => {
+  const secretary = { ...profile, roles: ['ROLE_SECRETARY', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const id = '01a1b2c3-0000-7000-8000-0000000000e1'
+  const poster = { cardUrl: `/api/events/${id}/poster/${'c'.repeat(32)}`, largeUrl: `/api/events/${id}/poster/${'b'.repeat(32)}`, width: 600, height: 848 }
+  const summary = {
+    id, title: 'Soirée cricket', location: 'Bar du club', startsAt: '2026-11-14T19:00:00+00:00', endsAt: '2026-11-14T23:00:00+00:00',
+    season: '2026-2027', status: 'prevu', cancelReason: null, capacity: null, registered: 0, isRegistered: false,
+    full: false, started: false, past: false, hasSummary: false, poster: null,
+  }
+  // PNG 1×1 : l'API simulée renvoie la même image pour l'aperçu et l'affiche
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
+  const uploads: string[] = []
+
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: secretary }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route('**/api/events', (route) => route.fulfill({ status: 201, json: summary }))
+  await page.route(`**/api/events/${id}/poster`, (route) => {
+    uploads.push(route.request().headers()['content-type'] ?? '')
+    return route.fulfill({ status: 201, json: poster })
+  })
+  await page.route(`**/api/events/${id}/poster/*`, (route) => route.fulfill({ body: png, contentType: 'image/png' }))
+  await page.route(`**/api/events/${id}`, (route) =>
+    route.fulfill({
+      json: { ...summary, poster, description: '', organizer: 'Alice', summary: null, canManage: true, photos: [], posts: [], participants: [] },
+    }),
+  )
+
+  await page.goto('/evenements/nouveau')
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nouvel événement')
+
+  await page.getByLabel('Titre').fill('Soirée cricket')
+  await page.getByLabel('Lieu').fill('Bar du club')
+  await page.getByLabel('Début').fill('2026-11-14T20:00')
+  await page.getByLabel('Fin').fill('2026-11-15T00:00')
+  await page.getByRole('group', { name: 'Affiche (facultatif)' }).locator('input[type=file]').setInputFiles({ name: 'affiche.png', mimeType: 'image/png', buffer: png })
+  await expect(page.getByRole('img', { name: 'Aperçu de l’affiche' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Retirer l’affiche' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Publier l’événement' }).click()
+  await expect(page).toHaveURL(new RegExp(`/evenements/${id}$`))
+  expect(uploads).toHaveLength(1)
+  expect(uploads[0]).toMatch(/^multipart\/form-data/)
+  await expect(page.getByRole('img', { name: 'Affiche de l’événement « Soirée cricket »' })).toBeVisible()
+})

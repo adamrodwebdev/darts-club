@@ -78,6 +78,19 @@
       "addedBy": "Ajoutée par {name}",
       "previous": "← Précédente",
       "next": "Suivante →"
+    },
+    "poster": {
+      "label": "Affiche (facultatif)",
+      "hint": "JPEG, PNG ou WebP, 10 Mo au plus. Visible des adhérents dans le calendrier.",
+      "choose": "Choisir une image",
+      "replace": "Remplacer l’affiche",
+      "remove": "Retirer l’affiche",
+      "undo": "Garder l’affiche",
+      "removed": "L’affiche sera retirée à l’enregistrement.",
+      "preview": "Aperçu de l’affiche",
+      "tooLarge": "Image trop lourde : 10 Mo au plus.",
+      "wrongType": "Format non pris en charge : JPEG, PNG ou WebP.",
+      "alt": "Affiche de l’événement « {title} »"
     }
   }
 }

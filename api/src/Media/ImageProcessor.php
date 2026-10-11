@@ -11,6 +11,8 @@ final class ImageProcessor
     public const AVATAR_SIZE = 256;
     public const PHOTO_MAX_SIDE = 1600;
     public const THUMB_MAX_SIDE = 480;
+    /** Affiche sur les cartes du calendrier : nette sur écran haute densité */
+    public const POSTER_CARD_MAX_SIDE = 900;
     /** Garde-fou contre les « bombes de décompression » */
     private const MAX_PIXELS = 40_000_000;
     private const ALLOWED_TYPES = [\IMAGETYPE_JPEG, \IMAGETYPE_PNG, \IMAGETYPE_WEBP];
@@ -42,6 +44,24 @@ final class ImageProcessor
         return [
             'large' => $this->encode($large),
             'thumb' => $this->encode($this->fit($source, self::THUMB_MAX_SIDE)),
+            'width' => imagesx($large),
+            'height' => imagesy($large),
+        ];
+    }
+
+    /**
+     * Affiche d'événement : grande version et version carte, proportions conservées.
+     *
+     * @return array{large: string, card: string, width: int, height: int}
+     */
+    public function poster(string $sourcePath): array
+    {
+        $source = $this->decode($sourcePath);
+        $large = $this->fit($source, self::PHOTO_MAX_SIDE);
+
+        return [
+            'large' => $this->encode($large),
+            'card' => $this->encode($this->fit($source, self::POSTER_CARD_MAX_SIDE)),
             'width' => imagesx($large),
             'height' => imagesy($large),
         ];

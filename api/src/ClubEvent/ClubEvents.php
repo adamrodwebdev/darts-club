@@ -27,6 +27,7 @@ final class ClubEvents
         private readonly ImageProcessor $images,
         private readonly ImageStorage $eventPhotoStorage,
         private readonly EventPhotoRepository $photos,
+        private readonly ImageStorage $eventPosterStorage,
     ) {
     }
 
@@ -119,6 +120,40 @@ final class ClubEvents
         $this->eventPhotoStorage->delete($photo->thumbId());
     }
 
+    /** Affiche (JPEG, PNG ou WebP) : ré-encodée ; l'ancienne est supprimée. */
+    public function attachPoster(ClubEvent $event, UploadedFile $file): Poster
+    {
+        if (!$file->isValid() || $file->getSize() > self::MAX_PHOTO_BYTES) {
+            throw new InvalidImageException('« %file% » : fichier invalide ou trop lourd (10 Mo maximum).', null, ['%file%' => mb_substr($file->getClientOriginalName(), 0, 60)]);
+        }
+
+        $processed = $this->images->poster($file->getPathname());
+        $poster = new Poster(
+            $this->eventPosterStorage->store($processed['large']),
+            $this->eventPosterStorage->store($processed['card']),
+            $processed['width'],
+            $processed['height'],
+        );
+
+        try {
+            $previous = $event->attachPoster($poster);
+        } catch (\LogicException $e) {
+            $this->deletePosterFiles($poster);
+            throw $e;
+        }
+        $this->em->flush();
+        $this->deletePosterFiles($previous);
+
+        return $poster;
+    }
+
+    public function removePoster(ClubEvent $event): void
+    {
+        $previous = $event->removePoster();
+        $this->em->flush();
+        $this->deletePosterFiles($previous);
+    }
+
     public function addPost(ClubEvent $event, User $author, string $text): EventPost
     {
         $this->assertArchiveOpen($event);
@@ -139,6 +174,14 @@ final class ClubEvents
     {
         $this->em->remove($post);
         $this->em->flush();
+    }
+
+    private function deletePosterFiles(?Poster $poster): void
+    {
+        if (null !== $poster) {
+            $this->eventPosterStorage->delete($poster->largeId);
+            $this->eventPosterStorage->delete($poster->cardId);
+        }
     }
 
     private function assertArchiveOpen(ClubEvent $event): void
