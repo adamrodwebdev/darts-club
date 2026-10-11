@@ -62,6 +62,17 @@ export class EventService {
     return `/api/events/${encodeURIComponent(id)}/calendar.ics`
   }
 
+  /** Pose ou remplace l'affiche (JPEG, PNG ou WebP, 10 Mo au plus). */
+  async setPoster(id: string, file: File): Promise<void> {
+    const form = new FormData()
+    form.append('poster', file)
+    await this.api.post(`/api/events/${encodeURIComponent(id)}/poster`, form)
+  }
+
+  async removePoster(id: string): Promise<void> {
+    await this.api.delete(`/api/events/${encodeURIComponent(id)}/poster`)
+  }
+
   async uploadPhotos(id: string, files: File[]): Promise<void> {
     const form = new FormData()
     files.forEach((file) => form.append('photos[]', file))

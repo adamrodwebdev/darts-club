@@ -4,8 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import PosterField from '@/components/events/PosterField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { localInputToIso, toLocalInput } from '@/models/ClubEvent'
+import { localInputToIso, toLocalInput, type EventPoster } from '@/models/ClubEvent'
 import { services } from '@/services'
 
 /** Création (sans id) ou modification d'un événement — organisateurs uniquement. */
@@ -19,6 +20,12 @@ const location = ref('')
 const startsAt = ref('')
 const endsAt = ref('')
 const capacity = ref('')
+/** Affiche déjà en ligne, nouveau fichier choisi, ou retrait demandé */
+const currentPoster = ref<EventPoster | null>(null)
+const posterFile = ref<File | null>(null)
+const removePoster = ref(false)
+/** Événement déjà créé : un nouvel envoi le modifie au lieu d'en créer un second */
+const eventId = ref(props.id)
 const save = useAsyncAction()
 const load = useAsyncAction()
 
@@ -32,6 +39,7 @@ onMounted(async () => {
     startsAt.value = toLocalInput(detail.summary.startsAt)
     endsAt.value = toLocalInput(detail.summary.endsAt)
     capacity.value = detail.summary.capacity?.toString() ?? ''
+    currentPoster.value = detail.summary.poster
   }
 })
 
@@ -44,14 +52,22 @@ async function submit(): Promise<void> {
     endsAt: endsAt.value ? localInputToIso(endsAt.value) : '',
     capacity: capacity.value ? Number.parseInt(capacity.value, 10) : null,
   }
-  const saved = await save.run(() => (props.id ? services.events.update(props.id, draft) : services.events.create(draft)))
+  const saved = await save.run(async () => {
+    const id = eventId.value
+    const event = id ? await services.events.update(id, draft) : await services.events.create(draft)
+    eventId.value = event.id
+    // Affiche envoyée une fois l'événement enregistré ; en cas d'échec, le formulaire reste ouvert
+    if (posterFile.value) await services.events.setPoster(event.id, posterFile.value)
+    else if (removePoster.value && currentPoster.value) await services.events.removePoster(event.id)
+    return event
+  })
   if (saved) await router.push(`/evenements/${saved.id}`)
 }
 </script>
 
 <template>
   <section class="page page--form stack">
-    <h1>{{ id ? t('events.form.editTitle') : t('events.form.createTitle') }}</h1>
+    <h1>{{ eventId ? t('events.form.editTitle') : t('events.form.createTitle') }}</h1>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
     <p class="muted">
       {{ id ? t('events.form.editHint') : t('events.form.createHint') }}
@@ -66,8 +82,9 @@ async function submit(): Promise<void> {
       </div>
       <BaseField v-model="capacity" :label="t('events.form.capacity')" type="number" />
       <BaseField v-model="description" :label="t('events.form.description')" multiline :maxlength="5000" />
+      <PosterField v-model:file="posterFile" v-model:remove="removePoster" :current="currentPoster" />
       <p v-if="save.error.value" class="notice notice--error" role="alert">{{ save.error.value }}</p>
-      <BaseButton type="submit" :pending="save.pending.value">{{ id ? t('common.save') : t('events.form.publish') }}</BaseButton>
+      <BaseButton type="submit" :pending="save.pending.value">{{ eventId ? t('common.save') : t('events.form.publish') }}</BaseButton>
     </form>
   </section>
 </template>

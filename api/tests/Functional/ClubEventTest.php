@@ -187,6 +187,55 @@ final class ClubEventTest extends ApiTestCase
         unset($alice);
     }
 
+    public function testOrganizersAttachAPosterToAnUpcomingEvent(): void
+    {
+        $this->createUser('alice@example.com');
+        $id = $this->createEventAsSecretary();
+
+        $this->uploadPoster($id);
+        self::assertResponseStatusCodeSame(201);
+        $first = $this->json();
+        self::assertGreaterThan(0, $first['width']);
+        $cardUrl = $this->digString($first, 'cardUrl');
+
+        $this->client->request('GET', '/api/events');
+        self::assertSame($cardUrl, $this->dig($this->json(), 'items', 0, 'poster', 'cardUrl'));
+
+        $this->client->request('GET', $cardUrl);
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'image/webp');
+        self::assertStringContainsString('immutable', (string) $this->client->getResponse()->headers->get('Cache-Control'));
+        $this->client->request('GET', "/api/events/{$id}/poster/".str_repeat('a', 32));
+        self::assertResponseStatusCodeSame(404, 'Fichier d\'un autre événement ou inexistant');
+
+        // Nouvelle affiche : l'ancienne disparaît
+        $this->uploadPoster($id);
+        self::assertResponseStatusCodeSame(201);
+        $this->client->request('GET', $cardUrl);
+        self::assertResponseStatusCodeSame(404);
+
+        $this->client->request('POST', "/api/events/{$id}/poster", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+        self::assertResponseStatusCodeSame(422, 'Aucun fichier');
+
+        $this->switchTo('alice@example.com');
+        $this->client->request('GET', "/api/events/{$id}");
+        self::assertNotNull($this->json()['poster']);
+        $this->uploadPoster($id);
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request('DELETE', "/api/events/{$id}/poster", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+        self::assertResponseStatusCodeSame(403);
+
+        $this->loginAsSecretaryAgain();
+        $this->client->request('DELETE', "/api/events/{$id}/poster", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+        self::assertResponseStatusCodeSame(204);
+        $this->client->request('GET', "/api/events/{$id}");
+        self::assertNull($this->json()['poster']);
+
+        $this->postJson("/api/events/{$id}/cancel", ['reason' => 'Salle indisponible']);
+        $this->uploadPoster($id);
+        self::assertResponseStatusCodeSame(422, 'Pas d\'affiche sur un événement annulé');
+    }
+
     public function testArchivesAreFilteredBySeasonAndSearch(): void
     {
         $this->createUser('alice@example.com');
@@ -254,6 +303,15 @@ final class ClubEventTest extends ApiTestCase
         }
 
         $this->client->request('POST', "/api/events/{$eventId}/photos", files: ['photos' => $files], server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+    }
+
+    private function uploadPoster(string $eventId): void
+    {
+        $copy = tempnam(sys_get_temp_dir(), 'poster');
+        self::assertIsString($copy);
+        copy(__DIR__.'/../Fixtures/avatar.jpg', $copy);
+
+        $this->client->request('POST', "/api/events/{$eventId}/poster", files: ['poster' => new UploadedFile($copy, 'affiche.jpg', test: true)], server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
     }
 
     private string $secretarySecret = '';

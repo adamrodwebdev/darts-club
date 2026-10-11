@@ -78,6 +78,19 @@
       "addedBy": "Added by {name}",
       "previous": "← Previous",
       "next": "Next →"
+    },
+    "poster": {
+      "label": "Poster (optional)",
+      "hint": "JPEG, PNG or WebP, 10 MB at most. Shown to members in the calendar.",
+      "choose": "Choose an image",
+      "replace": "Replace the poster",
+      "remove": "Remove the poster",
+      "undo": "Keep the poster",
+      "removed": "The poster will be removed when you save.",
+      "preview": "Poster preview",
+      "tooLarge": "Image too large: 10 MB at most.",
+      "wrongType": "Unsupported format: JPEG, PNG or WebP.",
+      "alt": "Poster for “{title}”"
     }
   }
 }

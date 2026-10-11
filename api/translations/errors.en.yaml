@@ -71,5 +71,6 @@
 'Une cotisation %season% existe déjà pour cet adhérent.': 'A %season% membership fee already exists for this member.'
 'Valeur chiffrée attendue sous forme de chaîne.': 'Encrypted value expected as a string.'
 '« %file% » : fichier invalide ou trop lourd (10 Mo maximum).': '“%file%”: invalid or too large file (10 MB maximum).'
+'Joins une image (champ « poster »).': 'Attach an image (“poster” field).'
 '« userIds » doit être une liste.': '“userIds” must be a list.'
 'Seul un administrateur peut réactiver un administrateur.': 'Only an administrator can reactivate an administrator.'

@@ -2,6 +2,20 @@ import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import { parseMember, type Member } from './Conversation'
 import { bool, list, num, obj, optStr, str, type Json } from './guards'
 
+/** Affiche d'un événement (WebP) : version carte pour le calendrier, grande version pour la page */
+export interface EventPoster {
+  cardUrl: string
+  largeUrl: string
+  width: number
+  height: number
+}
+
+function parsePoster(value: unknown): EventPoster | null {
+  if (value === null || value === undefined) return null
+  const d = obj(value, 'affiche')
+  return { cardUrl: str(d.cardUrl), largeUrl: str(d.largeUrl), width: num(d.width), height: num(d.height) }
+}
+
 export class EventSummary {
   constructor(
     readonly id: string,
@@ -19,6 +33,7 @@ export class EventSummary {
     readonly started: boolean,
     readonly past: boolean,
     readonly hasSummary: boolean,
+    readonly poster: EventPoster | null = null,
   ) {}
 
   static parse(value: unknown): EventSummary {
@@ -43,6 +58,7 @@ export class EventSummary {
       bool(d.started),
       bool(d.past),
       bool(d.hasSummary),
+      parsePoster(d.poster),
     )
   }
 

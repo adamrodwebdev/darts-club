@@ -28,6 +28,17 @@ const block = computed(() => dateBlock(props.event.startsAt))
         <span v-if="event.past && event.hasSummary" class="tag">{{ t('events.card.summary') }}</span>
       </span>
     </span>
+    <!-- Décorative : le titre de l'événement est déjà dans le lien -->
+    <img
+      v-if="event.poster"
+      class="poster"
+      :src="event.poster.cardUrl"
+      :width="event.poster.width"
+      :height="event.poster.height"
+      alt=""
+      loading="lazy"
+      decoding="async"
+    >
   </RouterLink>
 </template>
 
@@ -80,8 +91,18 @@ const block = computed(() => dateBlock(props.event.startsAt))
 
 .info {
   display: grid;
+  flex: 1;
   gap: 0.2rem;
   min-width: 0;
+}
+
+.poster {
+  flex: none;
+  width: clamp(3.5rem, 18vw, 5.5rem);
+  height: auto;
+  max-height: 7.5rem;
+  border-radius: calc(var(--radius) / 2);
+  object-fit: cover;
 }
 
 .info__title {

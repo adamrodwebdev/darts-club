@@ -7,6 +7,7 @@ use App\ClubEvent\ClubEventRescheduled;
 use App\ClubEvent\ClubEventScheduled;
 use App\ClubEvent\EventDetails;
 use App\ClubEvent\EventStatus;
+use App\ClubEvent\Poster;
 use App\ClubEvent\RegistrationException;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
@@ -73,6 +74,19 @@ class ClubEvent implements RecordsDomainEvents
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $dayReminderSentAt = null;
+
+    /** Affiche (voir Poster) : les quatre colonnes sont renseignées ensemble ou vides */
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $posterLargeId = null;
+
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $posterCardId = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $posterWidth = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $posterHeight = null;
 
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'event', cascade: ['persist'], orphanRemoval: true)]
@@ -165,6 +179,42 @@ class ClubEvent implements RecordsDomainEvents
                 return;
             }
         }
+    }
+
+    /**
+     * Pose (ou remplace) l'affiche.
+     *
+     * @return Poster|null l'affiche remplacée, dont les fichiers sont à supprimer
+     */
+    public function attachPoster(Poster $poster): ?Poster
+    {
+        $this->assertScheduled();
+        $previous = $this->poster();
+        $this->posterLargeId = $poster->largeId;
+        $this->posterCardId = $poster->cardId;
+        $this->posterWidth = $poster->width;
+        $this->posterHeight = $poster->height;
+
+        return $previous;
+    }
+
+    /** @return Poster|null l'affiche retirée, dont les fichiers sont à supprimer */
+    public function removePoster(): ?Poster
+    {
+        $previous = $this->poster();
+        $this->posterLargeId = $this->posterCardId = null;
+        $this->posterWidth = $this->posterHeight = null;
+
+        return $previous;
+    }
+
+    public function poster(): ?Poster
+    {
+        if (null === $this->posterLargeId || null === $this->posterCardId || null === $this->posterWidth || null === $this->posterHeight) {
+            return null;
+        }
+
+        return new Poster($this->posterLargeId, $this->posterCardId, $this->posterWidth, $this->posterHeight);
     }
 
     public function writeSummary(string $summary): void

@@ -35,5 +35,9 @@ services:
     app.storage.event_photos:
         class: App\Media\FilesystemImageStorage
         arguments: ['%kernel.project_dir%/var/storage/event-photos']
+    app.storage.event_posters:
+        class: App\Media\FilesystemImageStorage
+        arguments: ['%kernel.project_dir%/var/storage/event-posters']
     App\Media\ImageStorage $avatarStorage: '@app.storage.avatars'
     App\Media\ImageStorage $eventPhotoStorage: '@app.storage.event_photos'
+    App\Media\ImageStorage $eventPosterStorage: '@app.storage.event_posters'

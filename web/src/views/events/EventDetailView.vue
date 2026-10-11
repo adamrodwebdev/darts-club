@@ -92,6 +92,19 @@ async function saveSummary(): Promise<void> {
         <p v-if="event.cancelled" class="notice notice--error" role="status">{{ t('events.detail.cancelled', { reason: event.cancelReason ?? '' }) }}</p>
       </header>
 
+      <a v-if="event.poster" class="poster" :href="event.poster.largeUrl" target="_blank" rel="noopener">
+        <img
+          :src="event.poster.cardUrl"
+          :srcset="`${event.poster.cardUrl} 900w, ${event.poster.largeUrl} 1600w`"
+          sizes="(min-width: 768px) 28rem, 100vw"
+          :width="event.poster.width"
+          :height="event.poster.height"
+          :alt="t('events.poster.alt', { title: event.title })"
+          fetchpriority="high"
+        >
+        <span class="visually-hidden">{{ t('common.newTab') }}</span>
+      </a>
+
       <div class="actions">
         <BaseButton
           v-if="!event.cancelled && !event.started"
@@ -197,6 +210,21 @@ async function saveSummary(): Promise<void> {
 </template>
 
 <style scoped>
+.poster {
+  display: block;
+  justify-self: center;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
 .back {
   display: inline-flex;
   align-items: center;

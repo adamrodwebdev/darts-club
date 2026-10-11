@@ -35,6 +35,7 @@ final class ClubEventView
             'started' => $event->hasStarted($now),
             'past' => $event->isPast($now),
             'hasSummary' => null !== $event->getSummary(),
+            'poster' => $event->poster()?->toArray($event->getId()->toRfc4122()),
         ];
     }
 
