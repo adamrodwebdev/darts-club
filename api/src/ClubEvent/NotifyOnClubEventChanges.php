@@ -20,6 +20,7 @@ final class NotifyOnClubEventChanges
     public function __construct(
         private readonly ClubEventRepository $events,
         private readonly MemberNotifier $notifier,
+        private readonly GuestMailer $guests,
     ) {
     }
 
@@ -34,7 +35,11 @@ final class NotifyOnClubEventChanges
     public function onRescheduled(ClubEventRescheduled $event): void
     {
         $clubEvent = $this->events->find($event->eventId);
-        if (null === $clubEvent || [] === $clubEvent->participants()) {
+        if (null === $clubEvent) {
+            return;
+        }
+        $this->guests->notifyGuests($clubEvent, 'rescheduled');
+        if ([] === $clubEvent->participants()) {
             return;
         }
 
@@ -47,6 +52,10 @@ final class NotifyOnClubEventChanges
     public function onCancelled(ClubEventCancelled $event): void
     {
         $this->notify($event->eventId, Category::Cancellation, 'event.cancelled', null);
+        $clubEvent = $this->events->find($event->eventId);
+        if (null !== $clubEvent) {
+            $this->guests->notifyGuests($clubEvent, 'cancelled');
+        }
     }
 
     /** @param string $titleKey clé du domaine « notifications », paramètre %title% */

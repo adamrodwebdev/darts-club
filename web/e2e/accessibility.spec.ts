@@ -111,3 +111,24 @@ for (const { locale, login, pages } of memberPages) {
     }
   })
 }
+
+// Page publique d'un événement (API simulée), dans les deux thèmes
+for (const theme of THEMES) {
+  test(`public event page meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
+    const slug = 'soiree-cricket-2026-11-14-a1b2c3'
+    await page.route(`**/api/public/events/${slug}`, (route) =>
+      route.fulfill({
+        json: {
+          slug, title: 'Soirée cricket', description: 'Initiation et tournoi amical.', city: 'Louhans',
+          startsAt: '2026-11-14T19:00:00+00:00', endsAt: '2026-11-14T23:00:00+00:00', status: 'prevu', cancelReason: null,
+          capacity: null, going: 2, maybe: 1, full: false, started: false, past: false, poster: null,
+        },
+      }),
+    )
+    // Animations coupées dès le chargement : contrastes mesurés hors fondu d'apparition
+    await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
+    await page.goto(`/e/${slug}`)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
+    await audit(page)
+  })
+}

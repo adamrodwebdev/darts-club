@@ -20,6 +20,8 @@ const location = ref('')
 const startsAt = ref('')
 const endsAt = ref('')
 const capacity = ref('')
+const isPublic = ref(false)
+const city = ref('')
 /** Affiche déjà en ligne, nouveau fichier choisi, ou retrait demandé */
 const currentPoster = ref<EventPoster | null>(null)
 const posterFile = ref<File | null>(null)
@@ -40,6 +42,8 @@ onMounted(async () => {
     endsAt.value = toLocalInput(detail.summary.endsAt)
     capacity.value = detail.summary.capacity?.toString() ?? ''
     currentPoster.value = detail.summary.poster
+    isPublic.value = detail.summary.isPublic
+    city.value = detail.summary.city ?? ''
   }
 })
 
@@ -51,6 +55,8 @@ async function submit(): Promise<void> {
     startsAt: startsAt.value ? localInputToIso(startsAt.value) : '',
     endsAt: endsAt.value ? localInputToIso(endsAt.value) : '',
     capacity: capacity.value ? Number.parseInt(capacity.value, 10) : null,
+    public: isPublic.value,
+    city: city.value,
   }
   const saved = await save.run(async () => {
     const id = eventId.value
@@ -75,7 +81,7 @@ async function submit(): Promise<void> {
 
     <form class="stack" novalidate @submit.prevent="submit">
       <BaseField v-model="title" :label="t('events.form.title')" required :maxlength="120" />
-      <BaseField v-model="location" :label="t('events.form.location')" required :maxlength="160" />
+      <BaseField v-model="location" :label="t('events.form.location')" :hint="t('events.form.locationHint')" required :maxlength="160" />
       <div class="dates">
         <BaseField v-model="startsAt" :label="t('events.form.startsAt')" type="datetime-local" required />
         <BaseField v-model="endsAt" :label="t('events.form.endsAt')" type="datetime-local" required />
@@ -83,6 +89,15 @@ async function submit(): Promise<void> {
       <BaseField v-model="capacity" :label="t('events.form.capacity')" type="number" />
       <BaseField v-model="description" :label="t('events.form.description')" multiline :maxlength="5000" />
       <PosterField v-model:file="posterFile" v-model:remove="removePoster" :current="currentPoster" />
+      <fieldset class="public">
+        <legend>{{ t('events.form.publicLegend') }}</legend>
+        <label class="check">
+          <input v-model="isPublic" type="checkbox">
+          <span>{{ t('events.form.public') }}</span>
+        </label>
+        <p class="muted hint">{{ t('events.form.publicHint') }}</p>
+        <BaseField v-if="isPublic" v-model="city" :label="t('events.form.city')" :hint="t('events.form.cityHint')" required :maxlength="80" />
+      </fieldset>
       <p v-if="save.error.value" class="notice notice--error" role="alert">{{ save.error.value }}</p>
       <BaseButton type="submit" :pending="save.pending.value">{{ eventId ? t('common.save') : t('events.form.publish') }}</BaseButton>
     </form>
@@ -97,6 +112,40 @@ async function submit(): Promise<void> {
 .dates {
   display: grid;
   gap: 1rem;
+}
+
+.public {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.public legend {
+  padding: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
+.check input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.85rem;
 }
 
 @media (min-width: 640px) {

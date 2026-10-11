@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { EventSummary, parseEventDetail, type EventDetail } from '@/models/ClubEvent'
+import { EventSummary, parseEventDetail, type Attendance, type EventDetail } from '@/models/ClubEvent'
 import { bool, list, obj, str } from '@/models/guards'
 
 export interface EventDraft {
@@ -10,6 +10,10 @@ export interface EventDraft {
   startsAt: string
   endsAt: string
   capacity: number | null
+  /** Page publique : réponses possibles sans compte */
+  public: boolean
+  /** Seule indication de lieu montrée au public */
+  city: string
 }
 
 export interface EventQuery {
@@ -50,8 +54,9 @@ export class EventService {
     await this.api.put(`/api/events/${encodeURIComponent(id)}/summary`, { summary })
   }
 
-  async register(id: string): Promise<void> {
-    await this.api.post(`/api/events/${encodeURIComponent(id)}/registration`)
+  /** Réponse de l'adhérent (ou changement d'avis) */
+  async respond(id: string, answer: Attendance): Promise<void> {
+    await this.api.post(`/api/events/${encodeURIComponent(id)}/registration`, { answer })
   }
 
   async unregister(id: string): Promise<void> {

@@ -25,6 +25,19 @@ framework:
             policy: sliding_window
             limit: 10
             interval: '1 hour'
+        # Réponses sans compte : par adresse IP et par email (envoi d'un lien)
+        guest_response_ip:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'
+        guest_response_email:
+            policy: sliding_window
+            limit: 3
+            interval: '1 hour'
+        guest_token:
+            policy: sliding_window
+            limit: 30
+            interval: '15 minutes'
         photo_upload:
             policy: sliding_window
             limit: 60

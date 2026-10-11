@@ -10,7 +10,7 @@ import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import PhotoGallery from '@/components/events/PhotoGallery.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { formatEventDate, type EventDetail } from '@/models/ClubEvent'
+import { formatEventDate, type Attendance, type EventDetail } from '@/models/ClubEvent'
 import { services } from '@/services'
 
 const props = defineProps<{ id: string }>()
@@ -26,6 +26,10 @@ const draftPost = ref('')
 const cancelling = ref(false)
 const cancelReason = ref('')
 const editingSummary = ref(false)
+const copied = ref(false)
+const publicUrl = computed(() => (event.value?.publicPath ? window.location.origin + event.value.publicPath : null))
+const going = computed(() => detail.value?.participants?.filter((p) => p.answer === 'je-viens') ?? [])
+const unsure = computed(() => detail.value?.participants?.filter((p) => p.answer === 'pas-sur') ?? [])
 const summaryDraft = ref('')
 
 async function refresh(): Promise<void> {
@@ -34,14 +38,26 @@ async function refresh(): Promise<void> {
 }
 onMounted(refresh)
 
-async function toggleRegistration(): Promise<void> {
+/** Réponse de l'adhérent ; null = retirer sa réponse */
+async function answer(choice: Attendance | null): Promise<void> {
   const e = event.value
   if (!e) return
   const ok = await registration.run(async () => {
-    await (e.isRegistered ? services.events.unregister(e.id) : services.events.register(e.id))
+    await (choice ? services.events.respond(e.id, choice) : services.events.unregister(e.id))
     return true
   })
   if (ok) await refresh()
+}
+
+async function copyPublicLink(): Promise<void> {
+  if (!publicUrl.value) return
+  try {
+    await navigator.clipboard.writeText(publicUrl.value)
+    copied.value = true
+    window.setTimeout(() => (copied.value = false), 2500)
+  } catch {
+    copied.value = false
+  }
 }
 
 async function sendPost(): Promise<void> {
@@ -106,15 +122,26 @@ async function saveSummary(): Promise<void> {
       </a>
 
       <div class="actions">
-        <BaseButton
-          v-if="!event.cancelled && !event.started"
-          :variant="event.isRegistered ? 'ghost' : 'primary'"
-          :disabled="!event.isRegistered && event.full"
-          :pending="registration.pending.value"
-          @click="toggleRegistration"
-        >
-          {{ event.isRegistered ? t('events.detail.unregister') : event.full ? t('events.detail.full') : t('events.detail.register') }}
-        </BaseButton>
+        <div v-if="!event.cancelled && !event.started" class="answers" role="group" :aria-label="t('events.answer.label')">
+          <BaseButton
+            :variant="event.myAnswer === 'je-viens' ? 'primary' : 'ghost'"
+            :aria-pressed="event.myAnswer === 'je-viens'"
+            :disabled="event.full && event.myAnswer !== 'je-viens'"
+            :pending="registration.pending.value"
+            @click="answer('je-viens')"
+          >
+            {{ event.full && event.myAnswer !== 'je-viens' ? t('events.detail.full') : t('events.answer.going') }}
+          </BaseButton>
+          <BaseButton
+            :variant="event.myAnswer === 'pas-sur' ? 'primary' : 'ghost'"
+            :aria-pressed="event.myAnswer === 'pas-sur'"
+            :pending="registration.pending.value"
+            @click="answer('pas-sur')"
+          >
+            {{ t('events.answer.maybe') }}
+          </BaseButton>
+          <BaseButton v-if="event.myAnswer" variant="ghost" :pending="registration.pending.value" @click="answer(null)">{{ t('events.answer.withdraw') }}</BaseButton>
+        </div>
         <a class="link-button" :href="services.events.icsUrl(event.id)" download>{{ t('events.detail.addToCalendar') }}</a>
         <span class="muted">
           {{
@@ -122,9 +149,20 @@ async function saveSummary(): Promise<void> {
               ? t('events.detail.registeredOf', { n: event.registered, capacity: event.capacity }, event.registered)
               : t('events.detail.registered', event.registered)
           }}
+          <template v-if="event.maybe">· {{ t('events.answer.maybeCount', event.maybe) }}</template>
         </span>
       </div>
       <p v-if="registration.error.value" class="notice notice--error" role="alert">{{ registration.error.value }}</p>
+
+      <section v-if="publicUrl && !event.cancelled" class="card share" aria-labelledby="share-title">
+        <h2 id="share-title">{{ t('events.share.title') }}</h2>
+        <p class="muted">{{ t('events.share.text', { city: event.city ?? '' }) }}</p>
+        <div class="actions">
+          <a :href="publicUrl" target="_blank" rel="noopener" class="share__url">{{ publicUrl }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
+          <BaseButton variant="ghost" @click="copyPublicLink">{{ copied ? t('events.share.copied') : t('events.share.copy') }}</BaseButton>
+        </div>
+        <p class="visually-hidden" role="status"><template v-if="copied">{{ t('events.share.copied') }}</template></p>
+      </section>
 
       <section v-if="detail.description" class="card">
         <h2>{{ t('events.detail.description') }}</h2>
@@ -176,12 +214,30 @@ async function saveSummary(): Promise<void> {
         </div>
         <p v-if="manage.error.value" class="notice notice--error" role="alert">{{ manage.error.value }}</p>
         <details v-if="detail.participants">
-          <summary>{{ t('events.detail.participants', { count: detail.participants.length }) }}</summary>
+          <summary>{{ t('events.detail.participants', { count: going.length }) }}</summary>
           <ul class="participants">
-            <li v-for="m in detail.participants" :key="m.id ?? m.displayName">
+            <li v-for="m in going" :key="m.id ?? m.displayName">
               <UserAvatar :name="m.displayName" :src="m.avatarUrl" :size="28" /> {{ m.displayName }}
             </li>
           </ul>
+        </details>
+        <details v-if="unsure.length">
+          <summary>{{ t('events.answer.unsureList', { count: unsure.length }) }}</summary>
+          <ul class="participants">
+            <li v-for="m in unsure" :key="m.id ?? m.displayName">
+              <UserAvatar :name="m.displayName" :src="m.avatarUrl" :size="28" /> {{ m.displayName }}
+            </li>
+          </ul>
+        </details>
+        <details v-if="detail.guests && detail.guests.length">
+          <summary>{{ t('events.guests.title', { count: detail.guests.length }) }}</summary>
+          <ul class="guests">
+            <li v-for="g in detail.guests" :key="g.email">
+              <strong>{{ g.name }}</strong> · {{ t(`events.answer.${g.answer === 'je-viens' ? 'going' : 'maybe'}`) }}
+              <a :href="`mailto:${g.email}`" class="muted">{{ g.email }}</a>
+            </li>
+          </ul>
+          <p class="muted small">{{ t('events.guests.privacy') }}</p>
         </details>
       </section>
 
@@ -223,6 +279,32 @@ async function saveSummary(): Promise<void> {
   height: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+}
+
+.answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.share__url {
+  overflow-wrap: anywhere;
+}
+
+.guests {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guests a {
+  overflow-wrap: anywhere;
+}
+
+.small {
+  font-size: 0.85rem;
 }
 
 .back {

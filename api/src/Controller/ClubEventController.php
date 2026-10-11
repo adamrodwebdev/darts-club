@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\ClubEvent\Attendance;
 use App\ClubEvent\ClubEvents;
 use App\ClubEvent\ClubEventView;
 use App\ClubEvent\EventDetails;
@@ -18,6 +19,7 @@ use App\Repository\EventPhotoRepository;
 use App\Repository\EventPostRepository;
 use App\Security\Voter\ClubEventVoter;
 use App\Translation\InvalidValue;
+use App\Translation\Unprocessable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -121,9 +123,11 @@ final class ClubEventController extends AbstractController
     }
 
     #[Route('/api/events/{id}/registration', name: 'events_register', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
-    public function register(ClubEvent $event, #[CurrentUser] User $user): Response
+    public function register(ClubEvent $event, Request $request, #[CurrentUser] User $user): Response
     {
-        $this->events->register($event, $user);
+        // Corps facultatif : {answer: "je-viens" | "pas-sur"} (défaut : je viens)
+        $answer = '' !== $request->getContent() ? ($request->toArray()['answer'] ?? null) : null;
+        $this->events->respond($event, $user, null === $answer ? Attendance::Going : self::attendance($answer));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -261,7 +265,7 @@ final class ClubEventController extends AbstractController
     }
 
     /**
-     * Corps : {title, description, location, startsAt, endsAt (ISO 8601 avec décalage), capacity?}.
+     * Corps : {title, description, location, startsAt, endsAt (ISO 8601 avec décalage), capacity?, public?, city?}.
      */
     private static function details(Request $request): EventDetails
     {
@@ -285,7 +289,15 @@ final class ClubEventController extends AbstractController
             $date('startsAt'),
             $date('endsAt'),
             \is_int($capacity) ? $capacity : null,
+            true === ($data['public'] ?? false),
+            $text('city'),
         );
+    }
+
+    public static function attendance(mixed $value): Attendance
+    {
+        return (\is_string($value) ? Attendance::tryFrom($value) : null)
+            ?? throw new Unprocessable('Réponse inconnue : « je-viens » ou « pas-sur » attendu.');
     }
 
     /**

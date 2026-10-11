@@ -57,9 +57,12 @@ final class ClubEvents
         $this->em->flush();
     }
 
-    public function register(ClubEvent $event, User $member): void
+    public function respond(ClubEvent $event, User $member, Attendance $answer): void
     {
-        $this->em->persist($event->register($member, $this->now()));
+        $registration = $event->respond($member, $answer, $this->now());
+        if (null !== $registration) {
+            $this->em->persist($registration);
+        }
         $this->em->flush();
     }
 

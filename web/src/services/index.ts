@@ -5,6 +5,7 @@ import { EventService } from './EventService'
 import { MessagingService } from './MessagingService'
 import { NotificationService } from './NotificationService'
 import { ProfileService } from './ProfileService'
+import { PublicEventService } from './PublicEventService'
 import { PushService } from './PushService'
 import { RealtimeClient } from './RealtimeClient'
 import { TreasuryService } from './TreasuryService'
@@ -22,6 +23,7 @@ export const services = {
   treasury: new TreasuryService(api),
   admin: new AdminService(api),
   events: new EventService(api),
+  publicEvents: new PublicEventService(api),
 }
 
 export type Services = typeof services

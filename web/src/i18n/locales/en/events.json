@@ -49,13 +49,20 @@
       "endsAt": "End",
       "capacity": "Number of places (empty = unlimited)",
       "description": "Description",
-      "publish": "Publish the event"
+      "publish": "Publish the event",
+      "locationHint": "Full address: visible to members, and to guests once their answer is confirmed.",
+      "publicLegend": "Open to the public",
+      "public": "Open to the public (answer without an account)",
+      "publicHint": "A public page is created, to share (Facebook, poster…). It shows the city, never the address or the participants’ names.",
+      "city": "City shown publicly",
+      "cityHint": "For example “Louhans”."
     },
     "card": {
       "registered": "Registered",
       "full": "Full",
       "placesLeft": "no places left | {n} place left | {n} places left",
-      "summary": "Summary"
+      "summary": "Summary",
+      "public": "Public"
     },
     "calendar": {
       "title": "Club calendar in my own calendar",
@@ -91,6 +98,55 @@
       "tooLarge": "Image too large: 10 MB at most.",
       "wrongType": "Unsupported format: JPEG, PNG or WebP.",
       "alt": "Poster for “{title}”"
+    },
+    "answer": {
+      "label": "Your answer",
+      "going": "I’m coming",
+      "maybe": "Not sure",
+      "withdraw": "Withdraw my answer",
+      "maybeCount": "no “not sure” | {n} “not sure” | {n} “not sure”",
+      "unsureList": "Not sure ({count})"
+    },
+    "share": {
+      "title": "Public page",
+      "text": "Anyone, even without an account, can answer “I’m coming” or “Not sure” there. Only the city ({city}) is shown.",
+      "copy": "Copy the link",
+      "copied": "Link copied"
+    },
+    "guests": {
+      "title": "Guests without an account ({count})",
+      "privacy": "These addresses are only used for this event; they are deleted 30 days after it."
     }
+  },
+  "publicEvent": {
+    "kicker": "Skull Darts 71 · open event",
+    "going": "nobody is coming yet | {n} person is coming | {n} people are coming",
+    "member": "You are a member: answer from {link} instead.",
+    "memberLink": "your space",
+    "formTitle": "Are you coming?",
+    "name": "First name or nickname",
+    "emailHint": "To confirm your answer and warn you of any change. Never shown.",
+    "consent": "I agree that Skull Darts 71 uses my first name and email for this event only ({link}).",
+    "privacyLink": "privacy",
+    "submit": "Send my answer",
+    "sentTitle": "One more step!",
+    "sent": "If {email} is valid, an email is on its way: click its link to confirm your answer (within 48 hours).",
+    "closed": "Answers are closed for this event.",
+    "join": "Fancy playing more often? {link}",
+    "joinLink": "Discover the club",
+    "trap": "Leave empty"
+  },
+  "guestResponse": {
+    "invalid": "This link is not (or no longer) valid.",
+    "backToEvent": "Back to the event",
+    "pending": "{name}, you answered “{answer}”. Confirm so that it counts.",
+    "expired": "This link has expired: send your answer again from the event page.",
+    "confirm": "Confirm my answer",
+    "confirmed": "Got it, {name}: “{answer}”.",
+    "location": "Address: {location}",
+    "switchTo": "Change to “{answer}”",
+    "cancel": "Cancel my answer",
+    "removed": "Your answer is withdrawn and your data deleted.",
+    "keepEmail": "Keep the email you received: its link brings you back here."
   }
 }

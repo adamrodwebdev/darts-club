@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
+use App\ClubEvent\Attendance;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
-/** Inscription d'un adhérent à un événement ; créée par ClubEvent::register(). */
+/** Réponse d'un adhérent à un événement (« je viens » ou « pas sûr ») ; créée par ClubEvent::respond(). */
 #[ORM\Entity]
 #[ORM\Table(name: 'event_registration')]
 #[ORM\UniqueConstraint(name: 'uniq_registration_event_user', columns: ['event_id', 'user_id'])]
@@ -25,6 +26,8 @@ class Registration
         private User $user,
         #[ORM\Column]
         private \DateTimeImmutable $registeredAt,
+        #[ORM\Column(length: 10, enumType: Attendance::class, options: ['default' => 'je-viens'])]
+        private Attendance $answer = Attendance::Going,
     ) {
         $this->id = Uuid::v7();
     }
@@ -32,6 +35,17 @@ class Registration
     public function isFor(User $user): bool
     {
         return $this->user->getId()->equals($user->getId());
+    }
+
+    public function answer(): Attendance
+    {
+        return $this->answer;
+    }
+
+    /** Appelé par ClubEvent::respond(), qui contrôle les places */
+    public function changeAnswer(Attendance $answer): void
+    {
+        $this->answer = $answer;
     }
 
     public function getId(): Uuid

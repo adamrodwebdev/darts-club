@@ -1,0 +1,8 @@
+{% trans_default_domain 'emails' %}
+<p>{{ 'greeting'|trans }}</p>
+<p>{{ 'guest.link.intro'|trans({'%answer%': answer|trans, '%title%': title, '%date%': date|trans, '%city%': city}) }}</p>
+<p><a href="{{ link }}">{{ 'guest.link.button'|trans }}</a></p>
+<p>{{ 'guest.link.manage'|trans }}</p>
+<p>{{ 'guest.link.expires'|trans }}</p>
+<hr>
+<p style="font-size:12px;color:#666">{{ 'guest.link.ignore'|trans }} {{ 'guest.privacy'|trans }}</p>
