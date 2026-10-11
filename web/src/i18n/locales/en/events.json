@@ -116,6 +116,25 @@
     "guests": {
       "title": "Guests without an account ({count})",
       "privacy": "These addresses are only used for this event; they are deleted 30 days after it."
+    },
+    "audience": {
+      "title": "Announcement audience",
+      "adminOnly": "Visible to the administrator only.",
+      "unique": "Unique people",
+      "members": "Members",
+      "visitors": "Anonymous visitors",
+      "approx": "≈ {n}",
+      "responseRate": "Answered",
+      "percent": "{n}%",
+      "none": "—",
+      "byDay": "New people per day",
+      "day": "Day",
+      "chart": "Chart",
+      "empty": "No views yet.",
+      "method": "Each person counts once: members exactly (by their account), anonymous visitors as an estimate (same network and same browser). No cookies; organizers and bots excluded.",
+      "closed": "Measurement ended (30 days after the event): figures are final.",
+      "archived": "Detail deleted after 13 months: only totals are kept.",
+      "export": "Export (CSV)"
     }
   },
   "publicEvent": {

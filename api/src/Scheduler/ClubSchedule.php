@@ -2,6 +2,7 @@
 
 namespace App\Scheduler;
 
+use App\ClubEvent\PurgeAudience;
 use App\ClubEvent\PurgeGuestResponses;
 use App\ClubEvent\SendEventReminders;
 use App\Membership\SendMembershipReminders;
@@ -33,6 +34,8 @@ final class ClubSchedule implements ScheduleProviderInterface
                 RecurringMessage::cron('5 * * * *', new SendEventReminders()),
                 // Réponses sans compte : conservation limitée, chaque nuit à 4 h 20
                 RecurringMessage::cron('20 4 * * *', new PurgeGuestResponses()),
+                // Mesure d'audience : clés détruites, détail résumé (4 h 30)
+                RecurringMessage::cron('30 4 * * *', new PurgeAudience()),
             );
     }
 }

@@ -1,5 +1,6 @@
 import type { ApiClient } from '@/api/ApiClient'
 import { EventSummary, parseEventDetail, type Attendance, type EventDetail } from '@/models/ClubEvent'
+import { parseEventAudience, type EventAudience } from '@/models/EventAudience'
 import { bool, list, obj, str } from '@/models/guards'
 
 export interface EventDraft {
@@ -61,6 +62,20 @@ export class EventService {
 
   async unregister(id: string): Promise<void> {
     await this.api.delete(`/api/events/${encodeURIComponent(id)}/registration`)
+  }
+
+  /** Vue de l'annonce (mesure d'audience, sans cookie) */
+  async recordView(id: string): Promise<void> {
+    await this.api.post(`/api/events/${encodeURIComponent(id)}/view`)
+  }
+
+  /** Statistiques d'audience : administrateur uniquement */
+  async audience(id: string): Promise<EventAudience> {
+    return parseEventAudience(await this.api.get(`/api/admin/events/${encodeURIComponent(id)}/audience`))
+  }
+
+  audienceCsvUrl(id: string): string {
+    return `/api/admin/events/${encodeURIComponent(id)}/audience.csv`
   }
 
   icsUrl(id: string): string {

@@ -36,6 +36,8 @@ class ClubEvent implements RecordsDomainEvents
 
     private const WEEK = 'P7D';
     private const DAY = 'P1D';
+    /** Mesure d'audience : jusqu'à 30 jours après la fin */
+    private const AUDIENCE_WINDOW = 'P30D';
 
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
@@ -104,6 +106,14 @@ class ClubEvent implements RecordsDomainEvents
     /** Adresse de la page publique (/e/{slug}), fixée à la première ouverture au public */
     #[ORM\Column(length: 140, unique: true, nullable: true)]
     private ?string $slug = null;
+
+    /** Clé HMAC des empreintes de visiteurs (mesure d'audience), détruite 30 jours après l'événement */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $audienceKey = null;
+
+    /** @var array{members: int, visitors: int}|null totaux conservés après suppression du détail */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $archivedAudience = null;
 
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'event', cascade: ['persist'], orphanRemoval: true)]
@@ -350,6 +360,41 @@ class ClubEvent implements RecordsDomainEvents
     public function confirmedGuests(): array
     {
         return array_values(array_filter($this->guestResponses->toArray(), static fn (GuestResponse $r): bool => $r->isConfirmed()));
+    }
+
+    /**
+     * Clé servant à calculer les empreintes des visiteurs, créée à la première vue.
+     * Null une fois la mesure close : les empreintes ne peuvent plus être recalculées.
+     */
+    public function audienceKey(\DateTimeImmutable $now): ?string
+    {
+        if ($this->isAudienceClosed($now)) {
+            return null;
+        }
+
+        return $this->audienceKey ??= bin2hex(random_bytes(32));
+    }
+
+    public function isAudienceClosed(\DateTimeImmutable $now): bool
+    {
+        return $now > $this->endsAt->add(new \DateInterval(self::AUDIENCE_WINDOW));
+    }
+
+    /** Fin de la mesure : la clé est détruite, les empreintes deviennent anonymes */
+    public function closeAudience(): void
+    {
+        $this->audienceKey = null;
+    }
+
+    public function archiveAudience(int $members, int $visitors): void
+    {
+        $this->archivedAudience = ['members' => $members, 'visitors' => $visitors];
+    }
+
+    /** @return array{members: int, visitors: int}|null */
+    public function archivedAudience(): ?array
+    {
+        return $this->archivedAudience;
     }
 
     public function isPublic(): bool

@@ -58,6 +58,15 @@
     (cnil.fr), the French data protection authority.
   </p>
 
+  <h2>Audience measurement of event announcements</h2>
+  <p>
+    To know how many different people see an event announcement, the site records an irreversible fingerprint, without
+    cookies: that of your account if you are logged in, otherwise that of your IP address and browser (the IP address
+    itself is never stored). The key used to compute these fingerprints is specific to each event and destroyed 30 days
+    after it; the detail is deleted after 13 months, only totals remain. These statistics are only visible to the site
+    administrator and only serve the club (audience measurement exempt from consent under the CNIL guidelines).
+  </p>
+
   <h2>Cookies</h2>
   <p>
     Only technical cookies required for the site to work (session, sign-in indicator, real-time updates). Display

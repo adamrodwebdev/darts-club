@@ -72,6 +72,33 @@ class ClubEventRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /** @return list<ClubEvent> événements terminés dont la clé d'audience existe encore */
+    public function withOpenAudienceEndedBefore(\DateTimeImmutable $limit): array
+    {
+        /** @var list<ClubEvent> $result */
+        $result = $this->createQueryBuilder('e')
+            ->andWhere('e.audienceKey IS NOT NULL AND e.endsAt < :limit')
+            ->setParameter('limit', $limit, 'datetimetz_immutable')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /** @return list<ClubEvent> événements anciens dont le détail d'audience n'est pas encore résumé */
+    public function withAudienceDetailEndedBefore(\DateTimeImmutable $limit): array
+    {
+        /** @var list<ClubEvent> $result */
+        $result = $this->createQueryBuilder('e')
+            ->andWhere('e.archivedAudience IS NULL AND e.endsAt < :limit')
+            ->andWhere('EXISTS (SELECT 1 FROM '.\App\Entity\EventView::class.' v WHERE v.event = e)')
+            ->setParameter('limit', $limit, 'datetimetz_immutable')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     /** @return list<ClubEvent> candidats aux rappels (début dans les 8 prochains jours) */
     public function startingWithinDays(\DateTimeImmutable $now, int $days): array
     {

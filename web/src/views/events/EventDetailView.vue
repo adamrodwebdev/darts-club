@@ -8,13 +8,18 @@ import BaseField from '@/components/BaseField.vue'
 import MemberBadges from '@/components/MemberBadges.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
+import AudiencePanel from '@/components/events/AudiencePanel.vue'
 import PhotoGallery from '@/components/events/PhotoGallery.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useViewBeacon } from '@/composables/useViewBeacon'
 import { formatEventDate, type Attendance, type EventDetail } from '@/models/ClubEvent'
 import { services } from '@/services'
+import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{ id: string }>()
 const { t } = useI18n()
+const auth = useAuthStore()
+useViewBeacon(() => services.events.recordView(props.id))
 
 const detail = ref<EventDetail | null>(null)
 const event = computed(() => detail.value?.summary ?? null)
@@ -240,6 +245,8 @@ async function saveSummary(): Promise<void> {
           <p class="muted small">{{ t('events.guests.privacy') }}</p>
         </details>
       </section>
+
+      <AudiencePanel v-if="auth.user?.isAdmin" :event-id="event.id" />
 
       <BaseDialog v-if="cancelling" :title="t('events.detail.cancelEvent')" @close="cancelling = false">
         <form class="stack" @submit.prevent="confirmCancel">

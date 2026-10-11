@@ -116,6 +116,25 @@
     "guests": {
       "title": "Invités sans compte ({count})",
       "privacy": "Ces adresses ne servent qu’à cet événement ; elles sont effacées 30 jours après."
+    },
+    "audience": {
+      "title": "Audience de l’annonce",
+      "adminOnly": "Visible de l’administrateur uniquement.",
+      "unique": "Personnes uniques",
+      "members": "Adhérents",
+      "visitors": "Visiteurs anonymes",
+      "approx": "≈ {n}",
+      "responseRate": "Ont répondu",
+      "percent": "{n} %",
+      "none": "—",
+      "byDay": "Nouvelles personnes par jour",
+      "day": "Jour",
+      "chart": "Graphique",
+      "empty": "Aucune vue pour l’instant.",
+      "method": "Une personne compte une fois : les adhérents exactement (par leur compte), les visiteurs anonymes par estimation (même réseau et même navigateur). Sans cookie ; organisateurs et robots exclus.",
+      "closed": "Mesure terminée (30 jours après l’événement) : les chiffres sont définitifs.",
+      "archived": "Détail supprimé après 13 mois : seuls les totaux sont conservés.",
+      "export": "Exporter (CSV)"
     }
   },
   "publicEvent": {

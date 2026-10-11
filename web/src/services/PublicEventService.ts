@@ -27,6 +27,11 @@ export class PublicEventService {
     await this.api.post(`/api/public/events/${encodeURIComponent(slug)}/responses`, { ...answer })
   }
 
+  /** Vue de l'annonce publique (mesure d'audience, sans cookie) */
+  async recordView(slug: string): Promise<void> {
+    await this.api.post(`/api/public/events/${encodeURIComponent(slug)}/view`)
+  }
+
   async lookup(token: string): Promise<GuestResponse> {
     return parseGuestResponse(await this.api.post('/api/public/responses/lookup', { token }))
   }
