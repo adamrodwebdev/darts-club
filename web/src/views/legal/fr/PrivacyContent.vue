@@ -11,17 +11,27 @@
     <li><strong>Cotisations</strong> : montants, dates et moyens de paiement — tenue de la comptabilité (obligation légale).</li>
     <li><strong>Messagerie, événements, photos, posts</strong> : vie du club (intérêt légitime de l’association).</li>
     <li><strong>Notifications push</strong> : abonnement technique du navigateur, uniquement si tu l’actives (consentement).</li>
+    <li>
+      <strong>Réponses sans compte à un événement public</strong> : prénom ou pseudo, email et réponse (« Je viens » ou
+      « Pas sûr ») — confirmation de la réponse, rappel la veille, avis de changement ou d’annulation (consentement,
+      donné en cochant la case du formulaire).
+    </li>
   </ul>
 
   <h2>Destinataires</h2>
   <p>
     Les membres du bureau, selon leur rôle (trésorier pour les cotisations, etc.). Les autres adhérents voient seulement
-    ton pseudo, ton avatar et tes badges — jamais ton email ni ton téléphone. Aucune donnée n’est vendue ni cédée.
+    ton pseudo, ton avatar et tes badges — jamais ton email ni ton téléphone. Les réponses sans compte ne sont visibles
+    que des organisateurs de l’événement ; le public ne voit que des compteurs. Aucune donnée n’est vendue ni cédée.
   </p>
 
   <h2>Durées de conservation</h2>
   <ul>
     <li>Compte : jusqu’à sa suppression par toi ou par le bureau.</li>
+    <li>
+      Réponses sans compte : 48 heures si elles ne sont pas confirmées, sinon 30 jours après l’événement. Tu peux les
+      retirer à tout moment avec le lien reçu par email.
+    </li>
     <li>Pièces comptables (cotisations) : 10 ans, détachées de ton compte s’il est supprimé.</li>
     <li>Journal d’administration : [durée à définir].</li>
   </ul>

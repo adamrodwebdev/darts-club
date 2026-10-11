@@ -16,3 +16,5 @@
 'payment_method.virement': 'Bank transfer'
 'payment_method.carte': 'Card'
 'payment_method.en_ligne': 'Online payment'
+'attendance.je_viens': 'I''m coming'
+'attendance.pas_sur': 'Not sure'

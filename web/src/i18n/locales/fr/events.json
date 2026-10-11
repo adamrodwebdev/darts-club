@@ -49,13 +49,20 @@
       "endsAt": "Fin",
       "capacity": "Nombre de places (vide = illimité)",
       "description": "Présentation",
-      "publish": "Publier l’événement"
+      "publish": "Publier l’événement",
+      "locationHint": "Adresse complète : visible des adhérents, et des invités une fois leur réponse confirmée.",
+      "publicLegend": "Ouverture au public",
+      "public": "Ouvert au public (réponse possible sans compte)",
+      "publicHint": "Une page publique est créée, à partager (Facebook, affiche…). Elle montre la ville, jamais l’adresse ni les noms des participants.",
+      "city": "Ville affichée publiquement",
+      "cityHint": "Par exemple « Louhans »."
     },
     "card": {
       "registered": "Inscrit(e)",
       "full": "Complet",
       "placesLeft": "plus de place | {n} place | {n} places",
-      "summary": "Résumé"
+      "summary": "Résumé",
+      "public": "Public"
     },
     "calendar": {
       "title": "Calendrier du club dans mon agenda",
@@ -91,6 +98,55 @@
       "tooLarge": "Image trop lourde : 10 Mo au plus.",
       "wrongType": "Format non pris en charge : JPEG, PNG ou WebP.",
       "alt": "Affiche de l’événement « {title} »"
+    },
+    "answer": {
+      "label": "Ta réponse",
+      "going": "Je viens",
+      "maybe": "Pas sûr",
+      "withdraw": "Retirer ma réponse",
+      "maybeCount": "aucun « pas sûr » | {n} « pas sûr » | {n} « pas sûr »",
+      "unsureList": "Pas sûrs ({count})"
+    },
+    "share": {
+      "title": "Page publique",
+      "text": "Toute personne, même sans compte, peut y répondre « Je viens » ou « Pas sûr ». Seule la ville ({city}) y est affichée.",
+      "copy": "Copier le lien",
+      "copied": "Lien copié"
+    },
+    "guests": {
+      "title": "Invités sans compte ({count})",
+      "privacy": "Ces adresses ne servent qu’à cet événement ; elles sont effacées 30 jours après."
     }
+  },
+  "publicEvent": {
+    "kicker": "Skull Darts 71 · événement ouvert à tous",
+    "going": "personne ne vient encore | {n} personne vient | {n} personnes viennent",
+    "member": "Tu es adhérent(e) : réponds plutôt depuis {link}.",
+    "memberLink": "ton espace",
+    "formTitle": "Tu viens ?",
+    "name": "Prénom ou pseudo",
+    "emailHint": "Pour confirmer ta réponse et te prévenir en cas de changement. Jamais affiché.",
+    "consent": "J’accepte que Skull Darts 71 utilise mon prénom et mon email pour cet événement uniquement ({link}).",
+    "privacyLink": "confidentialité",
+    "submit": "Envoyer ma réponse",
+    "sentTitle": "Plus qu’une étape !",
+    "sent": "Si l’adresse {email} est valide, un email vient d’y partir : clique sur le lien pour confirmer ta réponse (sous 48 heures).",
+    "closed": "Les réponses sont closes pour cet événement.",
+    "join": "Envie de jouer plus souvent ? {link}",
+    "joinLink": "Découvre le club",
+    "trap": "Ne pas remplir"
+  },
+  "guestResponse": {
+    "invalid": "Ce lien n’est pas (ou plus) valable.",
+    "backToEvent": "Revenir à l’événement",
+    "pending": "{name}, tu as répondu « {answer} ». Confirme pour que ta réponse compte.",
+    "expired": "Ce lien a expiré : renvoie ta réponse depuis la page de l’événement.",
+    "confirm": "Confirmer ma réponse",
+    "confirmed": "C’est noté, {name} : « {answer} ».",
+    "location": "Adresse : {location}",
+    "switchTo": "Changer pour « {answer} »",
+    "cancel": "Me désinscrire",
+    "removed": "Ta réponse est retirée et tes données sont effacées.",
+    "keepEmail": "Garde l’email reçu : son lien te permet de revenir ici."
   }
 }

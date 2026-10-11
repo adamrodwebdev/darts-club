@@ -2,6 +2,7 @@
 
 namespace App\Scheduler;
 
+use App\ClubEvent\PurgeGuestResponses;
 use App\ClubEvent\SendEventReminders;
 use App\Membership\SendMembershipReminders;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
@@ -30,6 +31,8 @@ final class ClubSchedule implements ScheduleProviderInterface
                 RecurringMessage::cron('0 10 * * 1', new SendMembershipReminders()),
                 // Rappels J-7 / J-1 des événements : toutes les heures
                 RecurringMessage::cron('5 * * * *', new SendEventReminders()),
+                // Réponses sans compte : conservation limitée, chaque nuit à 4 h 20
+                RecurringMessage::cron('20 4 * * *', new PurgeGuestResponses()),
             );
     }
 }

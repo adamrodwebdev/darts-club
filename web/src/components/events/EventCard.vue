@@ -23,9 +23,11 @@ const block = computed(() => dateBlock(props.event.startsAt))
       <span class="muted">{{ formatEventDate(event.startsAt) }} · {{ event.location }}</span>
       <span class="tags">
         <span v-if="event.isRegistered" class="tag tag--ok">{{ t('events.card.registered') }}</span>
+        <span v-else-if="event.myAnswer === 'pas-sur' && !event.past" class="tag">{{ t('events.answer.maybe') }}</span>
         <span v-else-if="event.full && !event.past" class="tag">{{ t('events.card.full') }}</span>
         <span v-else-if="event.placesLeft !== null && !event.past" class="tag">{{ t('events.card.placesLeft', event.placesLeft) }}</span>
         <span v-if="event.past && event.hasSummary" class="tag">{{ t('events.card.summary') }}</span>
+        <span v-if="event.isPublic && !event.past" class="tag">{{ t('events.card.public') }}</span>
       </span>
     </span>
     <!-- Décorative : le titre de l'événement est déjà dans le lien -->

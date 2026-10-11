@@ -59,6 +59,8 @@ security:
         - { path: ^/api/health$, roles: PUBLIC_ACCESS }
         # Abonnement calendrier : authentifié par jeton secret, sans session
         - { path: '^/api/calendar/[a-f0-9]{48}\.ics$', roles: PUBLIC_ACCESS }
+        # Événements ouverts au public : page, affiche, réponses sans compte (jeton par email)
+        - { path: ^/api/public/, roles: PUBLIC_ACCESS }
         # Pendant la saisie du code 2FA, seules ces routes sont accessibles
         - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/(2fa|2fa/check)$, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }

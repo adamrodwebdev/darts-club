@@ -20,6 +20,7 @@ final class EventReminders
         private readonly MemberNotifier $notifier,
         private readonly EntityManagerInterface $em,
         private readonly ClockInterface $clock,
+        private readonly GuestMailer $guests,
     ) {
     }
 
@@ -35,6 +36,7 @@ final class EventReminders
                 $event->markWeekReminderSent($now);
                 $event->markDayReminderSent($now);
                 $participants = $event->participants();
+                $sent += $this->guests->notifyGuests($event, 'reminder');
                 if ([] !== $participants) {
                     $this->send($event, 'event.reminder_day', Recipients::users(...array_map(static fn ($u): Uuid => $u->getId(), $participants)));
                     ++$sent;

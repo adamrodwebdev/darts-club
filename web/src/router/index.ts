@@ -108,6 +108,20 @@ const router = createRouter({
       meta: { titleKey: 'eventEdit', requiresAuth: true, requiresOrganizer: true },
     },
     {
+      path: '/e/:slug([a-z0-9-]{3,140})',
+      name: 'public-event',
+      component: () => import('../views/public/PublicEventView.vue'),
+      props: true,
+      meta: { titleKey: 'publicEvent' },
+    },
+    {
+      path: '/e/:slug([a-z0-9-]{3,140})/reponse',
+      name: 'guest-response',
+      component: () => import('../views/public/GuestResponseView.vue'),
+      props: true,
+      meta: { titleKey: 'guestResponse' },
+    },
+    {
       path: '/infos',
       name: 'infos',
       component: () => import('../views/InfosView.vue'),

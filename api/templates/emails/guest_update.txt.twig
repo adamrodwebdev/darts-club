@@ -1,0 +1,13 @@
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
+
+{{ introKey|trans({'%title%': title, '%reason%': reason}) }}
+
+{{ 'guest.details'|trans({'%date%': date|trans, '%location%': location}) }}
+{{ 'guest.your_answer'|trans({'%answer%': answer|trans}) }}
+
+{{ 'guest.page'|trans }} : {{ link }}
+{{ 'guest.change'|trans }}
+
+--
+{{ 'guest.why'|trans }} {{ 'guest.privacy'|trans }}

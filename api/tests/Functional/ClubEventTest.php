@@ -55,12 +55,21 @@ final class ClubEventTest extends ApiTestCase
         $this->postJson("/api/events/{$id}/registration", []);
         self::assertResponseStatusCodeSame(204);
         $this->postJson("/api/events/{$id}/registration", []);
-        self::assertResponseStatusCodeSame(422, 'Déjà inscrite');
+        self::assertResponseStatusCodeSame(204, 'Même réponse : sans effet');
 
         $this->switchTo('bob@example.com');
         $this->postJson("/api/events/{$id}/registration", []);
         self::assertResponseStatusCodeSame(422);
         self::assertStringContainsString('Complet', $this->digString($this->json(), 'detail'));
+        // « Pas sûr » ne prend pas de place
+        $this->postJson("/api/events/{$id}/registration", ['answer' => 'pas-sur']);
+        self::assertResponseStatusCodeSame(204);
+        $this->client->request('GET', "/api/events/{$id}");
+        self::assertSame('pas-sur', $this->json()['myAnswer']);
+        self::assertSame(1, $this->json()['registered']);
+        self::assertSame(1, $this->json()['maybe']);
+        $this->postJson("/api/events/{$id}/registration", ['answer' => 'peut-etre']);
+        self::assertResponseStatusCodeSame(422);
 
         $this->switchTo('alice@example.com');
         $this->client->request('DELETE', "/api/events/{$id}/registration", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
@@ -236,6 +245,103 @@ final class ClubEventTest extends ApiTestCase
         self::assertResponseStatusCodeSame(422, 'Pas d\'affiche sur un événement annulé');
     }
 
+    public function testPeopleWithoutAccountAnswerPublicEventsByEmail(): void
+    {
+        $this->loginAsSecretary();
+        $this->postJson('/api/events', self::payload(['public' => true]));
+        self::assertResponseStatusCodeSame(422, 'Ville obligatoire pour un événement public');
+
+        $this->postJson('/api/events', self::payload(['public' => true, 'city' => 'Mâcon', 'capacity' => 1]));
+        self::assertResponseStatusCodeSame(201);
+        $id = $this->digString($this->json(), 'id');
+        $path = $this->digString($this->json(), 'publicPath');
+        self::assertMatchesRegularExpression('#^/e/tournoi-d-automne-2026-10-24-[a-f0-9]{6}$#', $path);
+        $slug = substr($path, 3);
+        $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+
+        // Page publique : ville seulement, aucun participant nommé
+        $this->client->request('GET', "/api/public/events/{$slug}");
+        self::assertResponseIsSuccessful();
+        self::assertSame('Mâcon', $this->json()['city']);
+        self::assertArrayNotHasKey('location', $this->json());
+        self::assertSame(0, $this->json()['going']);
+        $this->client->request('GET', '/api/events');
+        self::assertResponseStatusCodeSame(401, 'Le calendrier reste réservé');
+
+        $this->guestAnswer($slug, ['consent' => false]);
+        self::assertResponseStatusCodeSame(422);
+        $this->guestAnswer($slug, ['website' => 'http://spam.example', 'email' => 'bot@example.net']);
+        self::assertResponseStatusCodeSame(202, 'Piège à robots : même réponse');
+        self::assertNull($this->linkSentTo('bot@example.net'));
+
+        $this->guestAnswer($slug, ['name' => 'Zoé', 'email' => 'Zoe@Example.net']);
+        self::assertResponseStatusCodeSame(202);
+        $zoe = $this->linkSentTo('zoe@example.net');
+        self::assertNotNull($zoe);
+
+        $this->client->request('GET', "/api/public/events/{$slug}");
+        self::assertSame(0, $this->json()['going'], 'Non confirmée : ne compte pas');
+        $this->tokenAction('lookup', $zoe);
+        self::assertFalse($this->json()['confirmed']);
+        self::assertNull($this->dig($this->json(), 'event', 'location'));
+
+        $this->tokenAction('confirm', $zoe);
+        self::assertResponseIsSuccessful();
+        self::assertSame('je-viens', $this->json()['answer']);
+        self::assertSame('Bar Le 180, Lyon', $this->dig($this->json(), 'event', 'location'), 'Adresse donnée après confirmation');
+        $this->client->request('GET', "/api/public/events/{$slug}");
+        self::assertSame(1, $this->json()['going']);
+        self::assertTrue($this->json()['full']);
+
+        // Complet : un second invité ne peut que répondre « pas sûr »
+        $this->guestAnswer($slug, ['name' => 'Max', 'email' => 'max@example.net']);
+        $max = $this->linkSentTo('max@example.net');
+        self::assertNotNull($max);
+        $this->tokenAction('confirm', $max);
+        self::assertResponseStatusCodeSame(422);
+        $this->guestAnswer($slug, ['name' => 'Max', 'email' => 'max@example.net', 'answer' => 'pas-sur']);
+        $newMax = $this->linkSentTo('max@example.net');
+        self::assertNotNull($newMax);
+        self::assertNotSame($max, $newMax, 'Nouvelle demande : nouveau lien');
+        $this->tokenAction('lookup', $max);
+        self::assertResponseStatusCodeSame(404, 'L\'ancien lien ne vaut plus');
+        $this->tokenAction('confirm', $newMax);
+        self::assertSame('pas-sur', $this->json()['answer']);
+
+        $this->tokenAction('answer', $zoe, ['answer' => 'pas-sur']);
+        self::assertResponseIsSuccessful();
+        $this->client->request('GET', "/api/public/events/{$slug}");
+        self::assertSame([0, 2], [$this->json()['going'], $this->json()['maybe']]);
+
+        // Les organisateurs voient les invités ; les invités confirmés apprennent l'annulation
+        $this->loginAsSecretaryAgain();
+        $this->client->request('GET', "/api/events/{$id}");
+        self::assertSame(['Zoé', 'Max'], array_column((array) $this->json()['guests'], 'name'));
+        $this->postJson("/api/events/{$id}/cancel", ['reason' => 'Salle indisponible']);
+        self::assertResponseStatusCodeSame(204);
+        $cancelled = array_filter(self::getMailerMessages(), static fn ($m): bool => $m instanceof \Symfony\Component\Mime\Email && 'max@example.net' === ($m->getTo()[0] ?? null)?->getAddress() && str_contains((string) $m->getSubject(), 'Annulé'));
+        self::assertCount(1, $cancelled);
+
+        $this->tokenAction('cancel', $zoe);
+        self::assertResponseStatusCodeSame(204, 'Se retirer reste possible (données effacées)');
+        $this->tokenAction('lookup', 'x');
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testUnconfirmedGuestAnswersAreForgotten(): void
+    {
+        $this->loginAsSecretary();
+        $this->postJson('/api/events', self::payload(['public' => true, 'city' => 'Mâcon']));
+        $slug = substr($this->digString($this->json(), 'publicPath'), 3);
+        $this->guestAnswer($slug, ['email' => 'late@example.net']);
+        self::assertResponseStatusCodeSame(202);
+
+        $clock = $this->service('clock', MockClock::class);
+        $clock->modify('+49 hours');
+        $purged = $this->service(\App\ClubEvent\GuestResponses::class, \App\ClubEvent\GuestResponses::class)->purge();
+        self::assertSame(1, $purged);
+    }
+
     public function testArchivesAreFilteredBySeasonAndSearch(): void
     {
         $this->createUser('alice@example.com');
@@ -312,6 +418,34 @@ final class ClubEventTest extends ApiTestCase
         copy(__DIR__.'/../Fixtures/avatar.jpg', $copy);
 
         $this->client->request('POST', "/api/events/{$eventId}/poster", files: ['poster' => new UploadedFile($copy, 'affiche.jpg', test: true)], server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+    }
+
+    /** @param array<string, mixed> $overrides */
+    private function guestAnswer(string $slug, array $overrides = []): void
+    {
+        $this->postJson("/api/public/events/{$slug}/responses", $overrides + [
+            'name' => 'Invité', 'email' => 'guest@example.net', 'answer' => 'je-viens', 'consent' => true, 'website' => '',
+        ]);
+    }
+
+    /** @param array<string, mixed> $extra */
+    private function tokenAction(string $action, string $token, array $extra = []): void
+    {
+        $this->postJson("/api/public/responses/{$action}", ['token' => $token] + $extra);
+    }
+
+    /** Jeton du dernier lien envoyé à cette adresse */
+    private function linkSentTo(string $address): ?string
+    {
+        $token = null;
+        foreach (self::getMailerMessages() as $message) {
+            if ($message instanceof \Symfony\Component\Mime\Email && $address === ($message->getTo()[0] ?? null)?->getAddress()
+                && 1 === preg_match('~/reponse#([A-Za-z0-9_-]{43})~', (string) $message->getTextBody(), $match)) {
+                $token = $match[1];
+            }
+        }
+
+        return $token;
     }
 
     private string $secretarySecret = '';

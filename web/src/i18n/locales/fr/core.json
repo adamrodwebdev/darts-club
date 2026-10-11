@@ -30,7 +30,9 @@
     "conversation": "Conversation",
     "legalNotice": "Mentions légales",
     "privacy": "Confidentialité",
-    "notFound": "Page introuvable"
+    "notFound": "Page introuvable",
+    "publicEvent": "Événement",
+    "guestResponse": "Ma réponse"
   },
   "app": {
     "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",

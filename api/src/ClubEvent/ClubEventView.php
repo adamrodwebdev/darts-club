@@ -5,6 +5,8 @@ namespace App\ClubEvent;
 use App\Entity\ClubEvent;
 use App\Entity\EventPhoto;
 use App\Entity\EventPost;
+use App\Entity\GuestResponse;
+use App\Entity\Registration;
 use App\Entity\User;
 use App\Messaging\MessagingView;
 
@@ -29,8 +31,13 @@ final class ClubEventView
             'status' => $event->getStatus()->value,
             'cancelReason' => $event->getCancelReason(),
             'capacity' => $event->getCapacity(),
-            'registered' => $event->registrationCount(),
+            'registered' => $event->goingCount(),
+            'maybe' => $event->maybeCount(),
             'isRegistered' => $event->isRegistered($viewer),
+            'myAnswer' => $event->answerOf($viewer)?->value,
+            'public' => $event->isPublic(),
+            'city' => $event->getCity(),
+            'publicPath' => $event->isPublic() ? '/e/'.$event->getSlug() : null,
             'full' => $event->isFull(),
             'started' => $event->hasStarted($now),
             'past' => $event->isPast($now),
@@ -62,8 +69,12 @@ final class ClubEventView
                     ? $this->members->member($p->getAuthor())
                     : ['id' => null, 'displayName' => 'Ancien adhérent', 'avatarUrl' => null, 'badges' => []],
             ], $posts),
+            // Organisateurs : qui vient, qui hésite (adhérents puis invités confirmés)
             'participants' => $canManage
-                ? array_map(fn (User $u): array => $this->members->member($u), $event->participants())
+                ? array_map(fn (Registration $r): array => $this->members->member($r->getUser()) + ['answer' => $r->answer()->value], $event->registrations())
+                : null,
+            'guests' => $canManage
+                ? array_map(static fn (GuestResponse $g): array => ['name' => $g->name(), 'email' => $g->email(), 'answer' => $g->answer()?->value, 'at' => $g->createdAt()->format(\DATE_ATOM)], $event->confirmedGuests())
                 : null,
         ];
     }

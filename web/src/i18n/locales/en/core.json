@@ -30,7 +30,9 @@
     "conversation": "Conversation",
     "legalNotice": "Legal notice",
     "privacy": "Privacy",
-    "notFound": "Page not found"
+    "notFound": "Page not found",
+    "publicEvent": "Event",
+    "guestResponse": "My answer"
   },
   "app": {
     "twoFactorBanner": "Board member: {link} to access the club tools.",

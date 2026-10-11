@@ -14,17 +14,27 @@
     <li><strong>Membership fees</strong>: amounts, dates and payment methods — bookkeeping (legal obligation).</li>
     <li><strong>Messaging, events, photos, posts</strong>: club life (legitimate interest of the association).</li>
     <li><strong>Push notifications</strong>: technical browser subscription, only if you turn it on (consent).</li>
+    <li>
+      <strong>Answers to a public event without an account</strong>: first name or nickname, email and answer (“I’m coming”
+      or “Not sure”) — confirming the answer, reminder the day before, notice of change or cancellation (consent, given by
+      ticking the form’s box).
+    </li>
   </ul>
 
   <h2>Recipients</h2>
   <p>
     Board members, according to their role (the treasurer for membership fees, etc.). Other members only see your
-    nickname, avatar and badges — never your email or phone number. No data is ever sold or transferred.
+    nickname, avatar and badges — never your email or phone number. Answers without an account are only visible to the
+    event’s organizers; the public only sees counters. No data is ever sold or transferred.
   </p>
 
   <h2>Retention periods</h2>
   <ul>
     <li>Account: until you or the board delete it.</li>
+    <li>
+      Answers without an account: 48 hours if not confirmed, otherwise 30 days after the event. You can withdraw them at
+      any time with the link received by email.
+    </li>
     <li>Accounting records (membership fees): 10 years, detached from your account if it is deleted.</li>
     <li>Administration log: [period to be defined].</li>
   </ul>

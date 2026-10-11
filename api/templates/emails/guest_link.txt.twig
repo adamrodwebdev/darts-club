@@ -1,0 +1,12 @@
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
+
+{{ 'guest.link.intro'|trans({'%answer%': answer|trans, '%title%': title, '%date%': date|trans, '%city%': city}) }}
+
+{{ 'guest.link.button'|trans }} : {{ link }}
+
+{{ 'guest.link.manage'|trans }}
+{{ 'guest.link.expires'|trans }}
+
+--
+{{ 'guest.link.ignore'|trans }} {{ 'guest.privacy'|trans }}

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\ClubEvent\Attendance;
 use App\ClubEvent\ClubEventCancelled;
 use App\ClubEvent\ClubEventRescheduled;
 use App\ClubEvent\ClubEventScheduled;
@@ -12,13 +13,17 @@ use App\ClubEvent\RegistrationException;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Membership\Season;
+use App\Preference\Language;
 use App\Repository\ClubEventRepository;
 use App\Translation\InvalidValue;
+use App\ValueObject\DisplayName;
+use App\ValueObject\EmailAddress;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\Uid\Uuid;
 
 /** Événement du club : planification, inscriptions, puis archive (résumé, photos, posts). */
@@ -88,9 +93,25 @@ class ClubEvent implements RecordsDomainEvents
     #[ORM\Column(nullable: true)]
     private ?int $posterHeight = null;
 
+    /** Page publique ouverte aux personnes sans compte */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $public = false;
+
+    /** Ville montrée au public */
+    #[ORM\Column(length: EventDetails::CITY_MAX, nullable: true)]
+    private ?string $city = null;
+
+    /** Adresse de la page publique (/e/{slug}), fixée à la première ouverture au public */
+    #[ORM\Column(length: 140, unique: true, nullable: true)]
+    private ?string $slug = null;
+
     /** @var Collection<int, Registration> */
     #[ORM\OneToMany(targetEntity: Registration::class, mappedBy: 'event', cascade: ['persist'], orphanRemoval: true)]
     private Collection $registrations;
+
+    /** @var Collection<int, GuestResponse> */
+    #[ORM\OneToMany(targetEntity: GuestResponse::class, mappedBy: 'event', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $guestResponses;
 
     private function __construct(User $organizer, EventDetails $details, \DateTimeImmutable $now)
     {
@@ -98,6 +119,7 @@ class ClubEvent implements RecordsDomainEvents
         $this->organizerName = mb_substr($organizer->displayName()->value, 0, 80);
         $this->createdAt = $now;
         $this->registrations = new ArrayCollection();
+        $this->guestResponses = new ArrayCollection();
         $this->apply($details);
     }
 
@@ -117,8 +139,8 @@ class ClubEvent implements RecordsDomainEvents
     public function edit(EventDetails $details, \DateTimeImmutable $now): void
     {
         $this->assertScheduled();
-        if (null !== $details->capacity && $details->capacity < $this->registrationCount()) {
-            throw new InvalidValue('Impossible de descendre sous le nombre d\'inscrits actuel (%count%).', ['%count%' => $this->registrationCount()]);
+        if (null !== $details->capacity && $details->capacity < $this->goingCount()) {
+            throw new InvalidValue('Impossible de descendre sous le nombre d\'inscrits actuel (%count%).', ['%count%' => $this->goingCount()]);
         }
 
         $rescheduled = !$details->sameSchedule($this->startsAt, $this->endsAt);
@@ -145,25 +167,83 @@ class ClubEvent implements RecordsDomainEvents
         $this->recordThat(new ClubEventCancelled($this->id));
     }
 
-    public function register(User $member, \DateTimeImmutable $now): Registration
+    /**
+     * Réponse d'un adhérent (ou changement d'avis). « Pas sûr » ne prend pas de place.
+     *
+     * @return Registration|null la nouvelle inscription, null si une réponse existante a changé
+     */
+    public function respond(User $member, Attendance $answer, \DateTimeImmutable $now): ?Registration
     {
-        if (EventStatus::Cancelled === $this->status) {
-            throw new RegistrationException('Cet événement est annulé.');
-        }
-        if ($this->hasStarted($now)) {
-            throw new RegistrationException('Les inscriptions sont closes.');
-        }
-        if ($this->isRegistered($member)) {
-            throw new RegistrationException('Tu es déjà inscrit(e).');
-        }
-        if ($this->isFull()) {
-            throw new RegistrationException('Complet : plus de place disponible.');
+        $this->assertOpenForResponses($now);
+        $existing = $this->registrationOf($member);
+        $this->assertSeatFor($answer, $existing?->answer());
+
+        if (null !== $existing) {
+            $existing->changeAnswer($answer);
+
+            return null;
         }
 
-        $registration = new Registration($this, $member, $now);
+        $registration = new Registration($this, $member, $now, $answer);
         $this->registrations->add($registration);
 
         return $registration;
+    }
+
+    /** Raccourci : « je viens » */
+    public function register(User $member, \DateTimeImmutable $now): ?Registration
+    {
+        return $this->respond($member, Attendance::Going, $now);
+    }
+
+    /**
+     * Demande d'une personne sans compte (page publique). Rien ne compte avant confirmation.
+     *
+     * @param string $tokenHash empreinte du lien envoyé par email
+     */
+    public function requestGuestResponse(DisplayName $name, EmailAddress $email, Attendance $answer, string $tokenHash, Language $language, \DateTimeImmutable $now): GuestResponse
+    {
+        if (!$this->public) {
+            throw new RegistrationException('Cet événement n\'est pas ouvert au public.');
+        }
+        $this->assertOpenForResponses($now);
+
+        foreach ($this->guestResponses as $response) {
+            if ($response->isFor($email)) {
+                $response->reissue($name, $answer, $tokenHash, $language, $now);
+
+                return $response;
+            }
+        }
+
+        $response = new GuestResponse($this, $name, $email, $answer, $tokenHash, $language, $now);
+        $this->guestResponses->add($response);
+
+        return $response;
+    }
+
+    public function confirmGuestResponse(GuestResponse $response, \DateTimeImmutable $now): void
+    {
+        $this->assertOpenForResponses($now);
+        if (null !== $response->pendingAnswer()) {
+            $this->assertSeatFor($response->pendingAnswer(), $response->answer());
+        }
+        $response->confirm($now);
+    }
+
+    public function changeGuestAnswer(GuestResponse $response, Attendance $answer, \DateTimeImmutable $now): void
+    {
+        $this->assertOpenForResponses($now);
+        $this->assertSeatFor($answer, $response->answer());
+        $response->changeAnswer($answer);
+    }
+
+    public function removeGuestResponse(GuestResponse $response, \DateTimeImmutable $now): void
+    {
+        if ($this->hasStarted($now)) {
+            throw new RegistrationException('L\'événement a commencé.');
+        }
+        $this->guestResponses->removeElement($response);
     }
 
     public function unregister(User $member, \DateTimeImmutable $now): void
@@ -227,31 +307,64 @@ class ClubEvent implements RecordsDomainEvents
         $this->summary = '' !== $summary ? $summary : null;
     }
 
-    public function isRegistered(User $member): bool
+    public function answerOf(User $member): ?Attendance
     {
-        foreach ($this->registrations as $registration) {
-            if ($registration->isFor($member)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->registrationOf($member)?->answer();
     }
 
-    public function registrationCount(): int
+    /** Adhérent qui vient (« je viens ») */
+    public function isRegistered(User $member): bool
     {
-        return $this->registrations->count();
+        return Attendance::Going === $this->answerOf($member);
+    }
+
+    /** Places occupées : adhérents et invités confirmés qui viennent */
+    public function goingCount(): int
+    {
+        return $this->countAnswers(Attendance::Going);
+    }
+
+    public function maybeCount(): int
+    {
+        return $this->countAnswers(Attendance::Maybe);
     }
 
     public function isFull(): bool
     {
-        return null !== $this->capacity && $this->registrationCount() >= $this->capacity;
+        return null !== $this->capacity && $this->goingCount() >= $this->capacity;
     }
 
-    /** @return list<User> */
+    /** @return list<User> adhérents ayant répondu (« je viens » ou « pas sûr ») */
     public function participants(): array
     {
         return array_values(array_map(static fn (Registration $r): User => $r->getUser(), $this->registrations->toArray()));
+    }
+
+    /** @return list<Registration> */
+    public function registrations(): array
+    {
+        return array_values($this->registrations->toArray());
+    }
+
+    /** @return list<GuestResponse> invités dont la réponse est confirmée */
+    public function confirmedGuests(): array
+    {
+        return array_values(array_filter($this->guestResponses->toArray(), static fn (GuestResponse $r): bool => $r->isConfirmed()));
+    }
+
+    public function isPublic(): bool
+    {
+        return $this->public;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
     }
 
     public function hasStarted(\DateTimeImmutable $now): bool
@@ -368,6 +481,14 @@ class ClubEvent implements RecordsDomainEvents
         $this->startsAt = $details->startsAt->setTimezone($utc);
         $this->endsAt = $details->endsAt->setTimezone($utc);
         $this->capacity = $details->capacity;
+        $city = trim((string) $details->city);
+        $this->city = '' !== $city ? mb_substr($city, 0, EventDetails::CITY_MAX) : null;
+        $this->public = $details->public;
+        // Adresse stable : un lien partagé reste valable même si le titre change
+        if ($this->public && null === $this->slug) {
+            $base = (new AsciiSlugger('fr'))->slug($this->title.' '.$this->startsAt->setTimezone(new \DateTimeZone('Europe/Paris'))->format('Y-m-d'))->lower()->truncate(120, '', false)->trimEnd('-');
+            $this->slug = $base.'-'.bin2hex(random_bytes(3));
+        }
     }
 
     /** Planifié tardivement : la notification de création tient lieu de rappel. */
@@ -378,6 +499,43 @@ class ClubEvent implements RecordsDomainEvents
         }
         if ($this->isDueForDayReminder($now)) {
             $this->dayReminderSentAt = $now;
+        }
+    }
+
+    private function registrationOf(User $member): ?Registration
+    {
+        foreach ($this->registrations as $registration) {
+            if ($registration->isFor($member)) {
+                return $registration;
+            }
+        }
+
+        return null;
+    }
+
+    private function countAnswers(Attendance $answer): int
+    {
+        $members = \count(array_filter($this->registrations->toArray(), static fn (Registration $r): bool => $answer === $r->answer()));
+        $guests = \count(array_filter($this->guestResponses->toArray(), static fn (GuestResponse $r): bool => $r->counts($answer)));
+
+        return $members + $guests;
+    }
+
+    private function assertOpenForResponses(\DateTimeImmutable $now): void
+    {
+        if ($this->isCancelled()) {
+            throw new RegistrationException('Cet événement est annulé.');
+        }
+        if ($this->hasStarted($now)) {
+            throw new RegistrationException('Les inscriptions sont closes.');
+        }
+    }
+
+    /** Passer à « je viens » demande une place libre */
+    private function assertSeatFor(Attendance $answer, ?Attendance $current): void
+    {
+        if ($answer->takesASeat() && Attendance::Going !== $current && $this->isFull()) {
+            throw new RegistrationException('Complet : plus de place disponible.');
         }
     }
 
