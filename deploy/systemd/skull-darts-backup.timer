@@ -1,0 +1,10 @@
+[Unit]
+Description=Sauvegarde quotidienne de Skull Darts 71 (3 h 30, heure de Paris)
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Europe/Paris
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

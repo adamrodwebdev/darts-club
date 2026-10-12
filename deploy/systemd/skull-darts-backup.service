@@ -1,0 +1,6 @@
+[Unit]
+Description=Sauvegarde chiffrée de Skull Darts 71
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "/opt/skull-darts-71/deploy/backup.sh >> /var/backups/skull-darts-71/backup.log 2>&1"
