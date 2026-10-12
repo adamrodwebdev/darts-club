@@ -13,7 +13,7 @@ chaque fusion sur `main` avec une CI verte déploie automatiquement la nouvelle 
 | Serveur | Hetzner CX22 (2 vCPU, 4 Go, Allemagne/Finlande) ou OVH VPS-1 (France), Debian 12 | ~4 à 6 €/mois |
 | Domaine | `skulldarts71.fr` (à réserver chez OVH, Gandi… si ce n’est pas déjà fait) | ~7 €/an |
 | Emails | Compte Brevo gratuit (300 emails/jour) | 0 € |
-| Sonde | UptimeRobot gratuit (vérifie `/api/health` toutes les 5 min) | 0 € |
+| Sonde | GitHub Actions (`uptime.yml`, toutes les 15 min ; UptimeRobot en option) | 0 € |
 
 ## 2. Domaine (DNS)
 
@@ -54,8 +54,12 @@ docker run --rm $img php -r 'echo "APP_SECRET=", bin2hex(random_bytes(32)), PHP_
 docker run --rm $img php -r 'echo "TWO_FACTOR_ENCRYPTION_KEY=", base64_encode(random_bytes(32)), PHP_EOL;'
 docker run --rm $img php -r 'echo "MERCURE_JWT_SECRET=", bin2hex(random_bytes(32)), PHP_EOL;'
 docker run --rm $img php -r 'echo "POSTGRES_PASSWORD=", bin2hex(random_bytes(24)), PHP_EOL;'
-docker run --rm $img php bin/console app:push:generate-vapid-keys   # VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
 ```
+
+- Clés des notifications push (VAPID) : une fois l'application en service, une seule commande
+  depuis l'ordinateur du bureau les génère sur le serveur, les enregistre sans les afficher et redéploie :
+  `ssh deploy@SERVEUR /opt/skull-darts-71/deploy/set-vapid.sh`
+  (sans effet si des clés existent déjà ; `--force` les remplace, mais chaque appareil devra se réabonner).
 
 - Ces clés de **production** sont distinctes de celles de développement (`api/.env.local`).
 - `TWO_FACTOR_ENCRYPTION_KEY` chiffre les secrets de double authentification : **ne jamais la changer**
@@ -142,8 +146,15 @@ La sauvegarde contient la base (comptes, cotisations, messages, événements) et
 
 ## 11. Disponibilité
 
-Sur [UptimeRobot](https://uptimerobot.com) : nouveau moniteur HTTP(S) sur `https://skulldarts71.fr/api/health`
-(intervalle 5 min, alerte par email au bureau). La route répond `{"status":"ok"}` si l'application et la base fonctionnent.
+Le workflow [`uptime.yml`](../.github/workflows/uptime.yml) sonde le site toutes les 15 minutes :
+`/api/health` (répond `{"status":"ok"}` si l'application et la base fonctionnent, 3 essais), la page d'accueil,
+et la validité du certificat HTTPS (alerte à moins de 14 jours). En cas d'échec, GitHub envoie un email
+(Settings → Notifications → Actions du compte GitHub). Lancement manuel : onglet Actions → « Disponibilité » → Run workflow.
+
+- GitHub désactive les tâches planifiées d'un dépôt public après 60 jours sans activité : un email prévient,
+  il suffit de cliquer « Enable workflow ».
+- En complément (alerte plus rapide, SMS), un moniteur [UptimeRobot](https://uptimerobot.com) gratuit sur la même
+  URL, intervalle 5 min.
 
 Journaux : `dc logs -f php worker` (rotation automatique, 50 Mo max par service).
 
