@@ -134,10 +134,17 @@ Renseigner `OAUTH_*` dans `.env`, puis `./deploy/deploy.sh`.
 1. Sur l'ordinateur du bureau (pas sur le serveur) : `age-keygen -o skull-darts-71-backup.key`.
    Conserver ce fichier en lieu sûr (deux copies) : sans lui, les sauvegardes sont illisibles.
 2. Copier la ligne `public key: age1…` dans `.env` : `BACKUP_AGE_RECIPIENT=age1…`
-3. Planifier la sauvegarde quotidienne (`crontab -e` en tant que `deploy`) :
+3. Planifier la sauvegarde quotidienne (3 h 30, heure de Paris) avec un minuteur systemd de l'utilisateur
+   `deploy` (Debian minimal : pas de `cron`, et aucun droit administrateur nécessaire) :
+   ```bash
+   loginctl enable-linger deploy              # le minuteur tourne même sans session ouverte
+   mkdir -p ~/.config/systemd/user
+   cp /opt/skull-darts-71/deploy/systemd/skull-darts-backup.* ~/.config/systemd/user/
+   systemctl --user daemon-reload
+   systemctl --user enable --now skull-darts-backup.timer
+   systemctl --user list-timers               # prochaine exécution
    ```
-   30 3 * * * /opt/skull-darts-71/deploy/backup.sh >> /var/backups/skull-darts-71/backup.log 2>&1
-   ```
+   Journal : `/var/backups/skull-darts-71/backup.log`. Une exécution manquée (serveur éteint) est rattrapée au démarrage.
 4. Copie hors du serveur (recommandé) : installer `rclone`, configurer un stockage (Hetzner Storage Box, OVH Object Storage…)
    et renseigner `BACKUP_RCLONE_REMOTE`.
 5. **Tester une restauration** une fois par trimestre : `./deploy/restore.sh archive.tar.gz.age skull-darts-71-backup.key`.

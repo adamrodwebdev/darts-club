@@ -1,7 +1,7 @@
 #!/bin/sh
 # Sauvegarde chiffrée : base PostgreSQL + avatars et photos, chiffrée avec age
 # (clé publique BACKUP_AGE_RECIPIENT ; la clé privée reste hors du serveur).
-# Cron quotidien conseillé : 30 3 * * * /opt/skull-darts-71/deploy/backup.sh >> /var/log/skull-darts-71-backup.log 2>&1
+# Planification quotidienne : minuteur systemd deploy/systemd/skull-darts-backup.timer (voir docs/deploiement.md § 10)
 set -eu
 cd "$(dirname "$0")/.."
 
