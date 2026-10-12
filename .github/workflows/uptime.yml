@@ -1,0 +1,53 @@
+name: Disponibilité
+
+# Sonde du site en production : si elle échoue, GitHub envoie un email
+# (notifications « Actions » du compte). Rien à installer ni à créer ailleurs.
+on:
+  schedule:
+    # Toutes les 15 minutes (GitHub peut décaler l'exécution de quelques minutes)
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    name: Sonde skulldarts71.fr
+    if: github.repository == 'adamrodwebdev/darts-club'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: https://skulldarts71.fr
+      HOST: skulldarts71.fr
+    steps:
+      - name: API et base de données (/api/health)
+        run: |
+          # 3 essais espacés : une coupure de quelques secondes (redéploiement) n'alerte pas
+          for attempt in 1 2 3; do
+            if body=$(curl -fsS --max-time 10 "$SITE/api/health") && [ "$body" = '{"status":"ok"}' ]; then
+              echo "✓ /api/health : $body"
+              exit 0
+            fi
+            echo "Essai $attempt échoué ($body)"
+            sleep 20
+          done
+          echo "::error::$SITE/api/health ne répond pas correctement"
+          exit 1
+
+      - name: Page d'accueil
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$SITE/")
+          [ "$code" = 200 ] || { echo "::error::Accueil : HTTP $code"; exit 1; }
+          echo "✓ Accueil : HTTP $code"
+
+      - name: Certificat HTTPS (plus de 14 jours de validité)
+        run: |
+          end=$(echo | openssl s_client -connect "$HOST:443" -servername "$HOST" 2>/dev/null | openssl x509 -noout -enddate | cut -d= -f2)
+          days=$(( ($(date -d "$end" +%s) - $(date +%s)) / 86400 ))
+          echo "Certificat valable jusqu'au $end ($days jours)"
+          [ "$days" -ge 14 ] || { echo "::error::Le certificat expire dans $days jours (renouvellement Caddy en échec ?)"; exit 1; }
