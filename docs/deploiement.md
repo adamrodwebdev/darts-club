@@ -145,8 +145,18 @@ Renseigner `OAUTH_*` dans `.env`, puis `./deploy/deploy.sh`.
    systemctl --user list-timers               # prochaine exécution
    ```
    Journal : `/var/backups/skull-darts-71/backup.log`. Une exécution manquée (serveur éteint) est rattrapée au démarrage.
-4. Copie hors du serveur (recommandé) : installer `rclone`, configurer un stockage (Hetzner Storage Box, OVH Object Storage…)
-   et renseigner `BACKUP_RCLONE_REMOTE`.
+4. **Copie hors du serveur, gratuite** : l'ordinateur du bureau (Windows) récupère chaque jour les sauvegardes chiffrées.
+   - Sur l'ordinateur, depuis le dépôt : `powershell -ExecutionPolicy Bypass -File deploy\windows\Install-BackupTask.ps1`
+     (option `-Destination "D:\…"` ; par défaut `Documents\Sauvegardes Skull Darts 71`). Le script crée une clé SSH dédiée,
+     installe la tâche planifiée « Skull Darts 71 - copie des sauvegardes » (12 h 30 et ouverture de session, rattrapée
+     si l'ordinateur était éteint) et affiche la clé publique.
+   - Sur le serveur, autoriser cette clé **en lecture des sauvegardes uniquement** (une ligne dans `~deploy/.ssh/authorized_keys`) :
+     ```
+     restrict,command="/opt/skull-darts-71/deploy/backup-share.sh" ssh-ed25519 AAAA… skull-darts-71-backup-pull
+     ```
+     La clé ne permet que `list` et `get <nom>` (`deploy/backup-share.sh`) : ni session, ni autre commande, ni fichier hors sauvegardes.
+   - L'ordinateur garde les 30 dernières sauvegardes, toujours chiffrées ; journal : `copie.log` dans le dossier de destination.
+     Choisir un dossier synchronisé (OneDrive, Google Drive) ajoute une copie dans le cloud.
 5. **Tester une restauration** une fois par trimestre : `./deploy/restore.sh archive.tar.gz.age skull-darts-71-backup.key`.
 
 La sauvegarde contient la base (comptes, cotisations, messages, événements) et les avatars/photos.
