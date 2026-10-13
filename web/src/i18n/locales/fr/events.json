@@ -167,5 +167,14 @@
     "cancel": "Me désinscrire",
     "removed": "Ta réponse est retirée et tes données sont effacées.",
     "keepEmail": "Garde l’email reçu : son lien te permet de revenir ici."
+  },
+  "publicEvents": {
+    "title": "Prochains événements ouverts à tous",
+    "intro": "Pas besoin d’être adhérent : choisis un événement et réponds « Je viens » ou « Pas sûr ».",
+    "all": "Tous les événements ouverts →",
+    "answer": "Répondre",
+    "empty": "Aucun événement ouvert au public pour le moment. Reviens bientôt !",
+    "members": "Adhérent(e) ? {link} pour voir tout le calendrier du club.",
+    "login": "Connecte-toi"
   }
 }

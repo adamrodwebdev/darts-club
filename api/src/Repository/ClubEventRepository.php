@@ -32,6 +32,21 @@ class ClubEventRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /** @return list<ClubEvent> événements ouverts au public, à venir ou en cours, du plus proche au plus lointain */
+    public function upcomingPublic(\DateTimeImmutable $now, int $limit = 20): array
+    {
+        /** @var list<ClubEvent> $result */
+        $result = $this->createQueryBuilder('e')
+            ->andWhere('e.public = true AND e.endsAt >= :now')
+            ->setParameter('now', $now, 'datetimetz_immutable')
+            ->orderBy('e.startsAt', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
     /** @return list<ClubEvent> archives, les plus récentes d'abord */
     public function past(\DateTimeImmutable $now, ?Season $season = null, string $query = '', int $limit = 100): array
     {

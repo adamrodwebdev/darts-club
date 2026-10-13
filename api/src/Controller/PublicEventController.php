@@ -20,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Événements ouverts au public (routes PUBLIC_ACCESS, voir security.yaml).
@@ -37,6 +38,28 @@ final class PublicEventController extends AbstractController
         private readonly GuestResponses $guests,
         private readonly ClockInterface $clock,
     ) {
+    }
+
+    /** Événements ouverts au public à venir (accueil, calendrier des visiteurs) */
+    #[Route('/api/public/events', name: 'public_event_list', methods: ['GET'], format: 'json')]
+    public function list(): JsonResponse
+    {
+        return $this->json(['items' => array_map(fn (ClubEvent $e): array => $this->view($e), $this->events->upcomingPublic($this->clock->now()))]);
+    }
+
+    /**
+     * Lien adhérent (/evenements/{id}) ouvert sans compte : adresse de la page publique,
+     * seulement si l'événement est public (sinon 404, comme un événement inexistant).
+     */
+    #[Route('/api/public/events/by-id/{id}', name: 'public_event_by_id', requirements: ['id' => '[0-9a-f-]{36}'], methods: ['GET'], format: 'json')]
+    public function byId(string $id): JsonResponse
+    {
+        $event = Uuid::isValid($id) ? $this->events->find(Uuid::fromString($id)) : null;
+        if (null === $event || !$event->isPublic()) {
+            throw new NotFoundHttpException();
+        }
+
+        return $this->json(['slug' => $event->getSlug()]);
     }
 
     #[Route('/api/public/events/{slug}', name: 'public_event_show', requirements: ['slug' => self::SLUG], methods: ['GET'], format: 'json')]

@@ -84,3 +84,36 @@ test('a view is counted after the page stays visible for 2 seconds, without cook
   await expect.poll(() => views, { timeout: 5000 }).toEqual(['POST'])
   expect(await context.cookies()).toEqual([])
 })
+
+test('visitors without an account discover open events from the home page and the calendar', async ({ page }) => {
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [event] } }))
+  await page.route(`**/api/public/events/${slug}`, (route) => route.fulfill({ json: event }))
+
+  await page.goto('/')
+  const section = page.getByRole('region', { name: 'Prochains événements ouverts à tous' })
+  await expect(section.getByRole('link', { name: /Soirée cricket/ })).toHaveAttribute('href', `/e/${slug}`)
+
+  await page.getByRole('link', { name: 'Événements', exact: true }).click()
+  await expect(page).toHaveURL(/\/evenements$/)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Événements')
+  await page.getByRole('link', { name: /Soirée cricket/ }).click()
+  await expect(page).toHaveURL(new RegExp(`/e/${slug}$`))
+  await expect(page.getByRole('button', { name: 'Envoyer ma réponse' })).toBeVisible()
+})
+
+test('a member link to a public event opens its public page for someone without an account', async ({ page }) => {
+  const id = '01a1b2c3-0000-7000-8000-0000000000e9'
+  await page.route(`**/api/public/events/by-id/${id}`, (route) => route.fulfill({ json: { slug } }))
+  await page.route(`**/api/public/events/${slug}`, (route) => route.fulfill({ json: event }))
+
+  await page.goto(`/evenements/${id}`)
+  await expect(page).toHaveURL(new RegExp(`/e/${slug}$`))
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
+})
+
+test('the home page hides the section when no event is open', async ({ page }) => {
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [] } }))
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Skull Darts 71')
+  await expect(page.getByRole('region', { name: 'Prochains événements ouverts à tous' })).toBeHidden()
+})

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vu
 import HomeView from '../views/HomeView.vue'
 import type { MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
+import { services } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 import { usePreferencesStore } from '@/stores/preferences'
 
@@ -85,7 +86,8 @@ const router = createRouter({
       path: '/evenements',
       name: 'events',
       component: () => import('../views/events/EventsView.vue'),
-      meta: { titleKey: 'events', requiresAuth: true },
+      // Sans compte : événements ouverts au public (voir EventsView)
+      meta: { titleKey: 'events' },
     },
     {
       path: '/evenements/nouveau',
@@ -182,6 +184,11 @@ router.beforeEach(async (to: RouteLocationNormalized) => {
   await auth.init().catch(() => undefined)
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // Lien d'un événement partagé à quelqu'un sans compte : sa page publique, s'il en a une
+    if (to.name === 'event') {
+      const slug = await services.publicEvents.slugFor(String(to.params.id)).catch(() => null)
+      if (slug) return { name: 'public-event', params: { slug } }
+    }
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   // Contrôle d'ergonomie : l'API reste seule garante des droits

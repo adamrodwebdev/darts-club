@@ -167,5 +167,14 @@
     "cancel": "Cancel my answer",
     "removed": "Your answer is withdrawn and your data deleted.",
     "keepEmail": "Keep the email you received: its link brings you back here."
+  },
+  "publicEvents": {
+    "title": "Upcoming events open to everyone",
+    "intro": "No membership needed: pick an event and answer “I’m coming” or “Not sure”.",
+    "all": "All open events →",
+    "answer": "Answer",
+    "empty": "No event open to the public at the moment. Come back soon!",
+    "members": "Member? {link} to see the club’s full calendar.",
+    "login": "Log in"
   }
 }

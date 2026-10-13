@@ -1,5 +1,6 @@
 import type { ApiClient } from '@/api/ApiClient'
 import type { Attendance } from '@/models/ClubEvent'
+import { list, obj, str } from '@/models/guards'
 import { parseGuestResponse, parsePublicEvent, type GuestResponse, type PublicEvent } from '@/models/PublicEvent'
 
 export interface GuestAnswer {
@@ -17,6 +18,16 @@ export interface GuestAnswer {
  */
 export class PublicEventService {
   constructor(private readonly api: ApiClient) {}
+
+  /** Événements publics à venir (sans compte) */
+  async list(): Promise<PublicEvent[]> {
+    return list(obj(await this.api.get('/api/public/events')).items, parsePublicEvent)
+  }
+
+  /** Adresse publique d'un événement à partir de son identifiant (lien adhérent partagé) */
+  async slugFor(id: string): Promise<string> {
+    return str(obj(await this.api.get(`/api/public/events/by-id/${encodeURIComponent(id)}`)).slug)
+  }
 
   async get(slug: string): Promise<PublicEvent> {
     return parsePublicEvent(await this.api.get(`/api/public/events/${encodeURIComponent(slug)}`))
