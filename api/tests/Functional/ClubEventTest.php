@@ -328,6 +328,32 @@ final class ClubEventTest extends ApiTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testVisitorsDiscoverUpcomingPublicEventsOnly(): void
+    {
+        $this->loginAsSecretary();
+        $this->postJson('/api/events', self::payload(['title' => 'Soirée privée']));
+        $private = $this->digString($this->json(), 'id');
+        $this->postJson('/api/events', self::payload(['title' => 'Tournoi ouvert', 'public' => true, 'city' => 'Louhans']));
+        $public = $this->digString($this->json(), 'id');
+        $slug = substr($this->digString($this->json(), 'publicPath'), 3);
+        $past = $this->pastEvent('Ancienne soirée publique');
+        $past->edit(new EventDetails('Ancienne soirée publique', '', 'Club', $past->getStartsAt(), $past->getEndsAt(), null, true, 'Mâcon'), $past->getStartsAt()->modify('-1 day'));
+        $this->entityManager()->flush();
+        $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+
+        // Sans compte : seulement les événements publics à venir, sans adresse
+        $this->client->request('GET', '/api/public/events');
+        self::assertResponseIsSuccessful();
+        self::assertSame(['Tournoi ouvert'], array_column((array) $this->json()['items'], 'title'));
+        self::assertArrayNotHasKey('location', (array) $this->dig($this->json(), 'items', 0));
+
+        // Lien adhérent partagé : renvoie vers la page publique, jamais pour un événement privé
+        $this->client->request('GET', "/api/public/events/by-id/{$public}");
+        self::assertSame($slug, $this->json()['slug']);
+        $this->client->request('GET', "/api/public/events/by-id/{$private}");
+        self::assertResponseStatusCodeSame(404);
+    }
+
     public function testUnconfirmedGuestAnswersAreForgotten(): void
     {
         $this->loginAsSecretary();

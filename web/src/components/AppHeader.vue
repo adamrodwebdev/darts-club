@@ -78,6 +78,10 @@ const preferences = usePreferencesStore()
         <LanguageToggle />
         <ThemeToggle />
       </div>
+      <RouterLink v-if="!user" to="/evenements" class="guest-link" :aria-label="t('nav.events')">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
+        <span class="guest-link__label">{{ t('nav.events') }}</span>
+      </RouterLink>
       <RouterLink v-if="!user" to="/connexion" class="login-link">{{ t('nav.login') }}</RouterLink>
     </nav>
   </header>
@@ -93,10 +97,11 @@ const preferences = usePreferencesStore()
   border-bottom: 1px solid var(--color-border);
 }
 
+/* 320 px : espacements resserrés pour tout faire tenir (élargis dès 360 px) */
 .header__inner {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0.5rem var(--gutter);
@@ -115,8 +120,24 @@ const preferences = usePreferencesStore()
   margin-right: auto;
 }
 
+/* Très petits écrans (320 px) : le logo seul, le lien garde son nom accessible */
 .brand__name {
+  display: none;
   white-space: nowrap;
+}
+
+@media (min-width: 360px) {
+  .brand__name {
+    display: inline;
+  }
+
+  .header__inner {
+    gap: 0.5rem;
+  }
+
+  .login-link {
+    padding: 0 1rem;
+  }
 }
 
 .brand__logo {
@@ -177,11 +198,40 @@ const preferences = usePreferencesStore()
   text-align: center;
 }
 
+.guest-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.guest-link:hover {
+  background: var(--color-surface-2);
+}
+
+/* Libellé visible dès qu'il y a la place ; icône seule sur téléphone */
+.guest-link__label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .guest-link__label {
+    display: inline;
+  }
+}
+
 .login-link {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   border-radius: var(--radius);
   background: var(--color-accent);
   color: var(--color-on-accent);

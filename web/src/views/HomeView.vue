@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
+import { ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import HeroDartboard from '@/components/landing/HeroDartboard.vue'
+import PublicEventsList from '@/components/events/PublicEventsList.vue'
 import FriendBandSection from '@/components/landing/FriendBandSection.vue'
 import SongSection from '@/components/landing/SongSection.vue'
 import MarqueeBand from '@/components/motion/MarqueeBand.vue'
@@ -14,6 +15,8 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const { t } = useI18n()
 const root = useTemplateRef<HTMLElement>('root')
+/** Section affichée seulement s'il existe des événements ouverts à tous */
+const publicEvents = ref(0)
 useReveal(root)
 
 const ICONS: Record<string, string> = {
@@ -56,6 +59,14 @@ const ICONS: Record<string, string> = {
         <SplitText tag="h2" class="levitate" :text="t(`landing.pillars.${pillar.key}.title`)" />
         <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
       </article>
+    </section>
+
+    <!-- Chargée après l'affichage, sous la ligne de flottaison : pas de décalage visible -->
+    <section v-show="publicEvents > 0" class="public-events" aria-labelledby="public-events-title">
+      <h2 id="public-events-title">{{ t('publicEvents.title') }}</h2>
+      <p class="muted">{{ t('publicEvents.intro') }}</p>
+      <PublicEventsList :limit="6" hide-when-empty @loaded="publicEvents = $event" />
+      <RouterLink to="/evenements" class="btn btn--link">{{ t('publicEvents.all') }}</RouterLink>
     </section>
 
     <SongSection />
@@ -206,6 +217,16 @@ const ICONS: Record<string, string> = {
 .pillar p {
   margin: 0;
   color: var(--color-muted);
+}
+
+.public-events {
+  display: grid;
+  gap: 1rem;
+}
+
+.public-events h2,
+.public-events p {
+  margin: 0;
 }
 
 .join {

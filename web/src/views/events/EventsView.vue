@@ -4,12 +4,15 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import BaseField from '@/components/BaseField.vue'
 import EventCard from '@/components/events/EventCard.vue'
+import PublicEventsList from '@/components/events/PublicEventsList.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { EventSummary } from '@/models/ClubEvent'
 import { currentSeason } from '@/models/Membership'
 import { services } from '@/services'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -27,6 +30,7 @@ const canManage = ref(false)
 const load = useAsyncAction()
 
 async function refresh(): Promise<void> {
+  if (!auth.isAuthenticated) return
   const data = await load.run(() =>
     services.events.list({ period: period.value, season: season.value || undefined, q: search.value || undefined }),
   )
@@ -49,7 +53,21 @@ onMounted(refresh)
 </script>
 
 <template>
-  <section class="page stack">
+  <!-- Visiteur sans compte : seulement les événements ouverts au public -->
+  <section v-if="!auth.isAuthenticated" class="page stack">
+    <h1>{{ t('events.list.title') }}</h1>
+    <p class="muted">{{ t('publicEvents.intro') }}</p>
+    <PublicEventsList />
+    <p class="muted">
+      <i18n-t keypath="publicEvents.members" scope="global">
+        <template #link>
+          <RouterLink to="/connexion?redirect=/evenements">{{ t('publicEvents.login') }}</RouterLink>
+        </template>
+      </i18n-t>
+    </p>
+  </section>
+
+  <section v-else class="page stack">
     <div class="head">
       <h1>{{ t('events.list.title') }}</h1>
       <RouterLink v-if="canManage" to="/evenements/nouveau" class="cta">{{ t('events.list.create') }}</RouterLink>
