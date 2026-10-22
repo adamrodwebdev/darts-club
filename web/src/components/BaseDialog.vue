@@ -22,7 +22,7 @@ defineExpose({ close: () => dialog.value?.close() })
 
 <style scoped>
 .dialog {
-  width: min(30rem, calc(100vw - 2rem));
+  width: min(30rem, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 1.25rem;
   border: 1px solid var(--color-border);

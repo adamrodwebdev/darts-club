@@ -47,10 +47,18 @@
   color-scheme: light;
 }
 
-@media (min-width: 768px) {
+/* Points de rupture en rem (40 / 48 / 64 / 80rem) : ils suivent la taille de texte choisie par l'utilisateur */
+@media (width >= 48rem) {
   :root {
     --gutter: 2rem;
   }
+}
+
+/* Barre de défilement réservée (pas de décalage entre pages courtes et longues) ;
+   le focus clavier et les ancres ne passent jamais sous l'en-tête collant (WCAG 2.4.11) */
+html {
+  scrollbar-gutter: stable;
+  scroll-padding-block-start: 4.5rem;
 }
 
 *,
@@ -61,28 +69,52 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100svh;
   background: var(--color-bg);
   color: var(--color-text);
   overflow-wrap: break-word;
 }
 
+/* Tailles fluides : rem + vw (le texte grossit avec le zoom, WCAG 1.4.4), de 320 à 1440 px */
 h1 {
-  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-size: clamp(1.6rem, 1.3714rem + 1.1429vw, 2.4rem);
   line-height: 1.15;
 }
 
 h2 {
   margin-top: 0;
-  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-size: clamp(1.1rem, 1.0286rem + 0.3571vw, 1.35rem);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* iOS zoome dans un champ dont le texte fait moins de 16 px */
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
 }
 
 a {
   color: var(--color-link);
 }
 
+/* Pas de « svg » ici : les décors SVG débordent volontairement de leur cadre (anneaux de la cible) */
+img,
+video {
+  max-inline-size: 100%;
+}
+
 img {
-  max-width: 100%;
+  block-size: auto;
 }
 
 :focus-visible {
@@ -98,8 +130,7 @@ main:focus {
    des pages (code chargé à la demande) : aucun décalage de mise en page */
 main {
   display: block;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
 }
 
 /* Mise en page */
@@ -399,6 +430,6 @@ main {
 /* Titres de section de la page d'accueil */
 h2.metal-title {
   margin: 0.25rem 0 0;
-  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-size: clamp(2rem, 1.5714rem + 2.1429vw, 3.5rem);
   line-height: 1;
 }

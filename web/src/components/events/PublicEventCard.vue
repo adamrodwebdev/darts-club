@@ -17,7 +17,7 @@ const placesLeft = computed(() => (props.event.capacity === null ? null : Math.m
       class="poster"
       :src="event.poster.cardUrl"
       :srcset="`${event.poster.cardUrl} 900w, ${event.poster.largeUrl} 1600w`"
-      sizes="(min-width: 768px) 22rem, 100vw"
+      sizes="(min-width: 48rem) 22rem, calc(100vw - 2rem)"
       :width="event.poster.width"
       :height="event.poster.height"
       :alt="t('events.poster.alt', { title: event.title })"
@@ -86,7 +86,7 @@ h1 {
   white-space: pre-line;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .public-event {
     grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
   }

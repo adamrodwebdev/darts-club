@@ -20,7 +20,7 @@ const preferences = usePreferencesStore()
   display: grid;
   place-content: center;
   gap: 0.5rem;
-  min-height: 70vh;
+  min-height: 70svh;
   padding: 1rem;
   text-align: center;
 }

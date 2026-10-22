@@ -57,7 +57,7 @@ const items = computed(() => (tm('landing.marquee') as unknown as Parameters<typ
   gap: 1.5rem;
   padding-inline: 0.75rem;
   color: var(--color-text);
-  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-size: clamp(1.1rem, 0.9571rem + 0.7143vw, 1.6rem);
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;

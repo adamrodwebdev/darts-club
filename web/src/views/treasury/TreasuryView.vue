@@ -222,7 +222,7 @@ select {
 
 .tiles dd {
   margin: 0;
-  font-size: clamp(1.3rem, 4vw, 1.7rem);
+  font-size: clamp(1.3rem, 1.1857rem + 0.5714vw, 1.7rem);
   font-weight: 800;
 }
 
@@ -293,7 +293,7 @@ summary {
   text-decoration: line-through;
 }
 
-@media (min-width: 900px) {
+@media (width >= 56.25rem) {
   .row {
     grid-template-columns: minmax(12rem, 2fr) auto minmax(9rem, 1fr) auto;
   }

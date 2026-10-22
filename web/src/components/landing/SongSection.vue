@@ -187,7 +187,7 @@ function announce(): void {
 
 .lyrics p {
   margin: 0;
-  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-size: clamp(1rem, 0.9571rem + 0.2143vw, 1.15rem);
 }
 
 .lyrics__part--instrumental p {
@@ -201,7 +201,7 @@ function announce(): void {
   font-size: 0.85rem;
 }
 
-@media (min-width: 1024px) {
+@media (width >= 64rem) {
   .song {
     grid-template-columns: 1fr 1fr;
     align-items: start;

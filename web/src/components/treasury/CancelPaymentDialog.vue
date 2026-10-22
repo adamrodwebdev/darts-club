@@ -44,7 +44,7 @@ async function submit(): Promise<void> {
 
 <style scoped>
 .dialog {
-  width: min(28rem, calc(100vw - 2rem));
+  width: min(28rem, calc(100% - 2rem));
   padding: 1.25rem;
   border: 1px solid var(--color-border);
   border-radius: calc(var(--radius) * 1.5);

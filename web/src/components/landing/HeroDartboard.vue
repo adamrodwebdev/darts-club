@@ -149,9 +149,13 @@ usePointerTilt(stage)
 }
 
 /* Cible sous le texte (mobile, tablette) : place pour la fléchette qui dépasse en haut */
-@media (max-width: 1023px) {
+.stage {
+  margin-top: 16%;
+}
+
+@media (width >= 64rem) {
   .stage {
-    margin-top: 16%;
+    margin-top: 0;
   }
 }
 

@@ -88,9 +88,9 @@ const preferences = usePreferencesStore()
 </template>
 
 <style scoped>
+/* Collant seulement s'il reste de la hauteur (téléphone en paysage, zoom 400 % : WCAG 1.4.10) */
 .header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
   background: color-mix(in srgb, var(--color-bg) 85%, transparent);
   backdrop-filter: blur(10px);
@@ -120,23 +120,39 @@ const preferences = usePreferencesStore()
   margin-right: auto;
 }
 
-/* Très petits écrans (320 px) : le logo seul, le lien garde son nom accessible */
+@media (height >= 40rem) {
+  .header {
+    position: sticky;
+    top: 0;
+  }
+}
+
+/* Petits écrans : le logo seul, le lien garde son nom accessible */
 .brand__name {
   display: none;
   white-space: nowrap;
 }
 
-@media (min-width: 360px) {
-  .brand__name {
-    display: inline;
-  }
-
+@media (width >= 22.5rem) {
   .header__inner {
     gap: 0.5rem;
   }
 
   .login-link {
     padding: 0 1rem;
+  }
+}
+
+@media (width >= 32.5rem) {
+  .brand__name {
+    display: inline;
+  }
+}
+
+/* Connecté : cinq icônes de 44 px, le nom ne revient qu'à partir de 40rem */
+@media (32.5rem <= width < 40rem) {
+  .brand__name--member {
+    display: none;
   }
 }
 
@@ -221,7 +237,7 @@ const preferences = usePreferencesStore()
   display: none;
 }
 
-@media (min-width: 640px) {
+@media (width >= 40rem) {
   .guest-link__label {
     display: inline;
   }
@@ -252,7 +268,7 @@ const preferences = usePreferencesStore()
   display: none;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .nav__item--board {
     display: list-item;
   }
@@ -263,7 +279,7 @@ const preferences = usePreferencesStore()
 }
 
 /* Libellés visibles seulement quand toute la barre tient sur une ligne */
-@media (min-width: 1100px) {
+@media (width >= 68.75rem) {
   .nav__label {
     position: static;
     width: auto;
@@ -282,16 +298,4 @@ const preferences = usePreferencesStore()
   }
 }
 
-@media (max-width: 519px) {
-  .brand__name {
-    display: none;
-  }
-}
-
-/* Connecté : 5 icônes de 44 px, le logo seul suffit sur petit écran */
-@media (max-width: 639px) {
-  .brand__name--member {
-    display: none;
-  }
-}
 </style>
