@@ -9,19 +9,21 @@ use App\Entity\User;
 use App\Messaging\Conversations;
 use App\Messaging\Mailbox;
 use App\Messaging\MailboxAccess;
+use App\Messaging\MailboxTopic;
 use App\Messaging\MessageBody;
 use App\Messaging\MessagingView;
 use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Security\RequestThrottle;
 use App\Security\Voter\ConversationVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -36,6 +38,7 @@ final class ConversationController extends AbstractController
     private const UUID = '[0-9a-f-]{36}';
 
     public function __construct(
+        private readonly RequestThrottle $requestThrottle,
         private readonly Conversations $conversations,
         private readonly MessageRepository $messages,
         private readonly RateLimiterFactoryInterface $messagePostLimiter,
@@ -64,7 +67,7 @@ final class ConversationController extends AbstractController
         $body = self::body($input->body);
 
         if (null !== $input->mailbox) {
-            $conversation = $this->conversations->writeToMailbox($user, Mailbox::from($input->mailbox), $input->subject, $body);
+            $conversation = $this->conversations->writeToMailbox($user, new MailboxTopic(Mailbox::from($input->mailbox), $input->subject), $body);
         } else {
             $recipient = $users->find((string) $input->recipientId);
             if (null === $recipient || !$recipient->isVerified() || $recipient->getId()->equals($user->getId())) {
@@ -109,9 +112,9 @@ final class ConversationController extends AbstractController
 
     #[Route('/{id}/read', name: 'read', requirements: ['id' => self::UUID], methods: ['POST'])]
     #[IsGranted(ConversationVoter::ACCESS, subject: 'conversation')]
-    public function read(Conversation $conversation, #[CurrentUser] User $user, EntityManagerInterface $em): Response
+    public function read(Conversation $conversation, #[CurrentUser] User $user, EntityManagerInterface $em, ClockInterface $clock): Response
     {
-        $conversation->markReadBy($user);
+        $conversation->markReadBy($user, $clock->now());
         $em->flush();
 
         return new Response(status: Response::HTTP_NO_CONTENT);
@@ -119,10 +122,7 @@ final class ConversationController extends AbstractController
 
     private function throttle(User $user): void
     {
-        $limit = $this->messagePostLimiter->create($user->getId()->toRfc4122())->consume();
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
+        $this->requestThrottle->consume($this->messagePostLimiter, $user->getId()->toRfc4122());
     }
 
     private static function body(string $text): MessageBody

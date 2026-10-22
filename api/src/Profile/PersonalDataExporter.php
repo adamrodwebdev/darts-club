@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Repository\NotificationRepository;
 use App\Repository\OAuthIdentityRepository;
 use App\Repository\PushSubscriptionRepository;
+use Symfony\Component\Clock\ClockInterface;
 
 /** Droit d'accès et à la portabilité (RGPD art. 15 et 20). */
 final class PersonalDataExporter
@@ -17,6 +18,7 @@ final class PersonalDataExporter
         private readonly NotificationRepository $notifications,
         private readonly OAuthIdentityRepository $identities,
         private readonly PushSubscriptionRepository $subscriptions,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -24,7 +26,7 @@ final class PersonalDataExporter
     public function export(User $user): array
     {
         return [
-            'exportedAt' => (new \DateTimeImmutable())->format(\DATE_ATOM),
+            'exportedAt' => $this->clock->now()->format(\DATE_ATOM),
             'account' => [
                 'id' => $user->getId()->toRfc4122(),
                 'email' => $user->getEmail(),
@@ -42,7 +44,7 @@ final class PersonalDataExporter
             ),
             'pushSubscriptions' => array_map(
                 static fn (PushSubscription $s): array => [
-                    'service' => parse_url($s->getEndpoint(), \PHP_URL_HOST),
+                    'service' => $s->endpoint()->service(),
                     'createdAt' => $s->getCreatedAt()->format(\DATE_ATOM),
                 ],
                 $this->subscriptions->findByUser($user),

@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Notification\Category;
 use App\Notification\MemberNotifier;
 use App\Notification\NotificationContent;
+use App\Notification\Push\PushEndpoint;
 use App\Notification\Recipients;
 use App\Tests\ApiTestCase;
 use App\Tests\Double\FakePushSender;
@@ -168,7 +169,7 @@ final class NotificationTest extends ApiTestCase
     private function subscribePush(User $user, string $endpoint): void
     {
         $em = $this->entityManager();
-        $em->persist(new PushSubscription($user, $endpoint, 'key', 'auth'));
+        $em->persist(new PushSubscription($user, new PushEndpoint($endpoint, 'key', 'auth'), $this->now()));
         $em->flush();
     }
 

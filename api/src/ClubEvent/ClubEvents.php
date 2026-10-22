@@ -11,6 +11,7 @@ use App\Media\ImageStorage;
 use App\Media\InvalidImageException;
 use App\Messaging\MessageBody;
 use App\Repository\EventPhotoRepository;
+use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -28,6 +29,7 @@ final class ClubEvents
         private readonly ImageStorage $eventPhotoStorage,
         private readonly EventPhotoRepository $photos,
         private readonly ImageStorage $eventPosterStorage,
+        private readonly TokenGenerator $tokens,
     ) {
     }
 
@@ -39,6 +41,7 @@ final class ClubEvents
     public function schedule(User $organizer, EventDetails $details): ClubEvent
     {
         $event = ClubEvent::schedule($organizer, $details, $this->now());
+        $this->giveAddressIfPublic($event);
         $this->em->persist($event);
         $this->em->flush();
 
@@ -48,6 +51,7 @@ final class ClubEvents
     public function edit(ClubEvent $event, EventDetails $details): void
     {
         $event->edit($details, $this->now());
+        $this->giveAddressIfPublic($event);
         $this->em->flush();
     }
 
@@ -100,12 +104,13 @@ final class ClubEvents
 
             $processed = $this->images->photo($file->getPathname());
             $photo = new EventPhoto(
-                $event,
-                $uploader,
-                $this->eventPhotoStorage->store($processed['large']),
-                $this->eventPhotoStorage->store($processed['thumb']),
-                $processed['width'],
-                $processed['height'],
+                event: $event,
+                uploader: $uploader,
+                largeId: $this->eventPhotoStorage->store($processed['large']),
+                thumbId: $this->eventPhotoStorage->store($processed['thumb']),
+                width: $processed['width'],
+                height: $processed['height'],
+                now: $this->now(),
             );
             $this->em->persist($photo);
             $added[] = $photo;
@@ -162,7 +167,7 @@ final class ClubEvents
         $this->assertArchiveOpen($event);
 
         try {
-            $post = new EventPost($event, $author, MessageBody::fromString($text));
+            $post = new EventPost(event: $event, author: $author, body: MessageBody::fromString($text), now: $this->now());
         } catch (\InvalidArgumentException $e) {
             throw new RegistrationException($e->getMessage(), $e);
         }
@@ -184,6 +189,14 @@ final class ClubEvents
         if (null !== $poster) {
             $this->eventPosterStorage->delete($poster->largeId);
             $this->eventPosterStorage->delete($poster->cardId);
+        }
+    }
+
+    /** Événement devenu public : adresse stable /e/{slug}, avec un suffixe aléatoire anti-collision */
+    private function giveAddressIfPublic(ClubEvent $event): void
+    {
+        if ($event->needsPublicAddress()) {
+            $event->assignPublicAddress($this->tokens->hex(3));
         }
     }
 

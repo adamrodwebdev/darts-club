@@ -9,9 +9,10 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 ### Back (PHP)
 - **Une classe = une responsabilité.** Les contrôleurs sont minces : ils valident (DTO + `#[MapRequestPayload]`), délèguent à un service, puis renvoient la réponse.
 - **Entités riches, pas anémiques.** Pas de setters génériques pour l'état métier : préférer des méthodes d'intention (`markVerified()`, `pay()`, `cancel()`) qui protègent les invariants. Les champs obligatoires passent par le constructeur.
-- **Objets valeur** immuables (`final readonly class`) pour les concepts métier (Email, Money, Season, Label…) et pour les DTO.
+- **Objets valeur** immuables (`final readonly class`) pour les concepts métier (Email, Money, Season, Label…) et pour les DTO. Les valeurs qui voyagent ensemble en forment un (`PaymentDetails`, `NewAccount`, `MailboxTopic`, `PushEndpoint`) : **trois paramètres au plus** par constructeur ou méthode, sinon un objet valeur ou des arguments nommés.
 - **Classes `final` par défaut**, `private` par défaut, `readonly` dès que possible. L'héritage seulement pour un vrai « est-un » ; sinon composition.
-- **Dépendre d'abstractions** (interfaces) aux frontières : notifications, paiement, stockage, horloge (`ClockInterface`).
+- **Dépendre d'abstractions** (interfaces) aux frontières : notifications, paiement, stockage, horloge (`ClockInterface`), hasard (`TokenGenerator`).
+- **Ni heure ni hasard cachés** : jamais de `new \DateTimeImmutable()` ni de `random_bytes()` dans le code métier. Les entités reçoivent `$now` (et les jetons déjà tirés) du service qui tient l'horloge et le `TokenGenerator` ; les tests figent l'horloge. Limitation de débit : `RequestThrottle`.
 - **Polymorphisme plutôt que `switch`** : stratégies taguées (`#[AutoconfigureTag]` + `#[AutowireIterator]`) pour les canaux de notification, les fournisseurs OAuth, les types de messages…
 - **Enums PHP** pour les ensembles fermés (rôles, statuts de cotisation, labels de message).
 - **Traductions** : un message d'erreur s'écrit en français, ce texte sert de clé (domaine `errors`, version anglaise dans `translations/errors.en.yaml`) ; paramètres `%nom%` via `InvalidValue` / `UnprocessableException`. Textes rédigés par l'application (emails, notifications, exports) : domaines à clés, fichiers `fr` et `en`. Tout ce qui part vers un adhérent (email, notification) est rendu dans **sa** langue (`User::language()`).

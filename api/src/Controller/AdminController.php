@@ -7,6 +7,7 @@ use App\Admin\AuditTrail;
 use App\Admin\BroadcastLabel;
 use App\Admin\MemberAdministration;
 use App\Admin\PresidentialBroadcast;
+use App\Announcement\AnnouncementText;
 use App\Entity\Announcement;
 use App\Entity\AuditLog;
 use App\Entity\Broadcast;
@@ -41,6 +42,7 @@ final class AdminController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly AuditTrail $audit,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -161,7 +163,10 @@ final class AdminController extends AbstractController
         $data = $request->toArray();
 
         try {
-            $announcement = Announcement::publish($president, self::text($data, 'title'), self::text($data, 'body'), true === ($data['pinned'] ?? false));
+            $announcement = Announcement::publish($president, AnnouncementText::of(self::text($data, 'title'), self::text($data, 'body')), $this->clock->now());
+            if (true === ($data['pinned'] ?? false)) {
+                $announcement->pin();
+            }
         } catch (\InvalidArgumentException $e) {
             throw new AdministrationException($e->getMessage(), $e);
         }
@@ -181,8 +186,11 @@ final class AdminController extends AbstractController
         try {
             if (\array_key_exists('title', $data) || \array_key_exists('body', $data)) {
                 $announcement->edit(
-                    \array_key_exists('title', $data) ? self::text($data, 'title') : $announcement->getTitle(),
-                    \array_key_exists('body', $data) ? self::text($data, 'body') : $announcement->getBody(),
+                    AnnouncementText::of(
+                        \array_key_exists('title', $data) ? self::text($data, 'title') : $announcement->getTitle(),
+                        \array_key_exists('body', $data) ? self::text($data, 'body') : $announcement->getBody(),
+                    ),
+                    $this->clock->now(),
                 );
             }
         } catch (\InvalidArgumentException $e) {

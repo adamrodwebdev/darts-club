@@ -362,17 +362,44 @@ class ClubEvent implements RecordsDomainEvents
         return array_values(array_filter($this->guestResponses->toArray(), static fn (GuestResponse $r): bool => $r->isConfirmed()));
     }
 
-    /**
-     * Clé servant à calculer les empreintes des visiteurs, créée à la première vue.
-     * Null une fois la mesure close : les empreintes ne peuvent plus être recalculées.
-     */
-    public function audienceKey(\DateTimeImmutable $now): ?string
+    /** Public sans adresse : à doter d'une adresse (assignPublicAddress) avant l'enregistrement */
+    public function needsPublicAddress(): bool
     {
-        if ($this->isAudienceClosed($now)) {
-            return null;
+        return $this->public && null === $this->slug;
+    }
+
+    /**
+     * Adresse stable de la page publique (titre, date, suffixe aléatoire tiré par l'appelant) :
+     * un lien partagé reste valable même si le titre change ensuite.
+     */
+    public function assignPublicAddress(string $suffix): void
+    {
+        if (!$this->needsPublicAddress()) {
+            return;
+        }
+        if (1 !== preg_match('/^[a-z0-9]{4,12}$/', $suffix)) {
+            throw new \LogicException('Suffixe d\'adresse publique invalide.');
         }
 
-        return $this->audienceKey ??= bin2hex(random_bytes(32));
+        $base = (new AsciiSlugger('fr'))->slug($this->title.' '.$this->startsAt->setTimezone(new \DateTimeZone('Europe/Paris'))->format('Y-m-d'))->lower()->truncate(120, '', false)->trimEnd('-');
+        $this->slug = $base.'-'.$suffix;
+    }
+
+    /**
+     * Clé servant à calculer les empreintes des visiteurs : null avant la première vue,
+     * et de nouveau une fois la mesure close (les empreintes ne peuvent plus être recalculées).
+     */
+    public function audienceKey(): ?string
+    {
+        return $this->audienceKey;
+    }
+
+    /** Première vue : la mesure commence avec cette clé (tirée par l'appelant) */
+    public function openAudience(string $key, \DateTimeImmutable $now): void
+    {
+        if (null === $this->audienceKey && !$this->isAudienceClosed($now)) {
+            $this->audienceKey = $key;
+        }
     }
 
     public function isAudienceClosed(\DateTimeImmutable $now): bool
@@ -529,11 +556,6 @@ class ClubEvent implements RecordsDomainEvents
         $city = trim((string) $details->city);
         $this->city = '' !== $city ? mb_substr($city, 0, EventDetails::CITY_MAX) : null;
         $this->public = $details->public;
-        // Adresse stable : un lien partagé reste valable même si le titre change
-        if ($this->public && null === $this->slug) {
-            $base = (new AsciiSlugger('fr'))->slug($this->title.' '.$this->startsAt->setTimezone(new \DateTimeZone('Europe/Paris'))->format('Y-m-d'))->lower()->truncate(120, '', false)->trimEnd('-');
-            $this->slug = $base.'-'.bin2hex(random_bytes(3));
-        }
     }
 
     /** Planifié tardivement : la notification de création tient lieu de rappel. */

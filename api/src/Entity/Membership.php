@@ -7,8 +7,9 @@ use App\Event\RecordsDomainEvents;
 use App\Membership\MembershipPaid;
 use App\Membership\MembershipStatus;
 use App\Membership\Money;
-use App\Membership\PaymentMethod;
+use App\Membership\PaymentDetails;
 use App\Membership\Season;
+use App\Membership\SeasonFee;
 use App\Repository\MembershipRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -59,20 +60,20 @@ class Membership implements RecordsDomainEvents
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastReminderAt = null;
 
-    private function __construct(User $user, Season $season, Money $amountDue)
+    private function __construct(User $user, SeasonFee $fee, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->user = $user;
         $this->holderName = mb_substr($user->displayName()->value, 0, 80);
-        $this->season = $season->label();
-        $this->amountDue = $amountDue->cents;
+        $this->season = $fee->season->label();
+        $this->amountDue = $fee->amount->cents;
         $this->payments = new ArrayCollection();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
-    public static function open(User $user, Season $season, Money $amountDue): self
+    public static function open(User $user, SeasonFee $fee, \DateTimeImmutable $now): self
     {
-        return new self($user, $season, $amountDue);
+        return new self($user, $fee, $now);
     }
 
     public function changeAmountDue(Money $amount): void
@@ -82,27 +83,21 @@ class Membership implements RecordsDomainEvents
         $this->recordIfNewlyPaid($wasPaid);
     }
 
-    public function recordPayment(Money $amount, PaymentMethod $method, \DateTimeImmutable $paidAt, ?string $reference, ?User $recordedBy): Payment
+    /** Enregistre un paiement (persisté avec la cotisation) */
+    public function recordPayment(PaymentDetails $details, ?User $recordedBy, \DateTimeImmutable $now): void
     {
-        if ($amount->isZero()) {
-            throw new \InvalidArgumentException('Le montant du paiement doit être positif.');
-        }
-
         $wasPaid = MembershipStatus::Paid === $this->status();
-        $payment = new Payment($this, $amount, $method, $paidAt, $reference, $recordedBy);
-        $this->payments->add($payment);
+        $this->payments->add(new Payment(membership: $this, details: $details, recordedBy: $recordedBy, now: $now));
         $this->recordIfNewlyPaid($wasPaid);
-
-        return $payment;
     }
 
-    public function cancelPayment(Payment $payment, string $reason): void
+    public function cancelPayment(Payment $payment, string $reason, \DateTimeImmutable $now): void
     {
         if (!$this->payments->contains($payment)) {
             throw new \InvalidArgumentException('Ce paiement n\'appartient pas à cette cotisation.');
         }
 
-        $payment->cancel($reason);
+        $payment->cancel($reason, $now);
     }
 
     public function paidAmount(): Money

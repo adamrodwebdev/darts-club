@@ -9,6 +9,7 @@ use App\Repository\OAuthIdentityRepository;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
 /**
@@ -21,6 +22,7 @@ final class OAuthUserResolver
         private readonly OAuthIdentityRepository $identities,
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $em,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -46,14 +48,14 @@ final class OAuthUserResolver
 
         if (null === $user) {
             // Enregistre UserRegistered(viaOAuth), publié après le flush
-            $user = User::registerViaOAuth($address, $language);
+            $user = User::registerViaOAuth($address, $language, $this->clock->now());
             $this->em->persist($user);
         } else {
             // Le fournisseur prouve la possession de l'adresse
             $user->verifyThroughProvider();
         }
 
-        $this->em->persist(new OAuthIdentity($user, $provider, $subject));
+        $this->em->persist(new OAuthIdentity(user: $user, provider: $provider, subject: $subject, now: $this->clock->now()));
         $this->em->flush();
 
         return $user;

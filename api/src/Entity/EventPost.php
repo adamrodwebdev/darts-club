@@ -31,10 +31,11 @@ class EventPost
         #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
         private ?User $author,
         MessageBody $body,
+        \DateTimeImmutable $now,
     ) {
         $this->id = Uuid::v7();
         $this->body = $body->value;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
     public function isWrittenBy(User $user): bool

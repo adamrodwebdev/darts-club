@@ -2,6 +2,7 @@
 
 namespace App\Dev;
 
+use App\Announcement\AnnouncementText;
 use App\ClubEvent\ClubTime;
 use App\ClubEvent\EventDetails;
 use App\Entity\Announcement;
@@ -14,14 +15,18 @@ use App\Entity\User;
 use App\Enum\Role;
 use App\Event\RecordsDomainEvents;
 use App\Membership\Money;
+use App\Membership\PaymentDetails;
 use App\Membership\PaymentMethod;
 use App\Membership\Season;
+use App\Membership\SeasonFee;
 use App\Messaging\Mailbox;
+use App\Messaging\MailboxTopic;
 use App\Messaging\MessageBody;
 use App\Notification\Category;
 use App\Notification\NotificationContent;
 use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
+use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -78,12 +83,12 @@ final class DemoSeedCommand
 
         // Cotisations de la saison : payée, partielle, impayée
         foreach ([$president, $treasurer, $secretary, $alice, $bob, $chloe] as $user) {
-            $membership = Membership::open($user, $season, Money::cents(3000));
+            $membership = Membership::open($user, new SeasonFee($season, Money::cents(3000)), $now);
             $this->keep($membership);
             if (\in_array($user, [$president, $treasurer, $secretary, $alice], true)) {
-                $membership->recordPayment(Money::cents(3000), PaymentMethod::Transfer, $season->startsAt()->modify('+5 days'), 'Virement septembre', $treasurer);
+                $membership->recordPayment(new PaymentDetails(Money::cents(3000), PaymentMethod::Transfer, $season->startsAt()->modify('+5 days'), 'Virement septembre'), $treasurer, $now);
             } elseif ($user === $bob) {
-                $membership->recordPayment(Money::cents(1500), PaymentMethod::Cash, $season->startsAt()->modify('+12 days'), null, $treasurer);
+                $membership->recordPayment(new PaymentDetails(Money::cents(1500), PaymentMethod::Cash, $season->startsAt()->modify('+12 days')), $treasurer, $now);
             }
         }
 
@@ -96,26 +101,27 @@ final class DemoSeedCommand
         // Archives avec résumé et souvenirs
         $past = $this->event($secretary, 'Soirée de rentrée', 'Bar du club', $now->modify('-20 days 19:30'), 4, 'Reprise de la saison.', null, $now->modify('-2 months'));
         $past->writeSummary("Belle soirée de reprise : 14 joueurs, deux nouveaux venus et un 180 de Bob au troisième tour.\nMerci à tous !");
-        $this->keep(new EventPost($past, $bob, MessageBody::fromString('Mon premier 180 au club, je ne m’en remets pas !')));
-        $this->keep(new EventPost($past, $alice, MessageBody::fromString('Super ambiance, vivement la prochaine.')));
+        $this->keep(new EventPost(event: $past, author: $bob, body: MessageBody::fromString('Mon premier 180 au club, je ne m’en remets pas !'), now: $now));
+        $this->keep(new EventPost(event: $past, author: $alice, body: MessageBody::fromString('Super ambiance, vivement la prochaine.'), now: $now));
 
         // Canal d'informations
-        $pinned = Announcement::publish($president, 'Bienvenue sur le nouveau site !', "Calendrier, messagerie, cotisations : tout le club au même endroit.\nN’hésitez pas à compléter votre profil.", true);
+        $pinned = Announcement::publish($president, AnnouncementText::of('Bienvenue sur le nouveau site !', "Calendrier, messagerie, cotisations : tout le club au même endroit.\nN’hésitez pas à compléter votre profil."), $now);
+        $pinned->pin();
         $this->keep($pinned);
-        $this->keep(Announcement::publish($president, 'Nouveaux horaires', 'Les soirées commencent désormais à 20 h.'));
+        $this->keep(Announcement::publish($president, AnnouncementText::of('Nouveaux horaires', 'Les soirées commencent désormais à 20 h.'), $now));
 
         // Messagerie : entre adhérents et vers la trésorerie
-        $direct = Conversation::between($alice, $bob);
+        $direct = Conversation::between($alice, $bob, $now);
         $this->keep($direct);
-        $this->keep($direct->post($bob, MessageBody::fromString('Salut Alice, tu viens vendredi ?')));
-        $this->keep($direct->post($alice, MessageBody::fromString('Oui ! Je ramène mes nouvelles fléchettes.')));
-        $toTreasury = Conversation::toMailbox($bob, Mailbox::Treasurer, 'Cotisation');
+        $this->keep($direct->post($bob, MessageBody::fromString('Salut Alice, tu viens vendredi ?'), $now));
+        $this->keep($direct->post($alice, MessageBody::fromString('Oui ! Je ramène mes nouvelles fléchettes.'), $now));
+        $toTreasury = Conversation::toMailbox($bob, new MailboxTopic(Mailbox::Treasurer, 'Cotisation'), $now);
         $this->keep($toTreasury);
-        $this->keep($toTreasury->post($bob, MessageBody::fromString('Je règle le reste de ma cotisation vendredi, en espèces.')));
+        $this->keep($toTreasury->post($bob, MessageBody::fromString('Je règle le reste de ma cotisation vendredi, en espèces.'), $now));
 
         // Centre de notifications d'Alice
-        $this->keep(new Notification($alice, new NotificationContent(Category::Event, 'Nouvel événement : Soirée fléchettes du vendredi', 'Bar du club', '/evenements/'.$friday->getId()->toRfc4122())));
-        $this->keep(new Notification($alice, new NotificationContent(Category::Announcement, 'Bienvenue sur le nouveau site !', 'Tout le club au même endroit.', '/infos')));
+        $this->keep(new Notification($alice, new NotificationContent(Category::Event, 'Nouvel événement : Soirée fléchettes du vendredi', 'Bar du club', '/evenements/'.$friday->getId()->toRfc4122()), $now));
+        $this->keep(new Notification($alice, new NotificationContent(Category::Announcement, 'Bienvenue sur le nouveau site !', 'Tout le club au même endroit.', '/infos'), $now));
 
         // Données de démo : aucun email ni notification à l'enregistrement
         foreach ($this->entities as $entity) {
@@ -143,9 +149,9 @@ final class DemoSeedCommand
     private function member(string $email, string $name, ?Role $role = null, ?string $phone = null): User
     {
         $user = User::register(
-            EmailAddress::fromString($email),
+            new NewAccount(EmailAddress::fromString($email), null !== $phone ? PhoneNumber::fromInput($phone) : null),
             $this->hashers->getPasswordHasher(User::class)->hash(self::PASSWORD),
-            null !== $phone ? PhoneNumber::fromInput($phone) : null,
+            $this->clock->now(),
         );
         $user->markVerified();
         $user->rename(DisplayName::fromString($name));

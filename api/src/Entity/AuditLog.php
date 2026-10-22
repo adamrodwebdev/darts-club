@@ -36,11 +36,12 @@ class AuditLog
         private string $action,
         #[ORM\Column(length: 120, nullable: true)]
         private ?string $target,
+        \DateTimeImmutable $now,
         #[ORM\Column(type: Types::JSON)]
         private array $details = [],
     ) {
         $this->id = Uuid::v7();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
     /** @return array<string, mixed> */

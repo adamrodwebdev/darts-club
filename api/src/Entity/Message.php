@@ -33,13 +33,13 @@ class Message
     private \DateTimeImmutable $createdAt;
 
     /** Créé uniquement par Conversation::post(). */
-    public function __construct(Conversation $conversation, User $author, MessageBody $body)
+    public function __construct(Conversation $conversation, User $author, MessageBody $body, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->conversation = $conversation;
         $this->author = $author;
         $this->body = $body->value;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
     public function getId(): Uuid

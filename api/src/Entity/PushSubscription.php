@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Notification\Push\PushEndpoint;
 use App\Repository\PushSubscriptionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -32,26 +33,26 @@ class PushSubscription
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(User $user, string $endpoint, string $publicKey, string $authToken)
+    public function __construct(User $user, PushEndpoint $endpoint, \DateTimeImmutable $now)
     {
-        if (!str_starts_with($endpoint, 'https://')) {
-            throw new \InvalidArgumentException('Le point de terminaison push doit être en HTTPS.');
-        }
-
         $this->id = Uuid::v7();
         $this->user = $user;
-        $this->endpoint = $endpoint;
-        $this->publicKey = $publicKey;
-        $this->authToken = $authToken;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->endpoint = $endpoint->url;
+        $this->publicKey = $endpoint->publicKey;
+        $this->authToken = $endpoint->authToken;
+        $this->createdAt = $now;
     }
 
-    /** Même navigateur, autre compte connecté : l'abonnement change de propriétaire. */
-    public function reassign(User $user, string $publicKey, string $authToken): void
+    /** Même navigateur, autre compte connecté : l'abonnement change de propriétaire (clés renouvelées). */
+    public function reassign(User $user, PushEndpoint $endpoint): void
     {
+        if ($endpoint->url !== $this->endpoint) {
+            throw new \LogicException('Autre navigateur : un nouvel abonnement est attendu.');
+        }
+
         $this->user = $user;
-        $this->publicKey = $publicKey;
-        $this->authToken = $authToken;
+        $this->publicKey = $endpoint->publicKey;
+        $this->authToken = $endpoint->authToken;
     }
 
     public function getId(): Uuid
@@ -69,18 +70,8 @@ class PushSubscription
         return $this->user;
     }
 
-    public function getEndpoint(): string
+    public function endpoint(): PushEndpoint
     {
-        return $this->endpoint;
-    }
-
-    public function getPublicKey(): string
-    {
-        return $this->publicKey;
-    }
-
-    public function getAuthToken(): string
-    {
-        return $this->authToken;
+        return new PushEndpoint($this->endpoint, $this->publicKey, $this->authToken);
     }
 }

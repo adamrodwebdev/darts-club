@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Dto\PushSubscriptionInput;
 use App\Entity\PushSubscription;
 use App\Entity\User;
+use App\Notification\Push\PushEndpoint;
 use App\Notification\Push\PushSender;
 use App\Repository\PushSubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -23,6 +25,7 @@ final class PushSubscriptionController extends AbstractController
     public function __construct(
         private readonly PushSubscriptionRepository $subscriptions,
         private readonly EntityManagerInterface $em,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -35,12 +38,13 @@ final class PushSubscriptionController extends AbstractController
     #[Route('/subscriptions', name: 'subscribe', methods: ['POST'])]
     public function subscribe(#[CurrentUser] User $user, #[MapRequestPayload] PushSubscriptionInput $input): Response
     {
-        $existing = $this->subscriptions->findOneByEndpoint($input->endpoint);
+        $endpoint = new PushEndpoint($input->endpoint, $input->keys['p256dh'], $input->keys['auth']);
+        $existing = $this->subscriptions->findOneByEndpoint($endpoint->url);
 
         if (null === $existing) {
-            $this->em->persist(new PushSubscription($user, $input->endpoint, $input->keys['p256dh'], $input->keys['auth']));
+            $this->em->persist(new PushSubscription($user, $endpoint, $this->clock->now()));
         } else {
-            $existing->reassign($user, $input->keys['p256dh'], $input->keys['auth']);
+            $existing->reassign($user, $endpoint);
         }
         $this->em->flush();
 

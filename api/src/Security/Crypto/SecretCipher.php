@@ -2,6 +2,8 @@
 
 namespace App\Security\Crypto;
 
+use App\Security\TokenGenerator;
+
 /**
  * Chiffrement symétrique authentifié (libsodium secretbox) des secrets
  * stockés en base, comme la graine TOTP. Une fuite de la base seule ne
@@ -17,12 +19,13 @@ final class SecretCipher
     public function __construct(
         #[\SensitiveParameter]
         private readonly string $base64Key,
+        private readonly TokenGenerator $tokens,
     ) {
     }
 
     public function encrypt(string $plaintext): string
     {
-        $nonce = random_bytes(\SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $nonce = $this->tokens->bytes(\SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
 
         return self::PREFIX.sodium_bin2base64($nonce.sodium_crypto_secretbox($plaintext, $nonce, $this->key()), \SODIUM_BASE64_VARIANT_ORIGINAL);
     }

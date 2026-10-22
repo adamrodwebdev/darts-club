@@ -41,7 +41,7 @@ class Notification
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $readAt = null;
 
-    public function __construct(User $recipient, NotificationContent $content)
+    public function __construct(User $recipient, NotificationContent $content, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->recipient = $recipient;
@@ -49,12 +49,12 @@ class Notification
         $this->title = $content->title;
         $this->body = $content->body;
         $this->link = $content->link;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
-    public function markRead(): void
+    public function markRead(\DateTimeImmutable $now): void
     {
-        $this->readAt ??= new \DateTimeImmutable();
+        $this->readAt ??= $now;
     }
 
     public function isRead(): bool

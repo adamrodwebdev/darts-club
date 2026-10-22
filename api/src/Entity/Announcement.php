@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\Announcement\AnnouncementPublished;
+use App\Announcement\AnnouncementText;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Repository\AnnouncementRepository;
-use App\Translation\InvalidValue;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -19,14 +19,11 @@ class Announcement implements RecordsDomainEvents
 {
     use DomainEventsTrait;
 
-    public const TITLE_MAX = 120;
-    public const BODY_MAX = 5000;
-
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
     private Uuid $id;
 
-    #[ORM\Column(length: self::TITLE_MAX)]
+    #[ORM\Column(length: AnnouncementText::TITLE_MAX)]
     private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -44,28 +41,28 @@ class Announcement implements RecordsDomainEvents
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $editedAt = null;
 
-    private function __construct(User $author, string $title, string $body, bool $pinned)
+    private function __construct(User $author, AnnouncementText $text, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->authorName = mb_substr($author->displayName()->value, 0, 80);
-        $this->publishedAt = new \DateTimeImmutable();
-        $this->pinned = $pinned;
-        $this->write($title, $body);
+        $this->publishedAt = $now;
+        $this->write($text);
     }
 
-    public static function publish(User $author, string $title, string $body, bool $pinned = false): self
+    /** Publication (non épinglée : pin() ensuite si besoin) ; les adhérents sont prévenus. */
+    public static function publish(User $author, AnnouncementText $text, \DateTimeImmutable $now): self
     {
-        $announcement = new self($author, $title, $body, $pinned);
+        $announcement = new self($author, $text, $now);
         $announcement->recordThat(new AnnouncementPublished($announcement->id));
 
         return $announcement;
     }
 
     /** Correction sans nouvelle notification. */
-    public function edit(string $title, string $body): void
+    public function edit(AnnouncementText $text, \DateTimeImmutable $now): void
     {
-        $this->write($title, $body);
-        $this->editedAt = new \DateTimeImmutable();
+        $this->write($text);
+        $this->editedAt = $now;
     }
 
     public function pin(): void
@@ -107,19 +104,9 @@ class Announcement implements RecordsDomainEvents
         ];
     }
 
-    private function write(string $title, string $body): void
+    private function write(AnnouncementText $text): void
     {
-        $title = trim($title);
-        $body = trim(str_replace("\r\n", "\n", $body));
-
-        if ('' === $title || mb_strlen($title) > self::TITLE_MAX) {
-            throw new InvalidValue('Le titre doit faire entre 1 et %max% caractères.', ['%max%' => self::TITLE_MAX]);
-        }
-        if ('' === $body || mb_strlen($body) > self::BODY_MAX) {
-            throw new InvalidValue('Le texte doit faire entre 1 et %max% caractères.', ['%max%' => self::BODY_MAX]);
-        }
-
-        $this->title = $title;
-        $this->body = $body;
+        $this->title = $text->title;
+        $this->body = $text->body;
     }
 }

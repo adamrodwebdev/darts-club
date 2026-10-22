@@ -17,6 +17,7 @@ use App\Membership\Season;
 use App\Repository\ClubEventRepository;
 use App\Repository\EventPhotoRepository;
 use App\Repository\EventPostRepository;
+use App\Security\RequestThrottle;
 use App\Security\Voter\ClubEventVoter;
 use App\Translation\InvalidValue;
 use App\Translation\Unprocessable;
@@ -28,7 +29,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -41,6 +41,7 @@ final class ClubEventController extends AbstractController
     private const UUID = '[0-9a-f-]{36}';
 
     public function __construct(
+        private readonly RequestThrottle $requestThrottle,
         private readonly ClubEvents $events,
         private readonly ClubEventView $view,
     ) {
@@ -158,10 +159,7 @@ final class ClubEventController extends AbstractController
             throw new InvalidImageException('Envoie entre 1 et 10 photos à la fois (champ « photos[] »).');
         }
 
-        $limit = $photoUploadLimiter->create($user->getId()->toRfc4122())->consume(\count($files));
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
+        $this->requestThrottle->consume($photoUploadLimiter, $user->getId()->toRfc4122(), \count($files));
 
         $added = $this->events->addPhotos($event, $user, $files);
 
@@ -205,10 +203,7 @@ final class ClubEventController extends AbstractController
             throw new InvalidImageException('Joins une image (champ « poster »).');
         }
 
-        $limit = $photoUploadLimiter->create($user->getId()->toRfc4122())->consume();
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
+        $this->requestThrottle->consume($photoUploadLimiter, $user->getId()->toRfc4122());
 
         $poster = $this->guard(fn () => $this->events->attachPoster($event, $file));
 
@@ -244,10 +239,7 @@ final class ClubEventController extends AbstractController
     #[Route('/api/events/{id}/posts', name: 'events_posts_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
     public function addPost(ClubEvent $event, Request $request, #[CurrentUser] User $user, RateLimiterFactoryInterface $messagePostLimiter): JsonResponse
     {
-        $limit = $messagePostLimiter->create($user->getId()->toRfc4122())->consume();
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
+        $this->requestThrottle->consume($messagePostLimiter, $user->getId()->toRfc4122());
 
         $body = $request->toArray()['body'] ?? '';
         $post = $this->events->addPost($event, $user, \is_string($body) ? $body : '');

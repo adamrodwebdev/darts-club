@@ -4,7 +4,9 @@ namespace App\Tests\Unit;
 
 use App\Entity\User;
 use App\Enum\Role;
+use App\Preference\Language;
 use App\ValueObject\EmailAddress;
+use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
 use PHPUnit\Framework\TestCase;
 
@@ -12,7 +14,7 @@ final class UserTest extends TestCase
 {
     public function testRegisteredUserIsUnverifiedMember(): void
     {
-        $user = User::register(EmailAddress::fromString(' Bob@Example.COM '), 'hash', PhoneNumber::fromInput('06 12 34 56 78'));
+        $user = User::register(new NewAccount(EmailAddress::fromString(' Bob@Example.COM '), PhoneNumber::fromInput('06 12 34 56 78')), 'hash', new \DateTimeImmutable('2026-10-15 12:00'));
 
         self::assertSame('bob@example.com', $user->getEmail());
         self::assertSame('+33612345678', $user->getPhone());
@@ -22,7 +24,7 @@ final class UserTest extends TestCase
 
     public function testOAuthUserIsVerifiedWithoutPassword(): void
     {
-        $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'));
+        $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'), Language::French, new \DateTimeImmutable('2026-10-15 12:00'));
 
         self::assertTrue($user->isVerified());
         self::assertSame('', $user->getPassword());
@@ -30,7 +32,7 @@ final class UserTest extends TestCase
 
     public function testRolesCanBeGrantedAndRevokedButMemberIsPermanent(): void
     {
-        $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'));
+        $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'), Language::French, new \DateTimeImmutable('2026-10-15 12:00'));
 
         $user->grantRole(Role::Treasurer);
         $user->grantRole(Role::Treasurer);
