@@ -6,7 +6,9 @@ import { useAsyncAction } from '@/composables/useAsyncAction'
 import { enumLabel } from '@/i18n'
 import { formatDate } from '@/i18n/format'
 import { formatEuro, type MembershipRecord } from '@/models/Membership'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 const season = ref('')

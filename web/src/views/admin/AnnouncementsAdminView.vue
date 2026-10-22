@@ -7,7 +7,9 @@ import BaseField from '@/components/BaseField.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Announcement } from '@/models/Admin'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 const announcements = ref<Announcement[]>([])

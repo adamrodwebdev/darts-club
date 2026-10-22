@@ -9,10 +9,12 @@ import PaymentForm from '@/components/treasury/PaymentForm.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { formatDate } from '@/i18n/format'
 import { currentSeason, formatEuro, type MembershipRecord, type Option, type PaymentRecord, type TreasuryDashboard } from '@/models/Membership'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
-const thisSeason = currentSeason()
+const thisSeason = currentSeason(services.clock.now())
 const seasons = [-1, 0, 1].map((offset) => {
   const start = Number(thisSeason.slice(0, 4)) + offset
   return `${start}-${start + 1}`

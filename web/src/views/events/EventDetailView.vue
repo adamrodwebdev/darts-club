@@ -12,9 +12,11 @@ import AudiencePanel from '@/components/events/AudiencePanel.vue'
 import PhotoGallery from '@/components/events/PhotoGallery.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useViewBeacon } from '@/composables/useViewBeacon'
-import { formatEventDate, type Attendance, type EventDetail } from '@/models/ClubEvent'
-import { services } from '@/services'
+import { ATTENDANCE_LABELS, formatEventDate, type Attendance, type EventDetail } from '@/models/ClubEvent'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 const props = defineProps<{ id: string }>()
 const { t } = useI18n()
@@ -238,7 +240,7 @@ async function saveSummary(): Promise<void> {
           <summary>{{ t('events.guests.title', { count: detail.guests.length }) }}</summary>
           <ul class="guests">
             <li v-for="g in detail.guests" :key="g.email">
-              <strong>{{ g.name }}</strong> · {{ t(`events.answer.${g.answer === 'je-viens' ? 'going' : 'maybe'}`) }}
+              <strong>{{ g.name }}</strong> · {{ t(ATTENDANCE_LABELS[g.answer]) }}
               <a :href="`mailto:${g.email}`" class="muted">{{ g.email }}</a>
             </li>
           </ul>

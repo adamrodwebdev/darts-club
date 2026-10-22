@@ -8,8 +8,10 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import DisplaySettings from '@/components/preferences/DisplaySettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Profile } from '@/models/Profile'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 const auth = useAuthStore()
 const { t } = useI18n()

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import type { OAuthProvider } from '@/services/AuthService'
+
+const services = useServices()
 
 const { t } = useI18n()
 const NAMES: Record<OAuthProvider, string> = { google: 'Google', discord: 'Discord' }

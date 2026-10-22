@@ -6,8 +6,10 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import TwoFactorSettings from '@/components/TwoFactorSettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 const auth = useAuthStore()
 const router = useRouter()

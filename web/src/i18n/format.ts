@@ -38,9 +38,9 @@ export function formatNumber(value: number): string {
   return cached('number', {}, (locale) => new Intl.NumberFormat(locale)).format(value)
 }
 
-/** « il y a 3 heures », « dans 2 jours » ; null sous la minute (« à l'instant » est traduit à part). */
-export function formatRelative(date: Date, now = Date.now()): string | null {
-  const seconds = Math.round((date.getTime() - now) / 1000)
+/** « il y a 3 heures », « dans 2 jours » par rapport à `now` (horloge injectée) ; null sous la minute. */
+export function formatRelative(date: Date, now: Date): string | null {
+  const seconds = Math.round((date.getTime() - now.getTime()) / 1000)
   const units: [Intl.RelativeTimeFormatUnit, number][] = [
     ['day', 86400],
     ['hour', 3600],

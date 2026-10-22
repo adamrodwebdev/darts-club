@@ -21,7 +21,10 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 
 ### Front (TypeScript / Vue)
 - **Couche services en classes** : un client HTTP (`ApiClient`) injecté dans des services par domaine (`AuthService`, `EventService`…) ; les composants n'appellent jamais `fetch` directement.
-- **Modèles typés** (classes ou interfaces + fonctions de mapping) ; les réponses API sont validées à la frontière.
+- **Aucun singleton ni localisateur de services** : `main.ts` est la racine de composition (`createServices()`, `createPreferenceControllers(window)`, `createAppRouter(services)`) et fournit les dépendances à l'application ; composants, composables et stores les reçoivent par `useServices()` / `usePreferenceControllers()`. Les tests fournissent leurs propres instances.
+- **Heure injectée** : l'horloge (`Clock`, `services.clock`) donne la date du jour ; jamais de `new Date()` / `Date.now()` dans la logique.
+- **Modèles typés** (classes ou interfaces + fonctions de mapping) ; les réponses API sont validées à la frontière. Au-delà de trois paramètres, un constructeur prend un **objet d'options** (`new EventSummary({ id, title, … })`) ; la construction depuis l'API passe par une fabrique nommée (`EventSummary.parse()`). Pas de champ public modifiable : une méthode d'intention (`notification.markRead()`).
+- **Pas de condition répétée sur un type** : une table ou une stratégie (ex. `ATTENDANCE_LABELS` pour les libellés des réponses).
 - Logique réutilisable dans des **composables** ; état partagé dans des **stores Pinia** ; composants centrés sur l'affichage.
 - `strict` TypeScript, pas de `any`.
 - **Aucun texte en dur** : toute chaîne visible passe par `vue-i18n` (`src/i18n/locales/fr.json` + `en.json`, mêmes clés) ; dates, nombres et montants via `Intl` dans la langue courante. Couleurs uniquement via les jetons CSS (thèmes clair et sombre).

@@ -8,15 +8,17 @@ import PublicEventsList from '@/components/events/PublicEventsList.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { EventSummary } from '@/models/ClubEvent'
 import { currentSeason } from '@/models/Membership'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 const { t } = useI18n()
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 
-const thisSeason = currentSeason()
+const thisSeason = currentSeason(services.clock.now())
 const seasons = [0, -1, -2, -3].map((offset) => {
   const start = Number(thisSeason.slice(0, 4)) + offset
   return `${start}-${start + 1}`

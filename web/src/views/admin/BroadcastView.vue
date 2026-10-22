@@ -7,7 +7,9 @@ import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { labelled } from '@/i18n/labels'
 import type { AdminMember, BroadcastRecord } from '@/models/Admin'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 

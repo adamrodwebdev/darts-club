@@ -1,21 +1,31 @@
+import { inject, type InjectionKey } from 'vue'
 import { LocaleController } from './LocaleController'
 import { MotionController } from './MotionController'
-import { BrowserPreferenceStorage } from './PreferenceStorage'
+import { BrowserPreferenceStorage, type PreferenceStorage } from './PreferenceStorage'
 import { ThemeController } from './ThemeController'
 
-/** Contrôleurs de préférences liés au navigateur (une instance chacun). */
-const storage = new BrowserPreferenceStorage()
+/** Contrôleurs des préférences d'affichage liés au navigateur */
+export interface PreferenceControllers {
+  theme: ThemeController
+  motion: MotionController
+  locale: LocaleController
+}
 
-export const themeController = new ThemeController(
-  document.documentElement,
-  storage,
-  typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: light)') : null,
-)
+/** Créés une fois au démarrage (main.ts) pour cette fenêtre, puis injectés. */
+export function createPreferenceControllers(view: Window, storage: PreferenceStorage = new BrowserPreferenceStorage()): PreferenceControllers {
+  const root = view.document.documentElement
+  const media = (query: string) => (typeof view.matchMedia === 'function' ? view.matchMedia(query) : null)
+  return {
+    theme: new ThemeController(root, storage, media('(prefers-color-scheme: light)')),
+    motion: new MotionController(root, storage, media('(prefers-reduced-motion: reduce)')),
+    locale: new LocaleController(storage, () => view.navigator.languages ?? [view.navigator.language]),
+  }
+}
 
-export const motionController = new MotionController(
-  document.documentElement,
-  storage,
-  typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null,
-)
+export const PREFERENCES: InjectionKey<PreferenceControllers> = Symbol('preferences')
 
-export const localeController = new LocaleController(storage, () => navigator.languages ?? [navigator.language])
+export function usePreferenceControllers(): PreferenceControllers {
+  const controllers = inject(PREFERENCES)
+  if (!controllers) throw new Error('Préférences absentes : app.provide(PREFERENCES, createPreferenceControllers(window)) dans main.ts')
+  return controllers
+}

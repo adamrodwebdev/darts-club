@@ -5,12 +5,18 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import { i18n, loadLocaleMessages } from './i18n'
-import { localeController } from './preferences'
-import router from './router'
+import { createPreferenceControllers, PREFERENCES } from './preferences'
+import { createAppRouter } from './router'
+import { createServices, SERVICES } from './services'
+
+// Racine de composition : chaque dépendance est créée ici une fois, puis fournie à l'application
+const services = createServices()
+const preferences = createPreferenceControllers(window)
+const router = createAppRouter(services)
 
 // Langue connue avant le premier rendu : aucun texte affiché dans la mauvaise langue.
 // Le code de la page demandée est téléchargé en même temps que les traductions.
-const locale = localeController.initialFor(window.location.pathname)
+const locale = preferences.locale.initialFor(window.location.pathname)
 const pageChunks = router
   .resolve(window.location.pathname + window.location.search)
   .matched.flatMap((record) => Object.values(record.components ?? {}))
@@ -22,6 +28,8 @@ document.documentElement.lang = locale
 
 const app = createApp(App)
 
+app.provide(SERVICES, services)
+app.provide(PREFERENCES, preferences)
 app.use(createPinia())
 app.use(i18n)
 app.use(router)
