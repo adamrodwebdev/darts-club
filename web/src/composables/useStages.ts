@@ -5,7 +5,7 @@ import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
  * qu'aucune ne bloque longtemps le fil principal au démarrage (Lighthouse : temps de
  * blocage). `all` affiche tout d'un coup, par exemple pour un lien vers une ancre de la
  * page, dont la cible doit exister tout de suite. `after` retarde la première étape
- * (par exemple jusqu'à la première page affichée).
+ * (par exemple jusqu'à la première page affichée), qu'il aboutisse ou échoue.
  */
 export function useStages(total: number, options: { all: boolean; after?: Promise<unknown> }): Ref<number> {
   const shown = ref(options.all ? total : 0)
@@ -23,7 +23,7 @@ export function useStages(total: number, options: { all: boolean; after?: Promis
 
   onMounted(() => {
     if (shown.value >= total) return
-    if (options.after) void options.after.then(start)
+    if (options.after) void options.after.then(start, start)
     else start()
   })
   onBeforeUnmount(() => {

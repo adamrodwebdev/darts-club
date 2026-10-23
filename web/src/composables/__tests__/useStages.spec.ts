@@ -62,6 +62,18 @@ describe('useStages', () => {
     expect(shown.value).toBe(1)
   })
 
+  it('starts all the same when that moment fails (first navigation refused)', async () => {
+    vi.useFakeTimers()
+    let refuse = (): void => undefined
+    const { shown } = mountStages(1, { all: false, after: new Promise<void>((_, reject) => (refuse = () => reject(new Error('refused')))) })
+
+    refuse()
+    await Promise.resolve()
+    await Promise.resolve()
+    vi.advanceTimersToNextTimer()
+    expect(shown.value).toBe(1)
+  })
+
   it('never starts once the page has gone away', async () => {
     vi.useFakeTimers()
     let ready = (): void => undefined
