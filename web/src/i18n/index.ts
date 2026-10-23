@@ -1,16 +1,9 @@
 import { createI18n } from 'vue-i18n'
-import account from './locales/fr/account.json'
-import admin from './locales/fr/admin.json'
-import core from './locales/fr/core.json'
-import events from './locales/fr/events.json'
-import messaging from './locales/fr/messaging.json'
-import treasury from './locales/fr/treasury.json'
+import type frCatalogue from './locales/fr/index'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from './locales'
 
-/** Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue. */
-const fr = { ...core, ...account, ...events, ...messaging, ...treasury, ...admin }
-
-export type MessageSchema = typeof fr
+/** Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue par langue. */
+export type MessageSchema = typeof frCatalogue
 
 declare module 'vue-i18n' {
   // Clés de traduction vérifiées par le compilateur TypeScript
@@ -18,20 +11,24 @@ declare module 'vue-i18n' {
   export interface DefineLocaleMessage extends MessageSchema {}
 }
 
-/** Le français est embarqué ; les autres langues sont chargées à la demande. */
+/**
+ * Chaque langue est chargée à la demande (main.ts attend celle de la page avant le premier
+ * rendu) : un visiteur ne télécharge ni n'évalue que la sienne.
+ */
 export const i18n = createI18n<[MessageSchema], Locale, false>({
   legacy: false,
   locale: DEFAULT_LOCALE,
   fallbackLocale: DEFAULT_LOCALE,
-  messages: { fr } as Record<Locale, MessageSchema>,
+  messages: {} as Record<Locale, MessageSchema>,
 })
 
-const loaders: Record<Exclude<Locale, 'fr'>, () => Promise<{ default: unknown }>> = {
+const loaders: Record<Locale, () => Promise<{ default: unknown }>> = {
+  fr: () => import('./locales/fr/index'),
   en: () => import('./locales/en/index'),
 }
 
 export async function loadLocaleMessages(locale: Locale): Promise<void> {
-  if (locale === 'fr' || i18n.global.availableLocales.includes(locale)) return
+  if (i18n.global.availableLocales.includes(locale)) return
   const catalogue = await loaders[locale]()
   i18n.global.setLocaleMessage(locale, catalogue.default as MessageSchema)
 }

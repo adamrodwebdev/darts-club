@@ -22,15 +22,15 @@
     const styles = []
     for (const href of manifest.styles) {
       if (!ASSET.test(href)) continue
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
       styles.push(
         new Promise((resolve) => {
-          const link = document.createElement('link')
-          link.rel = 'stylesheet'
-          link.href = href
           link.onload = link.onerror = resolve
-          document.head.append(link)
         }),
       )
+      document.head.append(link)
     }
     const entry = manifest.entry
     if (ASSET.test(entry)) Promise.all(styles).then(() => import(entry))

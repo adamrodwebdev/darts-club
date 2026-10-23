@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw, START_LOCATION } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import type { MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
@@ -164,11 +164,13 @@ const ROUTES: RouteRecordRaw[] = [
 export function createAppRouter(services: Services): Router {
   const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
-    scrollBehavior: (to, _from, saved) => {
+    scrollBehavior: (to, from, saved) => {
       if (saved) return saved
       if (to.hash) {
         return { el: to.hash, top: 72, behavior: document.documentElement.dataset.motion === 'off' ? 'auto' : 'smooth' }
       }
+      // Premier chargement : déjà en haut ; défiler forcerait une mise en page pendant le démarrage
+      if (from === START_LOCATION) return false
       return { top: 0 }
     },
     routes: ROUTES,

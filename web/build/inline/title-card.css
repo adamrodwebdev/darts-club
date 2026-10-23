@@ -30,7 +30,7 @@
   width: min(78vw, 46svh, 28rem);
   height: auto;
   border-radius: 50%;
-  filter: drop-shadow(0 1.5rem 2.5rem rgb(0 0 0 / 0.5));
+  box-shadow: 0 1.5rem 2.5rem rgb(0 0 0 / 0.5);
 }
 
 .title-card__name {
