@@ -10,6 +10,9 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+/** Balayage des largeurs de 320 à 2560 px : une seule fois, en Chromium bureau */
+const SWEEP = /responsive\.spec\.ts$/
+
 export default defineConfig({
   testDir: './e2e',
   /* Maximum time one test can run for. */
@@ -51,6 +54,8 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // Balayage des largeurs (e2e/responsive.spec.ts) : Chromium bureau seulement,
+    // l'émulation mobile pouvant rétrécir un contenu trop large
     {
       name: 'chromium',
       use: {
@@ -62,12 +67,14 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
       },
+      testIgnore: SWEEP,
     },
     {
       name: 'webkit',
       use: {
         ...devices['Desktop Safari'],
       },
+      testIgnore: SWEEP,
     },
 
     /* Responsive design obligatoire : parcours testés sur mobile */
@@ -76,12 +83,14 @@ export default defineConfig({
       use: {
         ...devices['Pixel 7'],
       },
+      testIgnore: SWEEP,
     },
     {
       name: 'Mobile Safari',
       use: {
         ...devices['iPhone 14'],
       },
+      testIgnore: SWEEP,
     },
 
     /* Test against branded browsers. */

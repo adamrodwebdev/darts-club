@@ -237,7 +237,7 @@ async function reactivate(member: AdminMember): Promise<void> {
   gap: 0.5rem;
 }
 
-@media (min-width: 900px) {
+@media (width >= 56.25rem) {
   .member {
     grid-template-columns: auto 1fr auto;
     align-items: center;

@@ -46,6 +46,7 @@ const block = computed(() => dateBlock(props.event.startsAt))
 
 <style scoped>
 .card-link {
+  container: event-card / inline-size;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -100,7 +101,7 @@ const block = computed(() => dateBlock(props.event.startsAt))
 
 .poster {
   flex: none;
-  width: clamp(3.5rem, 18vw, 5.5rem);
+  width: clamp(3.5rem, 18cqi, 5.5rem);
   height: auto;
   max-height: 7.5rem;
   border-radius: calc(var(--radius) / 2);

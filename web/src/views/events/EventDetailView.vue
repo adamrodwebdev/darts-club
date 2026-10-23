@@ -117,7 +117,7 @@ async function saveSummary(): Promise<void> {
         <img
           :src="event.poster.cardUrl"
           :srcset="`${event.poster.cardUrl} 900w, ${event.poster.largeUrl} 1600w`"
-          sizes="(min-width: 768px) 28rem, 100vw"
+          sizes="(min-width: 48rem) 28rem, calc(100vw - 2rem)"
           :width="event.poster.width"
           :height="event.poster.height"
           :alt="t('events.poster.alt', { title: event.title })"

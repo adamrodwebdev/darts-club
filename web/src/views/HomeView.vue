@@ -111,7 +111,7 @@ const ICONS: Record<string, string> = {
   display: grid;
   gap: 2rem;
   align-items: center;
-  min-height: min(80vh, 46rem);
+  min-height: min(80svh, 46rem);
 }
 
 .hero__text {
@@ -122,14 +122,14 @@ const ICONS: Record<string, string> = {
 .hero__title {
   margin: 0;
   /* « Skull Darts 71 » tient sur 2 lignes de 320 px à grand écran */
-  font-size: clamp(2.6rem, 11vw, 6.5rem);
+  font-size: clamp(2.6rem, 1.4857rem + 5.5714vw, 6.5rem);
   line-height: 0.92;
   overflow-wrap: anywhere;
 }
 
 .hero__tagline {
   margin: 0;
-  font-size: clamp(1.25rem, 4vw, 1.9rem);
+  font-size: clamp(1.25rem, 1.0643rem + 0.9286vw, 1.9rem);
   font-weight: 800;
 }
 
@@ -137,7 +137,7 @@ const ICONS: Record<string, string> = {
   max-width: 34rem;
   margin: 0;
   color: var(--color-muted);
-  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  font-size: clamp(1rem, 0.9571rem + 0.2143vw, 1.15rem);
 }
 
 .hero__cta {
@@ -177,8 +177,10 @@ const ICONS: Record<string, string> = {
   color: var(--color-link);
 }
 
+/* Grille intrinsèque : 1 à 3 colonnes selon la place, sans point de rupture */
 .pillars {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
   gap: 1rem;
 }
 
@@ -243,7 +245,7 @@ const ICONS: Record<string, string> = {
 
 .join h2 {
   margin: 0;
-  font-size: clamp(1.8rem, 6vw, 3rem);
+  font-size: clamp(1.8rem, 1.4571rem + 1.7143vw, 3rem);
 }
 
 .join p {
@@ -251,13 +253,7 @@ const ICONS: Record<string, string> = {
   color: var(--color-muted);
 }
 
-@media (min-width: 768px) {
-  .pillars {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
+@media (width >= 64rem) {
   .hero {
     grid-template-columns: 1.1fr 1fr;
   }

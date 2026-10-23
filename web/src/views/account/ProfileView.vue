@@ -148,7 +148,7 @@ async function removeAvatar(): Promise<void> {
   outline-offset: 2px;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .grid {
     grid-template-columns: minmax(220px, 1fr) 2fr;
     align-items: start;

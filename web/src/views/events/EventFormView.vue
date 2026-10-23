@@ -148,7 +148,7 @@ async function submit(): Promise<void> {
   font-size: 0.85rem;
 }
 
-@media (min-width: 640px) {
+@media (width >= 40rem) {
   .dates {
     grid-template-columns: 1fr 1fr;
   }

@@ -18,7 +18,7 @@ async function audit(page: Page): Promise<void> {
 for (const theme of THEMES) {
   for (const path of ['/', '/en', '/connexion', '/inscription', '/mentions-legales', '/confidentialite']) {
     test(`public page ${path} meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
-      await page.emulateMedia({ colorScheme: theme })
+      await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
       await page.goto(path)
       await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
@@ -33,7 +33,7 @@ test.describe('in English', () => {
   for (const theme of THEMES) {
     for (const [path, heading] of [['/connexion', 'Log in'], ['/inscription', 'Join the club'], ['/confidentialite', 'Privacy policy']]) {
       test(`public page ${path} meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
-        await page.emulateMedia({ colorScheme: theme })
+        await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
         await page.goto(path)
         await expect(page.locator('html')).toHaveAttribute('lang', 'en')
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading)
