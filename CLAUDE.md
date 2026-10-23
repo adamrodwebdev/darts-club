@@ -46,7 +46,7 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 
 ## Qualité et sécurité (rappel)
 - API : PHPStan niveau max, PHP-CS-Fixer, PHPUnit. Web : ESLint, oxlint, `vue-tsc`, Vitest, Playwright.
-- Toute PR garde Lighthouse à **100** dans les 4 catégories (pire des 3 passages sur mobile, contrôlé en CI). Corriger la cause, jamais masquer un audit. Le premier affichage vient du HTML (écran titre, `build/deferredBoot.ts`) : ne jamais rien peindre de plus grand que lui, ni demander du code avant lui.
+- Toute PR garde Lighthouse à **100** dans les 4 catégories (pire des 3 passages sur mobile, contrôlé en CI après un passage de préchauffage non compté). Corriger la cause, jamais masquer un audit. Le premier affichage vient du HTML (écran titre, `build/deferredBoot.ts`) : ne jamais rien peindre de plus grand que lui, ni demander du code avant lui. Le temps de blocage décide : pas de tâche longue au démarrage (rendu par étapes avec `useStages`, chaque page dans son chunk), contenu loin de l'écran en `content-visibility: auto` (boîte élargie pour ne rien rogner).
 - Aucun secret commité (dépôt **public**) : `bin/console secrets:set` et variables d'environnement.
 - Écritures protégées par le contrôle d'Origin ; nouvelles routes publiques à déclarer explicitement dans `security.yaml`.
 - Commits Conventional Commits, une PR par étape.
