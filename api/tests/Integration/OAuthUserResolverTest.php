@@ -3,6 +3,7 @@
 namespace App\Tests\Integration;
 
 use App\Repository\UserRepository;
+use App\Security\OAuthProfile;
 use App\Security\OAuthUserResolver;
 use App\Tests\ApiTestCase;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
@@ -11,7 +12,7 @@ final class OAuthUserResolverTest extends ApiTestCase
 {
     public function testCreatesVerifiedAccountWithoutVerificationEmail(): void
     {
-        $user = $this->resolver()->resolve('google', 'g-123', 'New@Example.com', true);
+        $user = $this->resolver()->resolve(new OAuthProfile(provider: 'google', subject: 'g-123', email: 'New@Example.com', emailVerified: true));
 
         self::assertSame('new@example.com', $user->getEmail());
         self::assertTrue($user->isVerified());
@@ -23,7 +24,7 @@ final class OAuthUserResolverTest extends ApiTestCase
     {
         $existing = $this->createUser('member@example.com', verified: false);
 
-        $user = $this->resolver()->resolve('discord', 'd-42', 'member@example.com', true);
+        $user = $this->resolver()->resolve(new OAuthProfile(provider: 'discord', subject: 'd-42', email: 'member@example.com', emailVerified: true));
 
         self::assertTrue($user->getId()->equals($existing->getId()));
         self::assertTrue($user->isVerified());
@@ -31,9 +32,9 @@ final class OAuthUserResolverTest extends ApiTestCase
 
     public function testKnownIdentityReturnsSameUser(): void
     {
-        $first = $this->resolver()->resolve('google', 'g-123', 'member@example.com', true);
+        $first = $this->resolver()->resolve(new OAuthProfile(provider: 'google', subject: 'g-123', email: 'member@example.com', emailVerified: true));
         // Email changé côté fournisseur : l'identité prime
-        $second = $this->resolver()->resolve('google', 'g-123', 'other@example.com', true);
+        $second = $this->resolver()->resolve(new OAuthProfile(provider: 'google', subject: 'g-123', email: 'other@example.com', emailVerified: true));
 
         self::assertTrue($first->getId()->equals($second->getId()));
         self::assertCount(1, $this->service(UserRepository::class, UserRepository::class)->findAll());
@@ -44,7 +45,7 @@ final class OAuthUserResolverTest extends ApiTestCase
         $this->createUser('member@example.com');
 
         $this->expectException(CustomUserMessageAuthenticationException::class);
-        $this->resolver()->resolve('discord', 'd-42', 'member@example.com', false);
+        $this->resolver()->resolve(new OAuthProfile(provider: 'discord', subject: 'd-42', email: 'member@example.com', emailVerified: false));
     }
 
     private function resolver(): OAuthUserResolver

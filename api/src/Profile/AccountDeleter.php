@@ -45,7 +45,8 @@ final class AccountDeleter
 
     public function delete(User $user): void
     {
-        $avatar = $user->changeAvatar(null);
+        $avatar = $user->avatar();
+        $user->changeAvatar(null);
 
         $this->em->wrapInTransaction(function () use ($user): void {
             // Messages conservés pour les autres participants, auteur anonymisé

@@ -4,6 +4,7 @@ namespace App\Tests\Functional;
 
 use App\Entity\User;
 use App\Enum\Role;
+use App\Security\OAuthProfile;
 use App\Security\OAuthUserResolver;
 use App\Tests\ApiTestCase;
 
@@ -52,7 +53,7 @@ final class SecurityHardeningTest extends ApiTestCase
         $this->createUser('victim@example.com', verified: false);
 
         $resolver = $this->service(OAuthUserResolver::class, OAuthUserResolver::class);
-        $user = $resolver->resolve('google', 'google-subject-1', 'victim@example.com', true);
+        $user = $resolver->resolve(new OAuthProfile(provider: 'google', subject: 'google-subject-1', email: 'victim@example.com', emailVerified: true));
 
         self::assertTrue($user->isVerified());
         self::assertFalse($user->hasPassword());

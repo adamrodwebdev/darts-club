@@ -110,7 +110,8 @@ final class ProfileController extends AbstractController
             throw new InvalidImageException('Image trop lourde (2 Mo maximum).');
         }
 
-        $previous = $user->changeAvatar($avatarStorage->store($processor->avatar($file->getPathname())));
+        $previous = $user->avatar();
+        $user->changeAvatar($avatarStorage->store($processor->avatar($file->getPathname())));
         $this->em->flush();
 
         if (null !== $previous) {
@@ -123,7 +124,8 @@ final class ProfileController extends AbstractController
     #[Route('/avatar', name: 'avatar_delete', methods: ['DELETE'])]
     public function deleteAvatar(#[CurrentUser] User $user, ImageStorage $avatarStorage): JsonResponse
     {
-        $previous = $user->changeAvatar(null);
+        $previous = $user->avatar();
+        $user->changeAvatar(null);
         $this->em->flush();
 
         if (null !== $previous) {

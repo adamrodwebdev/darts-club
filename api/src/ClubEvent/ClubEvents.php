@@ -63,10 +63,7 @@ final class ClubEvents
 
     public function respond(ClubEvent $event, User $member, Attendance $answer): void
     {
-        $registration = $event->respond($member, $answer, $this->now());
-        if (null !== $registration) {
-            $this->em->persist($registration);
-        }
+        $event->respond($member, $answer, $this->now());
         $this->em->flush();
     }
 
@@ -137,14 +134,15 @@ final class ClubEvents
 
         $processed = $this->images->poster($file->getPathname());
         $poster = new Poster(
-            $this->eventPosterStorage->store($processed['large']),
-            $this->eventPosterStorage->store($processed['card']),
-            $processed['width'],
-            $processed['height'],
+            largeId: $this->eventPosterStorage->store($processed['large']),
+            cardId: $this->eventPosterStorage->store($processed['card']),
+            width: $processed['width'],
+            height: $processed['height'],
         );
 
+        $previous = $event->poster();
         try {
-            $previous = $event->attachPoster($poster);
+            $event->attachPoster($poster);
         } catch (\LogicException $e) {
             $this->deletePosterFiles($poster);
             throw $e;
@@ -157,7 +155,8 @@ final class ClubEvents
 
     public function removePoster(ClubEvent $event): void
     {
-        $previous = $event->removePoster();
+        $previous = $event->poster();
+        $event->removePoster();
         $this->em->flush();
         $this->deletePosterFiles($previous);
     }

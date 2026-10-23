@@ -7,8 +7,10 @@ const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
 const THEMES = ['light', 'dark'] as const
 
 async function audit(page: Page): Promise<void> {
-  // Laisse les animations d'apparition se terminer
+  // Laisse les animations d'apparition se terminer (dont le fondu d'arrivée de la page : en
+  // plein fondu, un texte moins opaque n'a pas encore son contraste)
   await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== 'running'))
   const results = await new AxeBuilder({ page }).withTags(WCAG).analyze()
   const summary = results.violations.map((v) => `${v.id} (${v.impact}) : ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)
   expect(summary).toEqual([])

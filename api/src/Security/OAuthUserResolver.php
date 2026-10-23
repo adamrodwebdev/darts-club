@@ -26,15 +26,16 @@ final class OAuthUserResolver
     ) {
     }
 
-    public function resolve(string $provider, string $subject, ?string $email, bool $emailVerified, Language $language = Language::French): User
+    public function resolve(OAuthProfile $profile, Language $language = Language::French): User
     {
-        $identity = $this->identities->findOneByProviderSubject($provider, $subject);
+        $identity = $this->identities->findOneByProviderSubject($profile->provider, $profile->subject);
         if (null !== $identity) {
             return $identity->getUser();
         }
 
         // Sans email vérifié, on ne peut ni lier ni créer un compte en sécurité
-        if (null === $email || '' === $email || !$emailVerified) {
+        $email = $profile->email;
+        if (null === $email || '' === $email || !$profile->emailVerified) {
             throw new CustomUserMessageAuthenticationException('Email non vérifié par le fournisseur.');
         }
 
@@ -55,7 +56,7 @@ final class OAuthUserResolver
             $user->verifyThroughProvider();
         }
 
-        $this->em->persist(new OAuthIdentity(user: $user, provider: $provider, subject: $subject, now: $this->clock->now()));
+        $this->em->persist(new OAuthIdentity(user: $user, provider: $profile->provider, subject: $profile->subject, now: $this->clock->now()));
         $this->em->flush();
 
         return $user;

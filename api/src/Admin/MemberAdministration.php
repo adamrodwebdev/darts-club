@@ -47,10 +47,10 @@ final class MemberAdministration
         $after = array_map(static fn (Role $r): string => $r->value, $member->assignedRoles());
 
         if ($before !== $after) {
-            $this->audit->record($actor, 'member.roles', $member->displayName()->value, [
+            $this->audit->record($actor, new AuditEntry('member.roles', $member->displayName()->value, [
                 'before' => implode(',', $before),
                 'after' => implode(',', $after),
-            ]);
+            ]));
         }
         $this->em->flush();
     }
@@ -70,7 +70,7 @@ final class MemberAdministration
             throw new AdministrationException($e->getMessage(), $e);
         }
 
-        $this->audit->record($actor, 'member.suspend', $member->displayName()->value, ['reason' => $member->suspensionReason()]);
+        $this->audit->record($actor, new AuditEntry('member.suspend', $member->displayName()->value, ['reason' => $member->suspensionReason()]));
         $this->em->flush();
     }
 
@@ -81,7 +81,7 @@ final class MemberAdministration
         }
 
         $member->reactivate();
-        $this->audit->record($actor, 'member.reactivate', $member->displayName()->value);
+        $this->audit->record($actor, new AuditEntry('member.reactivate', $member->displayName()->value));
         $this->em->flush();
     }
 }

@@ -10,6 +10,7 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - **Une classe = une responsabilité.** Les contrôleurs sont minces : ils valident (DTO + `#[MapRequestPayload]`), délèguent à un service, puis renvoient la réponse.
 - **Entités riches, pas anémiques.** Pas de setters génériques pour l'état métier : préférer des méthodes d'intention (`markVerified()`, `pay()`, `cancel()`) qui protègent les invariants. Les champs obligatoires passent par le constructeur.
 - **Objets valeur** immuables (`final readonly class`) pour les concepts métier (Email, Money, Season, Label…) et pour les DTO. Les valeurs qui voyagent ensemble en forment un (`PaymentDetails`, `NewAccount`, `MailboxTopic`, `PushEndpoint`) : **trois paramètres au plus** par constructeur ou méthode, sinon un objet valeur ou des arguments nommés.
+- **Commande ou question, pas les deux** : une méthode qui modifie l'état ne renvoie rien (sauf une fabrique, qui renvoie l'objet créé) ; l'appelant lit l'état avant d'agir (`$previous = $event->poster(); $event->attachPoster($poster);`).
 - **Classes `final` par défaut**, `private` par défaut, `readonly` dès que possible. L'héritage seulement pour un vrai « est-un » ; sinon composition.
 - **Dépendre d'abstractions** (interfaces) aux frontières : notifications, paiement, stockage, horloge (`ClockInterface`), hasard (`TokenGenerator`).
 - **Ni heure ni hasard cachés** : jamais de `new \DateTimeImmutable()` ni de `random_bytes()` dans le code métier. Les entités reçoivent `$now` (et les jetons déjà tirés) du service qui tient l'horloge et le `TokenGenerator` ; les tests figent l'horloge. Limitation de débit : `RequestThrottle`.
@@ -42,6 +43,8 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - Tableaux (trésorerie, membres) : vue en cartes sur mobile ou défilement contenu dans le tableau.
 - Navigation : menu compact accessible au clavier sur mobile.
 - Respect de `prefers-reduced-motion` et `prefers-color-scheme`.
+- **Défilement libre** : jamais d'accrochage vertical de la page (`scroll-snap` seulement dans les bandes horizontales), aucune transformation 3D sur un parent de bande qui défile (elle retient le geste du doigt).
+- **Animations** : `transform` et opacité seulement, jamais une propriété de mise en page. Celles d'entrée se rejouent à chaque retour à l'écran (`v-replay`) ; celles liées au défilement jouent dans les deux sens (plages `entry` et `exit`).
 - **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800), le balayage 320 → 2560 px et le test de réorganisation à 320 × 256 ; Lighthouse sur mobile, pire des 3 passages (voir ci-dessous).
 
 ## Qualité et sécurité (rappel)

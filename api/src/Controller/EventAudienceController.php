@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\ClubEvent\EventAudience;
+use App\ClubEvent\PageVisit;
 use App\Entity\ClubEvent;
 use App\Entity\User;
 use App\Repository\ClubEventRepository;
@@ -95,12 +96,15 @@ final class EventAudienceController extends AbstractController
         }
 
         $user = $this->getUser();
-        $this->audience->record(
-            $event,
-            $user instanceof User ? $user : null,
-            $user instanceof User && $this->isGranted(ClubEventVoter::MANAGE, $event),
-            $request->getClientIp(),
-            (string) $request->headers->get('User-Agent', ''),
-        );
+        // Les organisateurs ne faussent pas leurs propres statistiques
+        if ($user instanceof User && $this->isGranted(ClubEventVoter::MANAGE, $event)) {
+            return;
+        }
+
+        $this->audience->record($event, new PageVisit(
+            member: $user instanceof User ? $user : null,
+            ip: $request->getClientIp(),
+            userAgent: (string) $request->headers->get('User-Agent', ''),
+        ));
     }
 }

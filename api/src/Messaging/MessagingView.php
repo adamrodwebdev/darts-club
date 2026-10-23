@@ -28,8 +28,9 @@ final class MessagingView
     }
 
     /** @return array<string, mixed> */
-    public function conversation(Conversation $conversation, User $viewer, ?Message $last, int $unread): array
+    public function conversation(Conversation $conversation, User $viewer, ConversationActivity $activity): array
     {
+        $last = $activity->last;
         $mailbox = $conversation->getMailbox();
         $counterpart = $conversation->counterpartOf($viewer);
 
@@ -39,7 +40,7 @@ final class MessagingView
             'subject' => $conversation->getSubject(),
             'with' => null !== $counterpart ? $this->member($counterpart) : null,
             'lastMessage' => null !== $last ? ['preview' => $last->body()->preview(80), 'at' => $last->getCreatedAt()->format(\DATE_ATOM)] : null,
-            'unread' => $unread,
+            'unread' => $activity->unread,
         ];
     }
 

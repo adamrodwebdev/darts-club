@@ -28,10 +28,10 @@ final class NotifyOnAnnouncementPublished
 
         $this->notifier->notify(
             new NotificationContent(
-                Category::Announcement,
-                $announcement->getTitle(),
-                mb_strimwidth($announcement->getBody(), 0, 300, '…'),
-                '/infos',
+                category: Category::Announcement,
+                title: $announcement->getTitle(),
+                body: mb_strimwidth($announcement->getBody(), 0, 300, '…'),
+                link: '/infos',
             ),
             Recipients::allMembers(),
         );

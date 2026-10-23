@@ -63,9 +63,7 @@ final class CalendarFeedController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $now = $clock->now();
-
-        return new Response($calendar->render($events->forCalendarFeed($now), 'Skull Darts 71', $now, $user->language()->value), headers: [
+        return new Response($calendar->render($events->forCalendarFeed($clock->now()), 'Skull Darts 71', $user->language()->value), headers: [
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Cache-Control' => 'private, max-age=3600',
             'X-Robots-Tag' => 'noindex',

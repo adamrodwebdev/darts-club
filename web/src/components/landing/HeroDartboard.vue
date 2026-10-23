@@ -10,6 +10,7 @@
 import { useTemplateRef } from 'vue'
 import { usePointerTilt } from '@/composables/usePointerTilt'
 import { LANDING } from '@/content/landing'
+import { vReplay } from '@/motion/vReplay'
 
 const SECTORS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5]
 const step = (Math.PI * 2) / 20
@@ -46,7 +47,7 @@ usePointerTilt(stage)
 </script>
 
 <template>
-  <div ref="stage" class="stage" aria-hidden="true">
+  <div ref="stage" v-replay class="stage" aria-hidden="true">
     <div class="stage__tilt">
       <!-- Ambiance : halo qui respire, faisceau tournant, anneaux en orbite -->
       <div class="halo" />

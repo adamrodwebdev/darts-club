@@ -27,20 +27,20 @@ final class PresidentialBroadcast
     ) {
     }
 
-    /** @param list<string>|null $userIds null = tous les adhérents */
-    public function send(User $president, BroadcastLabel $label, string $title, string $body, ?array $userIds): Broadcast
+    /** Envoie le message ; renvoie la trace de l'envoi (fabrique, déjà enregistrée) */
+    public function send(User $president, BroadcastDraft $draft, BroadcastAudience $audience): Broadcast
     {
         try {
-            $content = new NotificationContent($label->category(), $title, $body, '/notifications');
+            $content = new NotificationContent(category: $draft->label->category(), title: $draft->title, body: $draft->body, link: '/notifications');
         } catch (\InvalidArgumentException $e) {
             throw new AdministrationException($e->getMessage(), $e);
         }
 
-        if (null === $userIds) {
+        if (null === $audience->userIds) {
             $recipients = Recipients::allMembers();
             $count = \count($this->users->findActiveIds());
         } else {
-            $ids = $this->activeIdsAmong($userIds);
+            $ids = $this->activeIdsAmong($audience->userIds);
             if ([] === $ids) {
                 throw new AdministrationException('Sélectionne au moins un adhérent actif.');
             }
@@ -49,16 +49,16 @@ final class PresidentialBroadcast
         }
 
         $broadcast = new Broadcast(
-            label: $label,
+            label: $draft->label,
             title: $content->title,
             body: $content->body,
             authorName: mb_substr($president->displayName()->value, 0, 80),
-            toAllMembers: null === $userIds,
+            toAllMembers: $audience->isEveryone(),
             recipientCount: $count,
             now: $this->clock->now(),
         );
         $this->em->persist($broadcast);
-        $this->audit->record($president, 'broadcast.send', $content->labelledTitle(), ['recipients' => $count]);
+        $this->audit->record($president, new AuditEntry('broadcast.send', $content->labelledTitle(), ['recipients' => $count]));
         $this->em->flush();
 
         $this->notifier->notify($content, $recipients);

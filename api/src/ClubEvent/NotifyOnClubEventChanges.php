@@ -3,7 +3,6 @@
 namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
-use App\Notification\Category;
 use App\Notification\MemberNotifier;
 use App\Notification\Recipients;
 use App\Notification\TranslatedNotification;
@@ -27,7 +26,10 @@ final class NotifyOnClubEventChanges
     #[AsEventListener]
     public function onScheduled(ClubEventScheduled $event): void
     {
-        $this->notify($event->eventId, Category::Event, 'event.scheduled', null);
+        $clubEvent = $this->events->find($event->eventId);
+        if (null !== $clubEvent) {
+            $this->notify($clubEvent, EventChange::Scheduled, Recipients::allMembers());
+        }
     }
 
     /** Seuls les inscrits sont concernés par un changement d'horaire. */
@@ -43,7 +45,7 @@ final class NotifyOnClubEventChanges
             return;
         }
 
-        $this->notify($event->eventId, Category::Event, 'event.rescheduled', Recipients::users(
+        $this->notify($clubEvent, EventChange::Rescheduled, Recipients::users(
             ...array_map(static fn ($u): Uuid => $u->getId(), $clubEvent->participants()),
         ));
     }
@@ -51,25 +53,21 @@ final class NotifyOnClubEventChanges
     #[AsEventListener]
     public function onCancelled(ClubEventCancelled $event): void
     {
-        $this->notify($event->eventId, Category::Cancellation, 'event.cancelled', null);
         $clubEvent = $this->events->find($event->eventId);
         if (null !== $clubEvent) {
+            $this->notify($clubEvent, EventChange::Cancelled, Recipients::allMembers());
             $this->guests->notifyGuests($clubEvent, 'cancelled');
         }
     }
 
-    /** @param string $titleKey clé du domaine « notifications », paramètre %title% */
-    private function notify(Uuid $id, Category $category, string $titleKey, ?Recipients $recipients): void
+    private function notify(ClubEvent $event, EventChange $change, Recipients $recipients): void
     {
-        $event = $this->events->find($id);
-        if (null === $event) {
-            return;
-        }
-
-        $this->notifier->notify(
-            new TranslatedNotification($category, new TranslatableMessage($titleKey, ['%title%' => $event->getTitle()], 'notifications'), self::body($event), self::link($event)),
-            $recipients ?? Recipients::allMembers(),
-        );
+        $this->notifier->notify(new TranslatedNotification(
+            category: $change->category(),
+            title: new TranslatableMessage($change->titleKey(), ['%title%' => $event->getTitle()], 'notifications'),
+            body: self::body($event),
+            link: self::link($event),
+        ), $recipients);
     }
 
     /** « Vendredi 16 octobre à 20:00 · Bar du club » (+ motif d'annulation), dans la langue du lecteur */
