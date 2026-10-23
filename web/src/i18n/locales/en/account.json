@@ -12,7 +12,8 @@
         "membership": "Membership fee",
         "notifications": "Notifications",
         "security": "Security"
-      }
+      },
+      "pending": "Your account is waiting for the board’s approval. You will get an email as soon as the members’ area (events, photos, messages) is open to you."
     },
     "profile": {
       "avatarTitle": "Avatar",

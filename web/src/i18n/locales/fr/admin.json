@@ -26,7 +26,10 @@
       "suspendHint": "La personne est déconnectée immédiatement, ne peut plus se connecter ni être contactée. Action réversible et journalisée.",
       "reason": "Motif",
       "suspended": "{name} est suspendu(e) et déconnecté(e).",
-      "reactivated": "{name} est réactivé(e)."
+      "reactivated": "{name} est réactivé(e).",
+      "pending": "En attente de validation",
+      "approve": "Valider",
+      "approved": "{name} peut maintenant accéder à l’espace membres."
     },
     "broadcast": {
       "title": "Nouveau message",

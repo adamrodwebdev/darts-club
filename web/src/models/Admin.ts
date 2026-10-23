@@ -16,6 +16,8 @@ export interface AdminMember {
   admin: boolean
   badges: Badge[]
   verified: boolean
+  /** Validé par le bureau (espace membres ouvert) */
+  approved: boolean
   twoFactorEnabled: boolean
   suspended: boolean
   suspensionReason: string | null
@@ -34,6 +36,7 @@ export function parseAdminMember(value: unknown): AdminMember {
     admin: bool(d.admin),
     badges: parseBadges(d.badges),
     verified: bool(d.verified),
+    approved: d.approved === undefined ? true : bool(d.approved),
     twoFactorEnabled: bool(d.twoFactorEnabled),
     suspended: bool(d.suspended),
     suspensionReason: optStr(d.suspensionReason),

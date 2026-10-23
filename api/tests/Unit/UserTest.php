@@ -12,13 +12,18 @@ use PHPUnit\Framework\TestCase;
 
 final class UserTest extends TestCase
 {
-    public function testRegisteredUserIsUnverifiedMember(): void
+    public function testARegisteredUserWaitsForConfirmationThenApproval(): void
     {
         $user = User::register(new NewAccount(EmailAddress::fromString(' Bob@Example.COM '), PhoneNumber::fromInput('06 12 34 56 78')), 'hash', new \DateTimeImmutable('2026-10-15 12:00'));
 
         self::assertSame('bob@example.com', $user->getEmail());
         self::assertSame('+33612345678', $user->getPhone());
         self::assertFalse($user->isVerified());
+        self::assertSame(['ROLE_USER'], $user->getRoles(), 'Son compte seulement, pas l\'espace membres');
+
+        $user->markVerified();
+        self::assertSame(['ROLE_USER'], $user->getRoles(), 'Adresse confirmée : le bureau valide encore');
+        $user->approve(new \DateTimeImmutable('2026-10-16 09:00'));
         self::assertSame([Role::Member->value], $user->getRoles());
     }
 
@@ -33,6 +38,7 @@ final class UserTest extends TestCase
     public function testRolesCanBeGrantedAndRevokedButMemberIsPermanent(): void
     {
         $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'), Language::French, new \DateTimeImmutable('2026-10-15 12:00'));
+        $user->approve(new \DateTimeImmutable('2026-10-16 09:00'));
 
         $user->grantRole(Role::Treasurer);
         $user->grantRole(Role::Treasurer);

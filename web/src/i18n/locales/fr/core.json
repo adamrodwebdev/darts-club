@@ -327,7 +327,8 @@
       "member": {
         "roles": "Rôles modifiés",
         "suspend": "Compte suspendu",
-        "reactivate": "Compte réactivé"
+        "reactivate": "Compte réactivé",
+        "approve": "Compte validé"
       },
       "broadcast": {
         "send": "Message diffusé"

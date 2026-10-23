@@ -12,7 +12,8 @@
         "membership": "Cotisation",
         "notifications": "Notifications",
         "security": "Sécurité"
-      }
+      },
+      "pending": "Ton compte attend la validation du bureau. Tu recevras un email dès que l’espace membres (événements, photos, messagerie) te sera ouvert."
     },
     "profile": {
       "avatarTitle": "Avatar",
