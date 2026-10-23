@@ -225,13 +225,17 @@ main {
  * Animations : <html data-motion="on|off"> posé avant le rendu (public/theme-init.js),
  * selon le choix du visiteur ou le réglage « réduire les animations » de l'appareil.
  * Uniquement transform / opacity / background-position : aucun décalage de mise en page.
+ * Transitions coupées net (0 s) : une durée, même de 0,01 ms, ferait transiter toutes les propriétés
+ * de tous les éléments (« all » par défaut), et une couleur héritée descendrait alors d'un niveau
+ * par image (texte noir sur fond sombre au démarrage).
  */
 :root[data-motion='off'] *,
 :root[data-motion='off'] *::before,
 :root[data-motion='off'] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
   scroll-behavior: auto !important;
 }
 
