@@ -136,17 +136,6 @@ defineExpose({ goTo: reel.goTo })
   --reel-card: min(88%, 26rem);
 }
 
-/*
- * Longues bandes de texte (paroles) : seules les cartes proches de la partie visible sont mises
- * en page, les autres attendent qu'on glisse jusqu'à elles (elles restent dans le DOM, lues par
- * les lecteurs d'écran et la recherche). Réserve plus basse que toute carte : la bande garde la
- * hauteur des cartes affichées.
- */
-.fret-reel--deck .fret-reel__item {
-  content-visibility: auto;
-  contain-intrinsic-block-size: auto 4rem;
-}
-
 /* Assez de place pour toutes les cartes : une grille, plus rien à faire glisser */
 @container fret-reel (width >= 44rem) {
   .fret-reel--grid-wide .fret-reel__track {
