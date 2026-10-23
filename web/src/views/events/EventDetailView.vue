@@ -12,7 +12,7 @@ import AudiencePanel from '@/components/events/AudiencePanel.vue'
 import PhotoGallery from '@/components/events/PhotoGallery.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useViewBeacon } from '@/composables/useViewBeacon'
-import { ATTENDANCE_LABELS, formatEventDate, type Attendance, type EventDetail } from '@/models/ClubEvent'
+import { ATTENDANCE_LABELS, formatEventDate, type Attendance, type EventDetail, type Guest } from '@/models/ClubEvent'
 import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 
@@ -31,6 +31,7 @@ const post = useAsyncAction()
 const manage = useAsyncAction()
 const draftPost = ref('')
 const cancelling = ref(false)
+const removingGuest = ref<Guest | null>(null)
 const cancelReason = ref('')
 const editingSummary = ref(false)
 const copied = ref(false)
@@ -80,6 +81,14 @@ async function sendPost(): Promise<void> {
 
 async function deletePost(postId: string): Promise<void> {
   if (await manage.run(async () => (await services.events.deletePost(postId), true))) await refresh()
+}
+
+async function confirmGuestRemoval(): Promise<void> {
+  const guest = removingGuest.value
+  if (guest && (await manage.run(async () => (await services.events.removeGuest(props.id, guest.id), true)))) {
+    removingGuest.value = null
+    await refresh()
+  }
 }
 
 async function confirmCancel(): Promise<void> {
@@ -239,9 +248,12 @@ async function saveSummary(): Promise<void> {
         <details v-if="detail.guests && detail.guests.length">
           <summary>{{ t('events.guests.title', { count: detail.guests.length }) }}</summary>
           <ul class="guests">
-            <li v-for="g in detail.guests" :key="g.email">
-              <strong>{{ g.name }}</strong> · {{ t(ATTENDANCE_LABELS[g.answer]) }}
-              <a :href="`mailto:${g.email}`" class="muted">{{ g.email }}</a>
+            <li v-for="g in detail.guests" :key="g.id" class="guest">
+              <span>
+                <strong>{{ g.name }}</strong> · {{ t(ATTENDANCE_LABELS[g.answer]) }}
+                <a :href="`mailto:${g.email}`" class="muted">{{ g.email }}</a>
+              </span>
+              <BaseButton v-if="!event.past" variant="ghost" @click="removingGuest = g">{{ t('events.guests.remove') }}</BaseButton>
             </li>
           </ul>
           <p class="muted small">{{ t('events.guests.privacy') }}</p>
@@ -257,6 +269,16 @@ async function saveSummary(): Promise<void> {
           <div class="actions">
             <BaseButton variant="ghost" @click="cancelling = false">{{ t('events.detail.dismiss') }}</BaseButton>
             <BaseButton type="submit" variant="danger" :pending="manage.pending.value" :disabled="!cancelReason.trim()">{{ t('events.detail.cancelEvent') }}</BaseButton>
+          </div>
+        </form>
+      </BaseDialog>
+
+      <BaseDialog v-if="removingGuest" :title="t('events.guests.removeTitle', { name: removingGuest.name })" @close="removingGuest = null">
+        <form class="stack" @submit.prevent="confirmGuestRemoval">
+          <p class="muted">{{ t('events.guests.removeNotice') }}</p>
+          <div class="actions">
+            <BaseButton variant="ghost" @click="removingGuest = null">{{ t('events.detail.dismiss') }}</BaseButton>
+            <BaseButton type="submit" variant="danger" :pending="manage.pending.value">{{ t('events.guests.remove') }}</BaseButton>
           </div>
         </form>
       </BaseDialog>
@@ -310,6 +332,14 @@ async function saveSummary(): Promise<void> {
 
 .guests a {
   overflow-wrap: anywhere;
+}
+
+.guest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .small {

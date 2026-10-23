@@ -9,12 +9,14 @@ use App\ClubEvent\ClubEventView;
 use App\ClubEvent\EventDetails;
 use App\ClubEvent\IcsCalendar;
 use App\Entity\ClubEvent;
+use App\Entity\GuestResponse;
 use App\Entity\User;
 use App\Membership\Season;
 use App\Repository\ClubEventRepository;
 use App\Security\Voter\ClubEventVoter;
 use App\Translation\InvalidValue;
 use App\Translation\Unprocessable;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -83,6 +85,19 @@ final class ClubEventController extends AbstractController
         DomainCall::run(fn () => $this->events->edit($event, self::details($request)));
 
         return $this->json($this->view->summary($event, $user));
+    }
+
+    /** Retire un invité sans compte (fausse réponse, places prises par un robot) */
+    #[Route('/api/events/{id}/guests/{guestId}', name: 'events_guest_remove', requirements: ['id' => self::UUID, 'guestId' => self::UUID], methods: ['DELETE'], format: 'json')]
+    #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
+    public function removeGuest(ClubEvent $event, #[MapEntity(id: 'guestId')] GuestResponse $guest, #[CurrentUser] User $organizer): Response
+    {
+        if (!$guest->getEvent()->getId()->equals($event->getId())) {
+            throw $this->createNotFoundException();
+        }
+        DomainCall::run(fn () => $this->events->removeGuest($guest, $organizer));
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/api/events/{id}/cancel', name: 'events_cancel', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
