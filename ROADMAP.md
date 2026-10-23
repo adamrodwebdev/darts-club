@@ -67,7 +67,7 @@
 
 ## 10. Performance (Lighthouse 100)
 - ✅ Seuil Lighthouse relevé (2026-10-23) : 100 en accessibilité, bonnes pratiques et SEO sur le pire des 3 passages ; la CI mesure les pages publiques avec un bouchon d'API (réponses de la production pour un visiteur, plus d'erreur 502 en console)
-- ✅ Performance 100 : écran titre peint depuis le HTML (logo et nom, style en ligne autorisé par son empreinte CSP), site chargé une fois ce premier affichage signalé (`build/deferredBoot.ts`), effacé en fondu dès la première page prête ; l'aperçu de test applique la CSP de production
+- ✅ Performance 100 : écran titre peint depuis le HTML (logo et nom, style en ligne autorisé par son empreinte CSP), site chargé une fois le logo signalé comme plus grand élément peint (`build/deferredBoot.ts`), effacé en fondu dès la première page prête ; démarrage allégé (une seule langue, aucune mise en page forcée, cordes de l'accueil rendues une par tâche, animations continues de la cible confiées au compositeur) ; l'aperçu de test applique la CSP de production
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
 - ✅ Images à dimensions fixes (CLS = 0), photos WebP + vignettes en lazy loading, animations transform/opacity uniquement
 - ✅ Budget vérifié en CI : JS initial ≤ 150 Ko gzip (actuel ≈ 54 Ko), CSS ≤ 30 Ko, module à la demande ≤ 100 Ko
@@ -81,7 +81,7 @@
 ## 10 bis. Thème & internationalisation
 Livrée en trois PR : **a** (thème, socle i18n, pages publiques), **b** (espace adhérent et bureau), **c** (API).
 - ✅ **Mode sombre** (a) : clair / sombre / système, bouton dans l'en-tête et choix détaillé dans « Mon compte », mémorisé dans le navigateur ; aucun flash grâce à `theme-init.js` exécuté avant le rendu (fichier externe : la CSP interdit l'inline) ; contrastes AA vérifiés par axe-core dans les deux thèmes
-- ✅ **Socle de traduction** (a) : `vue-i18n` avec messages précompilés (aucun compilateur ni `eval` dans le bundle), `fr.json` embarqué, `en.json` chargé à la demande, clés vérifiées par TypeScript
+- ✅ **Socle de traduction** (a) : `vue-i18n` avec messages précompilés (aucun compilateur ni `eval` dans le bundle), chaque langue chargée à la demande (seule celle de la page est téléchargée et évaluée, depuis l'étape « performance 100 »), clés vérifiées par TypeScript
 - ✅ Langue : choix mémorisé, sinon langue du navigateur ; sélecteur dans l'en-tête et le compte ; `Accept-Language` envoyé à l'API
 - ✅ SEO (a) : accueil FR sur `/`, EN sur `/en` (`en.html` généré au build avec titre, description, Open Graph et JSON-LD traduits), `lang` dynamique, `hreflang` + URL canonique
 - ✅ Pages publiques traduites (a) : accueil, hymne (paroles chantées gardées en français), connexion, inscription, mentions légales et confidentialité (le français fait foi), 404

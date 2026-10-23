@@ -22,11 +22,12 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const { t } = useI18n()
 /**
- * Cordes rendues une par tâche après le héros : le démarrage n'a aucune tâche longue.
+ * Rendu par étapes après le texte du héros, une par tâche, pour qu'aucune ne bloque longtemps
+ * le démarrage : 1 la cible (son intro se joue quand l'écran titre s'efface), 2 à 5 les cordes.
  * Lien vers une ancre (« #hymne ») : tout de suite, la cible doit exister.
  */
-const STRINGS = 4
-const strings = useStages(STRINGS, { all: useRoute().hash !== '' })
+const STAGES = 5
+const stages = useStages(STAGES, { all: useRoute().hash !== '' })
 /** Corde des rendez-vous affichée seulement s'il en existe d'ouverts à tous */
 const publicEvents = ref(0)
 
@@ -61,7 +62,9 @@ function stringLabel(n: number, name: string): string {
           <a href="#hymne" class="btn btn--link">{{ t('landing.anthem') }}</a>
         </div>
       </div>
-      <HeroDartboard class="hero__board" />
+      <HeroDartboard v-if="stages >= 1" class="hero__board" />
+      <!-- Place de la cible tant qu'elle n'est pas montée : rien ne bouge à son arrivée -->
+      <div v-else class="board-pending" aria-hidden="true" />
       <p class="hint">
         <svg viewBox="0 0 28 22" width="28" height="22" aria-hidden="true">
           <path d="M2 3h24M2 7h24M2 11h24M2 15h24M2 19h24" fill="none" stroke="currentColor" stroke-width="1.5" />
@@ -73,7 +76,7 @@ function stringLabel(n: number, name: string): string {
 
     <MarqueeBand />
 
-    <GuitarString v-if="strings >= 1" :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
+    <GuitarString v-if="stages >= 2" :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
       <SplitText id="club-title" tag="h2" class="metal-title levitate" :text="t('landing.clubTitle')" />
       <FretReel
         :items="LANDING.pillars"
@@ -95,7 +98,7 @@ function stringLabel(n: number, name: string): string {
 
     <!-- Chargée après l'affichage, sous la ligne de flottaison : pas de décalage visible -->
     <GuitarString
-      v-if="strings >= 2"
+      v-if="stages >= 3"
       v-show="publicEvents > 0"
       :strings="[3]"
       :label="stringLabel(3, 'events')"
@@ -107,12 +110,12 @@ function stringLabel(n: number, name: string): string {
       <RouterLink to="/evenements" class="btn btn--link more">{{ t('publicEvents.all') }}</RouterLink>
     </GuitarString>
 
-    <GuitarString v-if="strings >= 3" id="hymne" :strings="[4]" :label="stringLabel(4, 'anthem')" aria-labelledby="song-title">
+    <GuitarString v-if="stages >= 4" id="hymne" :strings="[4]" :label="stringLabel(4, 'anthem')" aria-labelledby="song-title">
       <SongSection />
     </GuitarString>
 
     <GuitarString
-      v-if="strings >= 4"
+      v-if="stages >= 5"
       id="rejoindre"
       :strings="[5, 6]"
       :label="t('fretboard.strings', { first: 5, second: 6, name: t('fretboard.names.join') })"
@@ -135,7 +138,7 @@ function stringLabel(n: number, name: string): string {
       </div>
     </GuitarString>
     <!-- Place réservée tant que des cordes manquent : le pied de page reste hors de vue, rien ne saute -->
-    <div v-if="strings < STRINGS" class="strings-pending" aria-hidden="true" />
+    <div v-if="stages < STAGES" class="strings-pending" aria-hidden="true" />
   </div>
 </template>
 
@@ -193,6 +196,19 @@ function stringLabel(n: number, name: string): string {
 
 .strings-pending {
   min-height: 100svh;
+}
+
+/* Même place que la scène de HeroDartboard (.stage) */
+.board-pending {
+  width: min(100%, 28rem);
+  aspect-ratio: 1;
+  margin: 16% auto 0;
+}
+
+@media (width >= 64rem) {
+  .board-pending {
+    margin-top: 0;
+  }
 }
 
 .more {
