@@ -6,6 +6,7 @@ import FretReel from '@/components/fretboard/FretReel.vue'
 import SplitText from '@/components/motion/SplitText.vue'
 import { useMediaPlayback } from '@/composables/useMediaPlayback'
 import { formatClock } from '@/i18n/format'
+import { vReplay } from '@/motion/vReplay'
 import AnthemPlayer from './AnthemPlayer.vue'
 
 const { t, tm, rt, locale } = useI18n()
@@ -53,7 +54,7 @@ function announce(): void {
 
 <template>
   <div class="song">
-    <div class="song__intro">
+    <div v-replay class="song__intro">
       <p class="kicker">{{ t('song.kicker') }}</p>
       <SplitText id="song-title" tag="h2" class="metal-title levitate" :text="SONG.title" />
       <p class="muted">{{ t('song.subtitle') }} · {{ formatClock(SONG.duration) }}</p>

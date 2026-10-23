@@ -63,6 +63,7 @@
 - ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
 - ✅ En-têtes SEO de l'accueil générés en FR et EN (étape 10 bis) ; rendu statique complet reporté à l'étape 11
 - ✅ Accueil « manche de guitare » : on gratte de haut en bas d'une corde (section) à l'autre et on glisse de côté sur chacune (cartes du club, rendez-vous, onze parties de l'hymne) ; entrées en alternance gauche / droite liées au défilement. Accueil ramené de 6,1 à 5,2 écrans sur téléphone et de 5,6 à 4,2 sur ordinateur, rendez-vous passés compris
+- ✅ Défilement fluide : plus d'accrochage vertical (à la molette comme au doigt, il ramenait la page au début des sections), main du pied de page qui n'allonge plus la page, carrousel en 2D (incliné, il retenait le geste du doigt) ; les animations se rejouent à chaque retour à l'écran, dans les deux sens
 - ✅ Carrousel 3D des rendez-vous ouverts à tous, du prochain au plus ancien (passés compris, annulés exclus) ; main « cornes » qui surgit au pied de page ; tout reste immobile si les animations sont coupées
 
 ## 10. Performance (Lighthouse 100)

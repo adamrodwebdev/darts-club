@@ -1,37 +1,23 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { onMounted, ref } from 'vue'
+import { vReplay } from '@/motion/vReplay'
 import { motionEnabled } from '@/preferences/MotionController'
 
 /**
- * Main « cornes » du pied de page : elle surgit du bas et secoue la tête quand on
- * atteint le bas de la page, une fois par visite. Animations coupées : elle reste
- * immobile, visible. Décorative (aria-hidden), elle ne capte aucun clic.
+ * Main « cornes » du pied de page : elle surgit du bas et secoue la tête chaque fois
+ * qu'on atteint le bas de la page (v-replay : cachée sous le bord tant qu'on est plus
+ * haut). Animations coupées : elle reste immobile, visible. Décorative (aria-hidden),
+ * elle ne capte aucun clic.
  */
-const box = useTemplateRef<HTMLElement>('box')
-const state = ref<'waiting' | 'rocking' | 'still'>('waiting')
-let observer: IntersectionObserver | null = null
+const state = ref<'rocking' | 'still'>('rocking')
 
 onMounted(() => {
-  if (!motionEnabled() || typeof IntersectionObserver === 'undefined' || box.value === null) {
-    state.value = 'still'
-    return
-  }
-  observer = new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      state.value = 'rocking'
-      observer?.disconnect()
-    },
-    { threshold: 0.9 },
-  )
-  observer.observe(box.value)
+  if (!motionEnabled()) state.value = 'still'
 })
-
-onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>
-  <span ref="box" class="rock-hand" :class="`rock-hand--${state}`" aria-hidden="true">
+  <span v-replay="{ threshold: 0.9 }" class="rock-hand" :class="`rock-hand--${state}`" aria-hidden="true">
     <svg viewBox="0 0 100 130" width="72" height="94" focusable="false">
       <defs>
         <linearGradient id="rock-hand-metal" x1="0" y1="0" x2="1" y2="1">
@@ -67,13 +53,20 @@ onBeforeUnmount(() => observer?.disconnect())
 </template>
 
 <style scoped>
-/* Coupée seulement en bas : la main monte depuis le bord du pied de page et peut pivoter librement */
+/*
+ * Coupée seulement en bas : la main monte depuis le bord du pied de page et peut pivoter
+ * librement. overflow (et non clip-path, qui ne rogne que l'image) : cachée sous le bord,
+ * elle n'allonge pas la page. La boîte monte de 6rem pour la laisser pivoter, sans rien décaler.
+ */
 .rock-hand {
   display: block;
   flex: none;
+  box-sizing: content-box;
   width: 4.5rem;
   aspect-ratio: 100 / 130;
-  clip-path: inset(-6rem -6rem 0 -6rem);
+  margin-block-start: -6rem;
+  padding-block-start: 6rem;
+  overflow: visible clip;
   pointer-events: none;
 }
 
@@ -120,10 +113,6 @@ onBeforeUnmount(() => observer?.disconnect())
 .rock-hand__sparks {
   stroke: var(--color-accent);
   opacity: 0;
-}
-
-:root[data-motion='on'] .rock-hand--waiting svg {
-  translate: 0 105%;
 }
 
 :root[data-motion='on'] .rock-hand--rocking svg {

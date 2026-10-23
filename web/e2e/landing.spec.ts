@@ -1,4 +1,25 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Locator } from '@playwright/test'
+
+/**
+ * Animations CSS à durée d'un élément (et de ses descendants) : toutes en attente à leur
+ * début (« held »), lancées (« playing »), ou un mélange des deux.
+ */
+async function playback(locator: Locator): Promise<'held' | 'playing' | 'mixed' | 'none'> {
+  return locator.evaluate((element) => {
+    const held = element
+      .getAnimations({ subtree: true })
+      .filter((animation) => 'animationName' in animation && animation.timeline === document.timeline)
+      .map((animation) => animation.playState === 'paused' && Number(animation.currentTime) === 0)
+    if (held.length === 0) return 'none'
+    if (held.every(Boolean)) return 'held'
+    return held.some(Boolean) ? 'mixed' : 'playing'
+  })
+}
+
+/** Défilement par script (la molette n'existe pas sur WebKit mobile), comme un visiteur qui amène l'élément à l'écran */
+async function bringIntoView(locator: Locator): Promise<void> {
+  await locator.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+}
 
 test('landing shows the anthem, the friend band and legal links', async ({ page }) => {
   await page.goto('/')
@@ -33,18 +54,58 @@ test('the home page is a guitar neck: strings to strum down, cards to slide alon
   await expect(parts.getByRole('listitem')).toHaveCount(11)
   const anthem = page.locator('#hymne')
   await expect(anthem.getByText('1 / 11')).toBeVisible()
+  // Toute la bande à l'écran, cartes et flèches, une fois la page posée (Playwright attend qu'elle ne bouge plus)
+  await parts.locator('xpath=..').scrollIntoViewIfNeeded()
   await anthem.getByRole('button', { name: 'Carte suivante' }).click()
   await expect(anthem.getByText('2 / 11')).toBeVisible()
   await expect(parts.getByRole('heading', { name: 'Couplet 1' })).toBeInViewport()
 })
 
-test('a rock hand greets whoever reaches the bottom of the page', async ({ page }) => {
+test('a rock hand greets whoever reaches the bottom of the page, every time', async ({ page }) => {
   await page.goto('/')
   const hand = page.locator('.rock-hand')
-  await expect(hand).toHaveClass(/rock-hand--waiting/)
-  // Défilement par script : la molette n'existe pas sur WebKit mobile
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+  const footer = page.locator('footer')
   await expect(hand).toHaveClass(/rock-hand--rocking/)
+  // Plus haut, elle attend sous le bord sans allonger la page : rien à faire défiler après le pied de page
+  await expect.poll(() => playback(hand)).toBe('held')
+  const blankBelow = await footer.evaluate((element) => document.documentElement.scrollHeight - (element.getBoundingClientRect().bottom + window.scrollY))
+  expect(blankBelow).toBeLessThanOrEqual(1)
+
+  await bringIntoView(footer)
+  await expect.poll(() => playback(hand)).toBe('playing')
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await expect.poll(() => playback(hand)).toBe('held')
+  await bringIntoView(footer)
+  await expect.poll(() => playback(hand)).toBe('playing')
+})
+
+test('entrance animations play again each time they come back into view', async ({ page }) => {
+  await page.goto('/')
+  const hero = page.locator('.hero__text')
+  const anthemIntro = page.locator('#hymne .song__intro')
+  await expect.poll(() => playback(hero)).toBe('playing')
+  // Plus bas, elles attendent leur tour : elles se jouent en arrivant à l'écran…
+  await expect.poll(() => playback(anthemIntro)).toBe('held')
+  await bringIntoView(anthemIntro)
+  await expect.poll(() => playback(anthemIntro)).toBe('playing')
+  // … et celles du haut, sorties de l'écran, repartent du début en y revenant
+  await expect.poll(() => playback(hero)).toBe('held')
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await expect.poll(() => playback(hero)).toBe('playing')
+})
+
+test('the page scrolls freely: no section pulls it back', async ({ page }) => {
+  await page.goto('/')
+  // Aucun accrochage vertical : seules les bandes horizontales en ont
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('none')
+  const snapping = await page.locator('section, footer').evaluateAll((elements) => elements.filter((element) => getComputedStyle(element).scrollSnapAlign !== 'none').length)
+  expect(snapping).toBe(0)
+
+  // Pas à pas vers le bas : chaque pas arrive où il doit, rien ne ramène la page en arrière
+  for (let step = 1; step <= 10; step++) {
+    await page.evaluate(() => window.scrollBy(0, 120))
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(step * 120)
+  }
 })
 
 test('without animations the rock hand simply stays there', async ({ page }) => {

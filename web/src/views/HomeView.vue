@@ -11,6 +11,7 @@ import SongSection from '@/components/landing/SongSection.vue'
 import MarqueeBand from '@/components/motion/MarqueeBand.vue'
 import SplitText from '@/components/motion/SplitText.vue'
 import { LANDING } from '@/content/landing'
+import { vReplay } from '@/motion/vReplay'
 import { useAuthStore } from '@/stores/auth'
 
 /**
@@ -37,7 +38,7 @@ function stringLabel(n: number, name: string): string {
 <template>
   <div class="landing fretboard">
     <section class="hero">
-      <div class="hero__text">
+      <div v-replay class="hero__text">
         <p class="kicker">{{ t('landing.kicker') }}</p>
         <SplitText tag="h1" class="metal-title hero__title levitate" :text="LANDING.name" rise />
         <SplitText tag="p" class="hero__tagline" :text="t('landing.tagline')" rise />
@@ -67,7 +68,7 @@ function stringLabel(n: number, name: string): string {
     <MarqueeBand />
 
     <GuitarString :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
-      <SplitText id="club-title" tag="h2" class="metal-title levitate" :text="t('landing.clubTitle')" />
+      <SplitText id="club-title" v-replay tag="h2" class="metal-title levitate" :text="t('landing.clubTitle')" />
       <FretReel
         :items="LANDING.pillars"
         :label="t('landing.pillarsLabel')"
@@ -88,7 +89,7 @@ function stringLabel(n: number, name: string): string {
 
     <!-- Chargée après l'affichage, sous la ligne de flottaison : pas de décalage visible -->
     <GuitarString v-show="publicEvents > 0" :strings="[3]" :label="stringLabel(3, 'events')" aria-labelledby="public-events-title">
-      <h2 id="public-events-title" class="metal-title">{{ t('publicEvents.carousel.title') }}</h2>
+      <h2 id="public-events-title" v-replay class="metal-title">{{ t('publicEvents.carousel.title') }}</h2>
       <p class="muted string-intro">{{ t('publicEvents.carousel.intro') }}</p>
       <PublicEventsCarousel @loaded="publicEvents = $event" />
       <RouterLink to="/evenements" class="btn btn--link more">{{ t('publicEvents.all') }}</RouterLink>
@@ -107,7 +108,7 @@ function stringLabel(n: number, name: string): string {
       <div class="duo">
         <FriendBandSection />
         <section class="join" aria-labelledby="join-title">
-          <SplitText id="join-title" tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
+          <SplitText id="join-title" v-replay tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
           <p>{{ t('landing.cta.text') }}</p>
           <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
             <template #link>
@@ -147,7 +148,6 @@ function stringLabel(n: number, name: string): string {
   gap: 2rem;
   align-items: center;
   min-height: min(80svh, 46rem);
-  scroll-snap-align: start;
 }
 
 /* Mode d'emploi du manche : gratter de haut en bas, glisser de côté */

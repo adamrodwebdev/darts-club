@@ -70,12 +70,6 @@ html {
   scroll-padding-block-start: 4.5rem;
 }
 
-/* Accueil « manche de guitare » : en approchant d'une corde (section), la page s'y cale
-   (le pied de page est aussi un point d'arrêt : voir AppFooter) */
-html:has(.fretboard) {
-  scroll-snap-type: y proximity;
-}
-
 *,
 *::before,
 *::after {
@@ -225,13 +219,17 @@ main {
  * Animations : <html data-motion="on|off"> posé avant le rendu (public/theme-init.js),
  * selon le choix du visiteur ou le réglage « réduire les animations » de l'appareil.
  * Uniquement transform / opacity / background-position : aucun décalage de mise en page.
+ * Transitions coupées net (0 s) : une durée, même de 0,01 ms, ferait transiter toutes les propriétés
+ * de tous les éléments (« all » par défaut), et une couleur héritée descendrait alors d'un niveau
+ * par image (texte noir sur fond sombre au démarrage).
  */
 :root[data-motion='off'] *,
 :root[data-motion='off'] *::before,
 :root[data-motion='off'] *::after {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
   scroll-behavior: auto !important;
 }
 
@@ -371,15 +369,15 @@ main {
   }
 }
 
-/* Surtitres : l'espacement des lettres se resserre */
+/* Surtitres : ils glissent en place en apparaissant (transform et opacité seulement : la ligne ne change jamais de taille) */
 :root[data-motion='on'] .kicker {
   animation: kicker-in 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 1 both;
 }
 
 @keyframes kicker-in {
   from {
-    letter-spacing: 0.6em;
-    transform: translateX(-0.5rem);
+    opacity: 0;
+    transform: translateX(-0.75rem);
   }
 }
 

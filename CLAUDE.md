@@ -43,6 +43,8 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - Tableaux (trésorerie, membres) : vue en cartes sur mobile ou défilement contenu dans le tableau.
 - Navigation : menu compact accessible au clavier sur mobile.
 - Respect de `prefers-reduced-motion` et `prefers-color-scheme`.
+- **Défilement libre** : jamais d'accrochage vertical de la page (`scroll-snap` seulement dans les bandes horizontales), aucune transformation 3D sur un parent de bande qui défile (elle retient le geste du doigt).
+- **Animations** : `transform` et opacité seulement, jamais une propriété de mise en page. Celles d'entrée se rejouent à chaque retour à l'écran (`v-replay`) ; celles liées au défilement jouent dans les deux sens (plages `entry` et `exit`).
 - **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800), le balayage 320 → 2560 px et le test de réorganisation à 320 × 256 ; Lighthouse sur mobile, pire des 3 passages (voir ci-dessous).
 
 ## Qualité et sécurité (rappel)
