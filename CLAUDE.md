@@ -42,11 +42,11 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - Tableaux (trésorerie, membres) : vue en cartes sur mobile ou défilement contenu dans le tableau.
 - Navigation : menu compact accessible au clavier sur mobile.
 - Respect de `prefers-reduced-motion` et `prefers-color-scheme`.
-- **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800), le balayage 320 → 2560 px et le test de réorganisation à 320 × 256 ; Lighthouse ≥ 95 sur mobile.
+- **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800), le balayage 320 → 2560 px et le test de réorganisation à 320 × 256 ; Lighthouse sur mobile, pire des 3 passages (voir ci-dessous).
 
 ## Qualité et sécurité (rappel)
 - API : PHPStan niveau max, PHP-CS-Fixer, PHPUnit. Web : ESLint, oxlint, `vue-tsc`, Vitest, Playwright.
-- Toute PR garde Lighthouse ≥ 95 dans les 4 catégories.
+- Toute PR garde Lighthouse à **100** en accessibilité, bonnes pratiques et SEO (pire des 3 passages, contrôlé en CI) ; performance ≥ 95 pour l'instant, objectif 100. Corriger la cause, jamais masquer un audit.
 - Aucun secret commité (dépôt **public**) : `bin/console secrets:set` et variables d'environnement.
 - Écritures protégées par le contrôle d'Origin ; nouvelles routes publiques à déclarer explicitement dans `security.yaml`.
 - Commits Conventional Commits, une PR par étape.

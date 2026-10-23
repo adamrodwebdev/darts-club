@@ -63,7 +63,9 @@
 - ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
 - ✅ En-têtes SEO de l'accueil générés en FR et EN (étape 10 bis) ; rendu statique complet reporté à l'étape 11
 
-## 10. Performance (Lighthouse ≥ 95)
+## 10. Performance (Lighthouse 100)
+- ✅ Seuil Lighthouse relevé (2026-10-23) : 100 en accessibilité, bonnes pratiques et SEO sur le pire des 3 passages ; la CI mesure les pages publiques avec un bouchon d'API (réponses de la production pour un visiteur, plus d'erreur 502 en console)
+- À faire : performance 100 (aujourd'hui 96–97 : FCP ≈ 1,9 s, LCP ≈ 2,4 s en mobile simulé) : premier écran peint depuis le HTML statique, code chargé après le premier rendu, CSS critique en ligne (empreintes CSP générées au build)
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
 - ✅ Images à dimensions fixes (CLS = 0), photos WebP + vignettes en lazy loading, animations transform/opacity uniquement
 - ✅ Budget vérifié en CI : JS initial ≤ 150 Ko gzip (actuel ≈ 54 Ko), CSS ≤ 30 Ko, module à la demande ≤ 100 Ko
