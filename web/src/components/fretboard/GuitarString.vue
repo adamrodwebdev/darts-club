@@ -38,7 +38,6 @@ const from = computed(() => ((props.strings[0] ?? 0) % 2 === 0 ? 'left' : 'right
   display: grid;
   gap: 1rem;
   min-width: 0;
-  scroll-snap-align: start;
 }
 
 .string__head {

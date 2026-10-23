@@ -33,6 +33,8 @@ test('the home page is a guitar neck: strings to strum down, cards to slide alon
   await expect(parts.getByRole('listitem')).toHaveCount(11)
   const anthem = page.locator('#hymne')
   await expect(anthem.getByText('1 / 11')).toBeVisible()
+  // Toute la bande à l'écran, cartes et flèches, une fois la page posée (Playwright attend qu'elle ne bouge plus)
+  await parts.locator('xpath=..').scrollIntoViewIfNeeded()
   await anthem.getByRole('button', { name: 'Carte suivante' }).click()
   await expect(anthem.getByText('2 / 11')).toBeVisible()
   await expect(parts.getByRole('heading', { name: 'Couplet 1' })).toBeInViewport()
@@ -45,6 +47,20 @@ test('a rock hand greets whoever reaches the bottom of the page', async ({ page 
   // Défilement par script : la molette n'existe pas sur WebKit mobile
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
   await expect(hand).toHaveClass(/rock-hand--rocking/)
+})
+
+test('the page scrolls freely: no section pulls it back', async ({ page }) => {
+  await page.goto('/')
+  // Aucun accrochage vertical : seules les bandes horizontales en ont
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('none')
+  const snapping = await page.locator('section, footer').evaluateAll((elements) => elements.filter((element) => getComputedStyle(element).scrollSnapAlign !== 'none').length)
+  expect(snapping).toBe(0)
+
+  // Pas à pas vers le bas : chaque pas arrive où il doit, rien ne ramène la page en arrière
+  for (let step = 1; step <= 10; step++) {
+    await page.evaluate(() => window.scrollBy(0, 120))
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(step * 120)
+  }
 })
 
 test('without animations the rock hand simply stays there', async ({ page }) => {

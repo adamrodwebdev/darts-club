@@ -147,7 +147,6 @@ function stringLabel(n: number, name: string): string {
   gap: 2rem;
   align-items: center;
   min-height: min(80svh, 46rem);
-  scroll-snap-align: start;
 }
 
 /* Mode d'emploi du manche : gratter de haut en bas, glisser de côté */

@@ -67,13 +67,20 @@ onBeforeUnmount(() => observer?.disconnect())
 </template>
 
 <style scoped>
-/* Coupée seulement en bas : la main monte depuis le bord du pied de page et peut pivoter librement */
+/*
+ * Coupée seulement en bas : la main monte depuis le bord du pied de page et peut pivoter
+ * librement. overflow (et non clip-path, qui ne rogne que l'image) : cachée sous le bord,
+ * elle n'allonge pas la page. La boîte monte de 6rem pour la laisser pivoter, sans rien décaler.
+ */
 .rock-hand {
   display: block;
   flex: none;
+  box-sizing: content-box;
   width: 4.5rem;
   aspect-ratio: 100 / 130;
-  clip-path: inset(-6rem -6rem 0 -6rem);
+  margin-block-start: -6rem;
+  padding-block-start: 6rem;
+  overflow: visible clip;
   pointer-events: none;
 }
 

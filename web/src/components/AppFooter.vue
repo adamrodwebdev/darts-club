@@ -34,12 +34,6 @@ const { t } = useI18n()
   background: var(--color-surface);
 }
 
-/* Accueil « manche de guitare » : le bas de page est un point d'arrêt, sinon la
-   dernière corde ramènerait la page vers le haut et le pied de page serait inaccessible */
-:global(html:has(.fretboard)) .footer {
-  scroll-snap-align: end;
-}
-
 .footer__inner {
   display: flex;
   flex-wrap: wrap;
