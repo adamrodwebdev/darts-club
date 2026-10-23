@@ -169,8 +169,20 @@
     "keepEmail": "Keep the email you received: its link brings you back here."
   },
   "publicEvents": {
-    "title": "Upcoming events open to everyone",
     "intro": "No membership needed: pick an event and answer “I’m coming” or “Not sure”.",
+    "carousel": {
+      "title": "All our events",
+      "intro": "From the next one to the oldest, open to everyone: answer “I’m coming” or “Not sure”, no account needed.",
+      "label": "Events open to everyone, from the next one to the oldest",
+      "badges": {
+        "next": "Next",
+        "live": "On now",
+        "upcoming": "Coming up",
+        "past": "Past",
+        "cancelled": "Cancelled"
+      },
+      "attended": "no sign-ups | {n} participant | {n} participants"
+    },
     "all": "All open events →",
     "answer": "Answer",
     "empty": "No event open to the public at the moment. Come back soon!",

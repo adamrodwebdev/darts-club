@@ -92,14 +92,60 @@ final class DemoSeedCommand
             }
         }
 
-        // Événements à venir
-        $friday = $this->event($secretary, 'Soirée fléchettes du vendredi', 'Bar du club', $now->modify('next friday 20:00'), 4, 'Parties libres, initiation pour les nouveaux. Ambiance stoner garantie.', null, $now);
+        // Événements à venir (deux ouverts au public : carrousel de l'accueil)
+        $fridayAt = $now->modify('next friday 20:00');
+        $friday = $this->event($secretary, new EventDetails(
+            title: 'Soirée fléchettes du vendredi',
+            description: 'Parties libres, initiation pour les nouveaux. Ambiance stoner garantie.',
+            location: 'Bar du club',
+            startsAt: $fridayAt,
+            endsAt: $fridayAt->modify('+4 hours'),
+        ), $now);
         $friday->register($alice, $now);
         $friday->register($bob, $now);
-        $this->event($secretary, 'Initiation découverte', 'Salle municipale', $now->modify('+12 days 14:00'), 3, 'Viens avec un ami : on prête les fléchettes.', 12, $now);
+        $halloweenAt = $now->modify('+8 days 17:00');
+        $this->event($secretary, new EventDetails(
+            title: 'Halloween Party',
+            description: 'Costumes bienvenus, cible spéciale citrouille et tournoi des monstres.',
+            location: 'Salle des fêtes',
+            startsAt: $halloweenAt,
+            endsAt: $halloweenAt->modify('+6 hours'),
+            public: true,
+            city: 'Bellevesvre',
+        ), $now);
+        $initiationAt = $now->modify('+12 days 14:00');
+        $this->event($secretary, new EventDetails(
+            title: 'Initiation découverte',
+            description: 'Viens avec un ami : on prête les fléchettes.',
+            location: 'Salle municipale',
+            startsAt: $initiationAt,
+            endsAt: $initiationAt->modify('+3 hours'),
+            capacity: 12,
+            public: true,
+            city: 'Bellevesvre',
+        ), $now);
 
-        // Archives avec résumé et souvenirs
-        $past = $this->event($secretary, 'Soirée de rentrée', 'Bar du club', $now->modify('-20 days 19:30'), 4, 'Reprise de la saison.', null, $now->modify('-2 months'));
+        // Archives avec résumé et souvenirs (deux ouvertes au public)
+        $pastAt = $now->modify('-20 days 19:30');
+        $past = $this->event($secretary, new EventDetails(
+            title: 'Soirée de rentrée',
+            description: 'Reprise de la saison.',
+            location: 'Bar du club',
+            startsAt: $pastAt,
+            endsAt: $pastAt->modify('+4 hours'),
+            public: true,
+            city: 'Bellevesvre',
+        ), $now->modify('-2 months'));
+        $summerAt = $now->modify('-3 months 15:00');
+        $this->event($secretary, new EventDetails(
+            title: 'Tournoi d’été',
+            description: 'Tournoi en plein air, doublettes tirées au sort.',
+            location: 'Parc municipal',
+            startsAt: $summerAt,
+            endsAt: $summerAt->modify('+5 hours'),
+            public: true,
+            city: 'Bellevesvre',
+        ), $now->modify('-4 months'));
         $past->writeSummary("Belle soirée de reprise : 14 joueurs, deux nouveaux venus et un 180 de Bob au troisième tour.\nMerci à tous !");
         $this->keep(new EventPost(event: $past, author: $bob, body: MessageBody::fromString('Mon premier 180 au club, je ne m’en remets pas !'), now: $now));
         $this->keep(new EventPost(event: $past, author: $alice, body: MessageBody::fromString('Super ambiance, vivement la prochaine.'), now: $now));
@@ -163,9 +209,11 @@ final class DemoSeedCommand
         return $user;
     }
 
-    private function event(User $organizer, string $title, string $location, \DateTimeImmutable $start, int $hours, string $description, ?int $capacity, \DateTimeImmutable $createdAt): ClubEvent
+    private function event(User $organizer, EventDetails $details, \DateTimeImmutable $createdAt): ClubEvent
     {
-        $event = ClubEvent::schedule($organizer, new EventDetails($title, $description, $location, $start, $start->modify("+{$hours} hours"), $capacity), $createdAt);
+        $event = ClubEvent::schedule($organizer, $details, $createdAt);
+        // Suffixe fixe (démo) : la page publique garde la même adresse d'un réensemencement à l'autre
+        $event->assignPublicAddress(substr(hash('sha256', $details->title), 0, 6));
         $this->keep($event);
 
         return $event;

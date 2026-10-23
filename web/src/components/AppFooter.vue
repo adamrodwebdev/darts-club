@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { LANDING } from '@/content/landing'
+import RockHand from './motion/RockHand.vue'
 import MotionToggle from './preferences/MotionToggle.vue'
 
 const { t } = useI18n()
@@ -22,6 +23,7 @@ const { t } = useI18n()
         </ul>
       </nav>
       <MotionToggle />
+      <RockHand class="footer__hand" />
     </div>
   </footer>
 </template>
@@ -30,6 +32,12 @@ const { t } = useI18n()
 .footer {
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
+}
+
+/* Accueil « manche de guitare » : le bas de page est un point d'arrêt, sinon la
+   dernière corde ramènerait la page vers le haut et le pied de page serait inaccessible */
+:global(html:has(.fretboard)) .footer {
+  scroll-snap-align: end;
 }
 
 .footer__inner {
@@ -62,6 +70,13 @@ ul {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Calée sur le bord bas du pied de page : la main en surgit */
+.footer__hand {
+  align-self: flex-end;
+  margin-inline-start: auto;
+  margin-block-end: -1.25rem;
 }
 
 a {

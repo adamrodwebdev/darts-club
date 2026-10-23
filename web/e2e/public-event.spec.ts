@@ -86,11 +86,11 @@ test('a view is counted after the page stays visible for 2 seconds, without cook
 })
 
 test('visitors without an account discover open events from the home page and the calendar', async ({ page }) => {
-  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [event] } }))
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [event], past: [] } }))
   await page.route(`**/api/public/events/${slug}`, (route) => route.fulfill({ json: event }))
 
   await page.goto('/')
-  const section = page.getByRole('region', { name: 'Prochains événements ouverts à tous' })
+  const section = page.getByRole('region', { name: 'Tous les rendez-vous' })
   await expect(section.getByRole('link', { name: /Soirée cricket/ })).toHaveAttribute('href', `/e/${slug}`)
 
   await page.getByRole('link', { name: 'Événements', exact: true }).click()
@@ -112,8 +112,43 @@ test('a member link to a public event opens its public page for someone without 
 })
 
 test('the home page hides the section when no event is open', async ({ page }) => {
-  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [] } }))
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [], past: [] } }))
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Skull Darts 71')
-  await expect(page.getByRole('region', { name: 'Prochains événements ouverts à tous' })).toBeHidden()
+  await expect(page.getByRole('region', { name: 'Tous les rendez-vous' })).toBeHidden()
+})
+
+test('the home carousel keeps track of every open event, the next one first', async ({ page }) => {
+  const next = { ...event, slug: 'halloween-party-2026-10-31-d4e5f6', title: 'Halloween Party', startsAt: '2026-10-31T16:00:00+00:00' }
+  const later = event
+  const recent = { ...event, slug: 'soiree-de-rentree-2026-10-03-a7b8c9', title: 'Soirée de rentrée', startsAt: '2026-10-03T17:30:00+00:00', past: true, started: true }
+  const older = { ...event, slug: 'tournoi-d-ete-2026-07-12-c1d2e3', title: 'Tournoi d’été', startsAt: '2026-07-12T13:00:00+00:00', going: 1, past: true, started: true }
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [next, later], past: [recent, older] } }))
+  await page.route(`**/api/public/events/${slug}`, (route) => route.fulfill({ json: event }))
+
+  await page.goto('/')
+  const carousel = page.getByRole('list', { name: 'Événements ouverts à tous, du prochain au plus ancien', exact: true })
+  const slides = carousel.getByRole('listitem')
+  await expect(slides).toHaveCount(4)
+  await expect(slides.nth(0)).toContainText('Prochain')
+  await expect(slides.nth(0)).toContainText('Halloween Party')
+  await expect(slides.nth(1)).toContainText('À venir')
+  await expect(slides.nth(2)).toContainText('Passé')
+  await expect(slides.nth(2)).toContainText('Soirée de rentrée')
+  await expect(slides.nth(3)).toContainText('1 participant')
+
+  // Les repères suivent la carte centrale ; une carte de côté vient au centre au lieu de s'ouvrir
+  const frets = page.getByRole('list', { name: /Aller à une carte/ })
+  await expect(frets.getByRole('button', { name: 'Halloween Party' })).toHaveAttribute('aria-current', 'true')
+  await page.getByRole('region', { name: 'Tous les rendez-vous' }).getByRole('button', { name: 'Carte suivante' }).click()
+  await expect(frets.getByRole('button', { name: 'Soirée cricket' })).toHaveAttribute('aria-current', 'true')
+  // Clic direct : Playwright ferait d'abord défiler la carte jusqu'au centre (elle serait alors déjà active)
+  await slides.nth(2).getByRole('link').dispatchEvent('click')
+  await expect(frets.getByRole('button', { name: 'Soirée de rentrée' })).toHaveAttribute('aria-current', 'true')
+  await expect(page).toHaveURL(/\/$/)
+
+  await frets.getByRole('button', { name: 'Soirée cricket' }).click()
+  await expect(frets.getByRole('button', { name: 'Soirée cricket' })).toHaveAttribute('aria-current', 'true')
+  await slides.nth(1).getByRole('link').click()
+  await expect(page).toHaveURL(new RegExp(`/e/${slug}$`))
 })

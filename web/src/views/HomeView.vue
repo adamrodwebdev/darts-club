@@ -1,33 +1,41 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import HeroDartboard from '@/components/landing/HeroDartboard.vue'
-import PublicEventsList from '@/components/events/PublicEventsList.vue'
+import PublicEventsCarousel from '@/components/events/PublicEventsCarousel.vue'
+import FretReel from '@/components/fretboard/FretReel.vue'
+import GuitarString from '@/components/fretboard/GuitarString.vue'
 import FriendBandSection from '@/components/landing/FriendBandSection.vue'
+import HeroDartboard from '@/components/landing/HeroDartboard.vue'
 import SongSection from '@/components/landing/SongSection.vue'
 import MarqueeBand from '@/components/motion/MarqueeBand.vue'
 import SplitText from '@/components/motion/SplitText.vue'
-import { useReveal } from '@/composables/useReveal'
 import { LANDING } from '@/content/landing'
 import { useAuthStore } from '@/stores/auth'
 
+/**
+ * Accueil « manche de guitare » : on gratte de haut en bas d'une corde (section) à
+ * l'autre, et on glisse de gauche à droite sur chacune (cartes du club, rendez-vous,
+ * parties de l'hymne) au lieu d'allonger la page.
+ */
 const auth = useAuthStore()
 const { t } = useI18n()
-const root = useTemplateRef<HTMLElement>('root')
-/** Section affichée seulement s'il existe des événements ouverts à tous */
+/** Corde des rendez-vous affichée seulement s'il en existe d'ouverts à tous */
 const publicEvents = ref(0)
-useReveal(root)
 
 const ICONS: Record<string, string> = {
   target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
   night: 'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z',
   crew: 'M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3 3-5 6-5s6 2 6 5M14 15c3 0 8 1 8 5',
 }
+
+function stringLabel(n: number, name: string): string {
+  return t('fretboard.string', { n, name: t(`fretboard.names.${name}`) })
+}
 </script>
 
 <template>
-  <div ref="root" class="landing">
+  <div class="landing fretboard">
     <section class="hero">
       <div class="hero__text">
         <p class="kicker">{{ t('landing.kicker') }}</p>
@@ -47,44 +55,71 @@ const ICONS: Record<string, string> = {
         </div>
       </div>
       <HeroDartboard class="hero__board" />
+      <p class="hint">
+        <svg viewBox="0 0 28 22" width="28" height="22" aria-hidden="true">
+          <path d="M2 3h24M2 7h24M2 11h24M2 15h24M2 19h24" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path class="hint__pick" d="M14 1v20" fill="none" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        {{ t('fretboard.hint') }}
+      </p>
     </section>
 
     <MarqueeBand />
 
-    <section class="pillars" :aria-label="t('landing.pillarsLabel')">
-      <article v-for="(pillar, i) in LANDING.pillars" :key="pillar.key" class="pillar" data-reveal :style="{ '--reveal-index': i }">
-        <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
-          <path :d="ICONS[pillar.icon]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        <SplitText tag="h2" class="levitate" :text="t(`landing.pillars.${pillar.key}.title`)" />
-        <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
-      </article>
-    </section>
+    <GuitarString :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
+      <SplitText id="club-title" tag="h2" class="metal-title levitate" :text="t('landing.clubTitle')" />
+      <FretReel
+        :items="LANDING.pillars"
+        :label="t('landing.pillarsLabel')"
+        :item-label="(pillar) => t(`landing.pillars.${pillar.key}.title`)"
+        variant="grid-wide"
+      >
+        <template #default="{ item: pillar }">
+          <article class="pillar">
+            <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true">
+              <path :d="ICONS[pillar.icon]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <h3>{{ t(`landing.pillars.${pillar.key}.title`) }}</h3>
+            <p>{{ t(`landing.pillars.${pillar.key}.text`) }}</p>
+          </article>
+        </template>
+      </FretReel>
+    </GuitarString>
 
     <!-- Chargée après l'affichage, sous la ligne de flottaison : pas de décalage visible -->
-    <section v-show="publicEvents > 0" class="public-events" aria-labelledby="public-events-title">
-      <h2 id="public-events-title">{{ t('publicEvents.title') }}</h2>
-      <p class="muted">{{ t('publicEvents.intro') }}</p>
-      <PublicEventsList :limit="6" hide-when-empty @loaded="publicEvents = $event" />
-      <RouterLink to="/evenements" class="btn btn--link">{{ t('publicEvents.all') }}</RouterLink>
-    </section>
+    <GuitarString v-show="publicEvents > 0" :strings="[3]" :label="stringLabel(3, 'events')" aria-labelledby="public-events-title">
+      <h2 id="public-events-title" class="metal-title">{{ t('publicEvents.carousel.title') }}</h2>
+      <p class="muted string-intro">{{ t('publicEvents.carousel.intro') }}</p>
+      <PublicEventsCarousel @loaded="publicEvents = $event" />
+      <RouterLink to="/evenements" class="btn btn--link more">{{ t('publicEvents.all') }}</RouterLink>
+    </GuitarString>
 
-    <SongSection />
+    <GuitarString id="hymne" :strings="[4]" :label="stringLabel(4, 'anthem')" aria-labelledby="song-title">
+      <SongSection />
+    </GuitarString>
 
-    <FriendBandSection />
-
-    <section class="join" data-reveal aria-labelledby="join-title">
-      <SplitText id="join-title" tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
-      <p>{{ t('landing.cta.text') }}</p>
-      <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
-        <template #link>
-          <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">{{ t('landing.cta.facebookLink') }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
-        </template>
-      </i18n-t>
-      <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary sheen-button">
-        {{ auth.isAuthenticated ? t('landing.cta.calendar') : t('landing.cta.signUp') }}
-      </RouterLink>
-    </section>
+    <GuitarString
+      id="rejoindre"
+      :strings="[5, 6]"
+      :label="t('fretboard.strings', { first: 5, second: 6, name: t('fretboard.names.join') })"
+      :aria-label="t('fretboard.names.join')"
+    >
+      <div class="duo">
+        <FriendBandSection />
+        <section class="join" aria-labelledby="join-title">
+          <SplitText id="join-title" tag="h2" class="metal-title levitate" :text="t('landing.cta.title')" />
+          <p>{{ t('landing.cta.text') }}</p>
+          <i18n-t keypath="landing.cta.facebook" tag="p" scope="global">
+            <template #link>
+              <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">{{ t('landing.cta.facebookLink') }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
+            </template>
+          </i18n-t>
+          <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary sheen-button">
+            {{ auth.isAuthenticated ? t('landing.cta.calendar') : t('landing.cta.signUp') }}
+          </RouterLink>
+        </section>
+      </div>
+    </GuitarString>
   </div>
 </template>
 
@@ -93,7 +128,7 @@ const ICONS: Record<string, string> = {
   /* La fléchette arrive de hors écran : on la rogne sans créer de défilement */
   overflow-x: clip;
   display: grid;
-  gap: clamp(3.5rem, 9vw, 7rem);
+  gap: clamp(2.5rem, 6vw, 4.5rem);
   max-width: var(--max-width);
   margin: 0 auto;
   padding: clamp(1.5rem, 5vw, 3rem) var(--gutter) 4rem;
@@ -112,6 +147,36 @@ const ICONS: Record<string, string> = {
   gap: 2rem;
   align-items: center;
   min-height: min(80svh, 46rem);
+  scroll-snap-align: start;
+}
+
+/* Mode d'emploi du manche : gratter de haut en bas, glisser de côté */
+.hint {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: calc(var(--radius) * 1.3);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.hint svg {
+  flex: none;
+}
+
+.hint__pick {
+  stroke: var(--color-accent);
+}
+
+.string-intro {
+  margin: 0;
+}
+
+.more {
+  justify-self: start;
 }
 
 .hero__text {
@@ -177,14 +242,8 @@ const ICONS: Record<string, string> = {
   color: var(--color-link);
 }
 
-/* Grille intrinsèque : 1 à 3 colonnes selon la place, sans point de rupture */
-.pillars {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-  gap: 1rem;
-}
-
 .pillar {
+  height: 100%;
   padding: 1.5rem;
   border: 1px solid var(--color-border);
   border-radius: calc(var(--radius) * 1.5);
@@ -200,7 +259,7 @@ const ICONS: Record<string, string> = {
     border-color 0.35s ease;
 }
 
-:root[data-motion='on'] .pillar.is-revealed:hover {
+:root[data-motion='on'] .pillar:hover {
   transform: translateY(-6px);
   border-color: color-mix(in srgb, var(--color-accent) 60%, var(--color-border));
   box-shadow: 0 1.25rem 2.5rem -1.5rem color-mix(in srgb, var(--color-accent) 70%, transparent);
@@ -210,7 +269,7 @@ const ICONS: Record<string, string> = {
   color: var(--color-link);
 }
 
-.pillar h2 {
+.pillar h3 {
   margin: 0.75rem 0 0.4rem;
   font-size: 1.35rem;
   text-transform: uppercase;
@@ -221,19 +280,17 @@ const ICONS: Record<string, string> = {
   color: var(--color-muted);
 }
 
-.public-events {
+/* Cordes 5 et 6 : groupe ami et adhésion côte à côte dès que la place le permet */
+.duo {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   gap: 1rem;
-}
-
-.public-events h2,
-.public-events p {
-  margin: 0;
 }
 
 .join {
   display: grid;
   justify-items: center;
+  align-content: center;
   gap: 1rem;
   padding: clamp(2rem, 6vw, 4rem) 1.5rem;
   border-radius: calc(var(--radius) * 2);
@@ -256,6 +313,10 @@ const ICONS: Record<string, string> = {
 @media (width >= 64rem) {
   .hero {
     grid-template-columns: 1.1fr 1fr;
+  }
+
+  .hint {
+    grid-column: 1 / -1;
   }
 }
 </style>

@@ -8,7 +8,7 @@ const band = LANDING.friendBand
 </script>
 
 <template>
-  <section class="friend" aria-labelledby="friend-title" data-reveal>
+  <section class="friend" aria-labelledby="friend-title">
     <p class="kicker">{{ t('landing.friend.kicker') }}</p>
     <SplitText id="friend-title" tag="h2" class="metal-title levitate" :text="band.name" />
     <p class="friend__text">{{ t('landing.friend.text') }}</p>
