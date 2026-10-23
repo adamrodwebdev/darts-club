@@ -17,6 +17,9 @@ x-prod-env: &prod-env
   OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
   OAUTH_DISCORD_CLIENT_ID: ${OAUTH_DISCORD_CLIENT_ID:-}
   OAUTH_DISCORD_CLIENT_SECRET: ${OAUTH_DISCORD_CLIENT_SECRET:-}
+  # Même origine : aucune autre origine n'a besoin de CORS (le réglage de développement ne passe pas
+  # en production). Expression « ^$ », le $ doublé pour Compose
+  CORS_ALLOW_ORIGIN: '^$$'
 
 services:
   php:

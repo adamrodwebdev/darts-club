@@ -18,6 +18,22 @@ Signaler une vulnérabilité : voir [SECURITY.md](../SECURITY.md).
 | Faible | Un président pouvait réactiver un administrateur suspendu | Réactivation d'un administrateur réservée aux administrateurs | `SecurityHardeningTest` |
 | Faible | Un membre du bureau sans 2FA accédait à `/api/members` (préfixe `/api/me` trop large) | Correspondance exacte `/api/me` ou `/api/me/…` | `SecurityHardeningTest` |
 
+## Revue d'octobre 2026 (site en ligne)
+
+Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 octobre.
+
+| Gravité | Problème | Correction | Test |
+|---|---|---|---|
+| Élevée | PHP2Shell (CVE-2026-109618, CVE-2026-109619) puis CVE-2026-115560 : failles de PHP lui-même | PHP 8.4.27 en production depuis le 23 octobre ; progression d'envoi par session coupée (`session.upload_progress.enabled = 0`) | — (configuration PHP) |
+| Moyenne | Un lancement manuel du déploiement pouvait mettre en production n'importe quelle branche | Lancement manuel limité à `main` | — (condition du workflow) |
+| Moyenne | Correctifs de PHP, Caddy, PostgreSQL, Redis et Mercure installés seulement quand du code est fusionné | Reconstruction de l'image et mise à jour des services chaque lundi | — (workflow planifié) |
+| Faible | Hub Mercure, joignable depuis Internet par Caddy, sur le même réseau que la base et Redis | Réseau Docker séparé (`realtime`) | Configuration Compose validée en CI |
+| Faible | Corps de requête jusqu'à 112 Mo sur toute route (mémoire de PHP) | Caddy coupe à 1 Mo, sauf les envois d'images (11 Mo, 112 Mo pour 10 photos) ; 10 fichiers par envoi au plus | Configuration Caddy validée en CI |
+| Faible | Redis sans plafond de mémoire | 256 Mo ; seules les clés à durée de vie (sessions, limiteurs) peuvent être évincées, jamais la file des messages | — |
+| Faible | Envoi d'email pouvant retomber en clair si STARTTLS est retiré en chemin | `require_tls=true` dans le DSN (ajouté au `.env` existant par `deploy.sh`) | — |
+| Faible | Réglage CORS de développement actif en production | Aucune origine autorisée en production (même origine) | — |
+| Faible | Ports de développement (base, Mailpit, Mercure) ouverts au réseau local | Liés à `127.0.0.1` | — |
+
 ## Contrôles vérifiés
 
 - **Pare-feu** : seules la connexion, l'inscription, la confirmation d'email, OAuth, la sonde `/api/health`, le flux iCal à jeton et la déconnexion sont publics ; le reste exige une connexion complète (2FA comprise).

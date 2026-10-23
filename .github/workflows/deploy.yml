@@ -1,12 +1,16 @@
 name: Déploiement
 
-# Après une CI verte sur main (ou à la main) : image publiée sur ghcr.io, puis
+# Après une CI verte sur main (ou à la main depuis main) : image publiée sur ghcr.io, puis
 # mise à jour du serveur par SSH si celui-ci est configuré (voir docs/deploiement.md).
+# Chaque lundi, même sans nouveau code : image reconstruite sur la dernière image de base
+# (correctifs PHP, Caddy, Alpine) et correctifs de la base, de Redis et de Mercure installés.
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
+  schedule:
+    - cron: "30 4 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -22,9 +26,11 @@ env:
 jobs:
   image:
     name: Image de production
-    # Uniquement un push sur main de ce dépôt : une PR venant d'un fork (même nommée « main ») ne déploie jamais
+    # Uniquement main de ce dépôt : un push (CI verte), la mise à jour du lundi ou un lancement à la main
+    # depuis main. Ni une autre branche, ni une PR venant d'un fork (même nommée « main ») ne déploie
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+       github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.event == 'push' &&
        github.event.workflow_run.head_repository.full_name == github.repository)
@@ -52,6 +58,8 @@ jobs:
           file: docker/php/Dockerfile
           target: prod
           push: true
+          # Toujours la dernière image de base publiée (correctifs de sécurité)
+          pull: true
           # Domaine public (variable du dépôt SERVER_NAME) : Open Graph, hreflang, sitemap
           build-args: |
             SITE_URL=${{ vars.SERVER_NAME && format('https://{0}', vars.SERVER_NAME) || '' }}

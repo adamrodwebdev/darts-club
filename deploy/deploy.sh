@@ -5,6 +5,13 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+# Relais SMTP : TLS exigé, sinon un intermédiaire pourrait retirer STARTTLS et lire la clé.
+# Ajouté une seule fois aux .env plus anciens que set-mailer.sh (qui l'écrit déjà), avant leur lecture
+if grep -q '^MAILER_DSN=smtp://[^?[:space:]]*$' .env; then
+  sed -i 's/^MAILER_DSN=smtp:\/\/[^?[:space:]]*$/&?require_tls=true/' .env
+  echo "→ Emails : TLS désormais exigé vers le relais SMTP"
+fi
+
 set -a
 . ./.env
 set +a
@@ -12,8 +19,8 @@ if [ -n "${1:-}" ]; then IMAGE_TAG="$1"; export IMAGE_TAG; fi
 
 compose() { docker compose -f compose.yaml -f compose.prod.yaml "$@"; }
 
-echo "→ Image ${IMAGE}:${IMAGE_TAG}"
-compose pull php worker
+echo "→ Images : application ${IMAGE}:${IMAGE_TAG}, et correctifs de la base, de Redis et de Mercure"
+compose pull
 
 echo "→ Services de données"
 compose up -d --wait database redis mercure

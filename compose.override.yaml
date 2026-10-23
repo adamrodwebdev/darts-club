@@ -1,4 +1,5 @@
-# Développement uniquement
+# Développement uniquement. Ports ouverts sur cet ordinateur seulement (127.0.0.1) : ni la base
+# et son mot de passe par défaut, ni Mailpit ne sont visibles du réseau local (Wi-Fi public…)
 services:
   php:
     build:
@@ -11,6 +12,9 @@ services:
       TRUSTED_ORIGINS: http://localhost:5173
       DEFAULT_URI: http://localhost:5173
       MERCURE_PUBLIC_URL: http://localhost:3000/.well-known/mercure
+    ports: !override
+      - "127.0.0.1:443:443"
+      - "127.0.0.1:80:80"
 
   worker:
     build:
@@ -25,14 +29,14 @@ services:
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins http://localhost:5173
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
 
   database:
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
 
   mailer:
     image: axllent/mailpit
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"

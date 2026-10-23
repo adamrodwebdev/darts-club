@@ -49,7 +49,8 @@ except smtplib.SMTPAuthenticationError:
     sys.exit(f'Brevo refuse cette clé ({len(key)} caractères) : rien n\'a été modifié. '
              'Génère une nouvelle clé SMTP et colle-la une seule fois.')
 print('✓ Clé acceptée par Brevo', file=sys.stderr)
-print(f"smtp://{quote(login, safe='')}:{quote(key, safe='')}@smtp-relay.brevo.com:587")
+# require_tls : jamais d'envoi en clair, même si un intermédiaire retire STARTTLS
+print(f"smtp://{quote(login, safe='')}:{quote(key, safe='')}@smtp-relay.brevo.com:587?require_tls=true")
 PY
 )
 
