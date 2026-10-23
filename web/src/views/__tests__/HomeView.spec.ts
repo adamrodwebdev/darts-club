@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -13,6 +13,7 @@ function mountHome() {
 describe('HomeView', () => {
   afterEach(() => {
     i18n.global.locale.value = 'fr'
+    vi.useRealTimers()
   })
 
   it('invites visitors to join the club', () => {
@@ -25,7 +26,10 @@ describe('HomeView', () => {
   it('speaks English while keeping the French lyrics', async () => {
     await loadLocaleMessages('en')
     i18n.global.locale.value = 'en'
+    vi.useFakeTimers()
     const wrapper = mountHome()
+    // Les cordes (dont l'hymne) arrivent une par tâche après le héros
+    await vi.runAllTimersAsync()
 
     expect(wrapper.get('a').text()).toBe('Join the club')
     expect(wrapper.text()).toContain('Verse 1')

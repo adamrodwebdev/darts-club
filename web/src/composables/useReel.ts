@@ -95,20 +95,23 @@ export function useReel(track: Ref<HTMLElement | null>, options: ReelOptions): R
   }
 
   onMounted(() => {
-    measure()
     track.value?.addEventListener('scroll', onScroll, { passive: true })
     track.value?.addEventListener('pointerdown', release, { passive: true })
     track.value?.addEventListener('wheel', release, { passive: true })
+    // Première mesure dans le rappel du ResizeObserver, une fois la page mise en page :
+    // lire scrollWidth au montage forcerait une mise en page de toute la page (tâche longue)
     if (track.value !== null && typeof ResizeObserver !== 'undefined') {
       resizes = new ResizeObserver(measure)
       resizes.observe(track.value)
+    } else {
+      measure()
     }
   })
 
-  // Cartes chargées après coup (événements) : nouvelle mesure
+  // Cartes chargées après coup (événements) : nouvelle mesure, à l'image suivante
   watch(options.count, async () => {
     await nextTick()
-    measure()
+    requestAnimationFrame(measure)
   })
 
   onBeforeUnmount(() => {

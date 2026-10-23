@@ -8,16 +8,15 @@
         "http://localhost:4173/inscription",
         "http://localhost:4173/confidentialite"
       ],
-      "numberOfRuns": 3,
-      "startServerCommand": "node web/lighthouse/api-stub.mjs & npm --prefix web run preview -- --port 4173 --strictPort",
-      "startServerReadyPattern": "Local"
+      "numberOfRuns": 3
     },
     "assert": {
       "assertions": {
         "categories:performance": [
           "error",
           {
-            "minScore": 0.95
+            "minScore": 1,
+            "aggregationMethod": "pessimistic"
           }
         ],
         "categories:accessibility": [

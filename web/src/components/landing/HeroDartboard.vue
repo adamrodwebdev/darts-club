@@ -4,6 +4,8 @@
  * et fléchette. Séquence d'ouverture (assemblage, vol, impact dans le double 20), ambiance continue
  * (halo, faisceau, orbites, reflet) et inclinaison 3D au pointeur.
  * Uniquement transform / opacity : l'écusson (élément principal de la page) est visible dès le premier rendu.
+ * Ce qui bouge en continu (orbites, double 20 touché) est un <svg> à part animé en entier : le
+ * compositeur s'en charge, sans repeindre la cible à chaque image (ombres et halos peints une fois).
  */
 import { useTemplateRef } from 'vue'
 import { usePointerTilt } from '@/composables/usePointerTilt'
@@ -50,16 +52,14 @@ usePointerTilt(stage)
       <!-- Ambiance : halo qui respire, faisceau tournant, anneaux en orbite -->
       <div class="halo" />
       <div class="sweep" />
-      <svg class="orbits" viewBox="-250 -250 500 500">
-        <g class="orbit orbit--a">
-          <circle r="226" pathLength="100" />
-          <circle class="orbit__dot" cx="0" cy="-226" r="3.5" />
-        </g>
-        <g class="orbit orbit--b">
-          <circle r="242" pathLength="100" />
-          <circle class="orbit__dot" cx="242" cy="0" r="2.5" />
-          <circle class="orbit__dot" cx="-171" cy="171" r="2.5" />
-        </g>
+      <svg class="orbit orbit--a" viewBox="-250 -250 500 500">
+        <circle r="226" pathLength="100" />
+        <circle class="orbit__dot" cx="0" cy="-226" r="3.5" />
+      </svg>
+      <svg class="orbit orbit--b" viewBox="-250 -250 500 500">
+        <circle r="242" pathLength="100" />
+        <circle class="orbit__dot" cx="242" cy="0" r="2.5" />
+        <circle class="orbit__dot" cx="-171" cy="171" r="2.5" />
       </svg>
 
       <div class="board-shake">
@@ -73,13 +73,16 @@ usePointerTilt(stage)
             <circle v-for="(r, i) in WIRES" :key="r" class="wire" :r="r" pathLength="1" :style="{ '--i': i }" />
             <circle r="16" class="bull bull--outer" />
             <circle r="6.5" class="bull" />
-            <path :d="hit" class="hit" />
           </g>
           <g class="board__numbers">
             <text v-for="(sector, i) in sectors" :key="sector.value" :x="sector.label.x" :y="sector.label.y" class="num" :style="{ '--i': i }">
               {{ sector.value }}
             </text>
           </g>
+        </svg>
+        <!-- Double 20 touché : calque à part, son halo pulse sans repeindre la cible -->
+        <svg class="board-hit" viewBox="-205 -205 410 410" width="410" height="410">
+          <path :d="hit" />
         </svg>
 
         <!-- Écusson : en avant-plan (profondeur à l'inclinaison), rebond à l'impact, reflet périodique -->
@@ -204,13 +207,13 @@ usePointerTilt(stage)
   mix-blend-mode: multiply;
 }
 
-.orbits {
+/* Chaque orbite tourne en entier (élément <svg>) : rotation prise en charge par le compositeur */
+.orbit {
   position: absolute;
   inset: -11%;
   width: 122%;
   height: 122%;
   overflow: visible;
-  animation: fade-in 1.4s ease-out 0.6s both;
 }
 
 .orbit circle {
@@ -234,17 +237,16 @@ usePointerTilt(stage)
   filter: drop-shadow(0 0 4px var(--glow));
 }
 
-.orbit {
-  transform-box: view-box;
-  transform-origin: center;
-}
-
 .orbit--a {
-  animation: rotate 48s linear infinite;
+  animation:
+    fade-in 1.4s ease-out 0.6s both,
+    rotate 48s linear infinite;
 }
 
 .orbit--b {
-  animation: rotate 70s linear infinite reverse;
+  animation:
+    fade-in 1.4s ease-out 0.6s both,
+    rotate 70s linear infinite reverse;
 }
 
 /* ---------- Cible ---------- */
@@ -255,11 +257,19 @@ usePointerTilt(stage)
   animation: shake 0.42s cubic-bezier(0.3, 0.6, 0.2, 1) var(--t-impact) both;
 }
 
+/* Ombre de la cible (ronde) peinte une fois, au lieu d'un filtre recalculé à chaque image de l'assemblage */
+.board-shake::before {
+  content: '';
+  position: absolute;
+  inset: 0.4%;
+  border-radius: 50%;
+  box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 0.55);
+}
+
 .board {
   width: 100%;
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 1.5rem 3rem rgb(0 0 0 / 0.55));
 }
 
 .board__frame {
@@ -299,13 +309,21 @@ usePointerTilt(stage)
   fill: var(--board-green);
 }
 
-.hit {
-  fill: #ff3346;
-  filter: drop-shadow(0 0 6px #ff3346) drop-shadow(0 0 14px rgb(255 51 70 / 0.7));
+.board-hit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   opacity: 0;
   animation:
     hit-on 0.3s ease-out var(--t-impact) forwards,
     hit-pulse 2.2s ease-in-out calc(var(--t-impact) + 0.6s) infinite;
+}
+
+.board-hit path {
+  fill: #ff3346;
+  filter: drop-shadow(0 0 6px #ff3346) drop-shadow(0 0 14px rgb(255 51 70 / 0.7));
 }
 
 .num {
@@ -623,7 +641,7 @@ usePointerTilt(stage)
   display: none;
 }
 
-:root[data-motion='off'] .hit {
+:root[data-motion='off'] .board-hit {
   opacity: 0.85;
 }
 </style>

@@ -59,12 +59,14 @@ function observers(): { entering: FakeObserver; leaving: FakeObserver } {
 
 describe('InViewReplay', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
     FakeObserver.created = []
     vi.stubGlobal('IntersectionObserver', FakeObserver)
     document.documentElement.dataset.motion = 'on'
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
     delete document.documentElement.dataset.motion
   })
@@ -76,6 +78,7 @@ describe('InViewReplay', () => {
     new InViewReplay(animatedElement([css, transition, scrolling]))
 
     observers().leaving.report({ isIntersecting: false })
+    vi.advanceTimersToNextFrame()
 
     expect(css.playState).toBe('paused')
     expect(css.currentTime).toBe(0)
@@ -87,6 +90,7 @@ describe('InViewReplay', () => {
     const css = animation('css')
     new InViewReplay(animatedElement([css]))
     observers().leaving.report({ isIntersecting: false })
+    vi.advanceTimersToNextFrame()
 
     observers().entering.report({ isIntersecting: true })
 
@@ -98,12 +102,25 @@ describe('InViewReplay', () => {
     const css = animation('css')
     new InViewReplay(animatedElement([css]), { threshold: 0.9 })
     observers().leaving.report({ isIntersecting: false })
+    vi.advanceTimersToNextFrame()
 
     observers().entering.report({ isIntersecting: true, intersectionRatio: 0.5 })
     expect(css.play).not.toHaveBeenCalled()
 
     observers().entering.report({ isIntersecting: true, intersectionRatio: 0.95 })
     expect(css.play).toHaveBeenCalledOnce()
+  })
+
+  it('holds nothing if the element is back before the next frame', () => {
+    const css = animation('css')
+    new InViewReplay(animatedElement([css]))
+
+    observers().leaving.report({ isIntersecting: false })
+    observers().entering.report({ isIntersecting: true })
+    vi.advanceTimersToNextFrame()
+
+    expect(css.pause).not.toHaveBeenCalled()
+    expect(css.playState).toBe('running')
   })
 
   it('waits well inside the screen by default, whatever the height of the element', () => {
@@ -117,6 +134,7 @@ describe('InViewReplay', () => {
     new InViewReplay(animatedElement([css]))
 
     observers().leaving.report({ isIntersecting: false })
+    vi.advanceTimersToNextFrame()
 
     expect(css.pause).not.toHaveBeenCalled()
   })
@@ -125,6 +143,7 @@ describe('InViewReplay', () => {
     const css = animation('css')
     const replay = new InViewReplay(animatedElement([css]))
     observers().leaving.report({ isIntersecting: false })
+    vi.advanceTimersToNextFrame()
 
     replay.disconnect()
 

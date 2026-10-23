@@ -5,6 +5,7 @@ import { SONG, type InstrumentalKey } from '@/content/song'
 import FretReel from '@/components/fretboard/FretReel.vue'
 import SplitText from '@/components/motion/SplitText.vue'
 import { useMediaPlayback } from '@/composables/useMediaPlayback'
+import { useStages } from '@/composables/useStages'
 import { formatClock } from '@/i18n/format'
 import { vReplay } from '@/motion/vReplay'
 import AnthemPlayer from './AnthemPlayer.vue'
@@ -14,6 +15,15 @@ const audio = useTemplateRef<HTMLAudioElement>('audio')
 const deck = useTemplateRef<{ goTo(index: number): void }>('deck')
 const playback = useMediaPlayback(audio)
 const { playing, time, started, failed } = playback
+
+/**
+ * Cartes des paroles rendues par paquets, chacun dans sa propre image, après l'intro : leur mise
+ * en page (surtout du texte) ne forme pas une tâche longue au chargement. Le premier paquet
+ * contient la carte la plus haute : une fois là, la bande ne change plus de hauteur.
+ */
+const CARDS_PER_TASK = 3
+const batches = useStages(Math.ceil(SONG.sections.length / CARDS_PER_TASK), { all: false })
+const sections = computed(() => SONG.sections.slice(0, batches.value * CARDS_PER_TASK))
 
 /** Indications de jeu d'une partie instrumentale, dans la langue courante */
 function directions(key: InstrumentalKey): string[] {
@@ -79,7 +89,7 @@ function announce(): void {
       <FretReel
         ref="deck"
         class="lyrics"
-        :items="SONG.sections"
+        :items="sections"
         :label="t('song.partsLabel')"
         :item-label="(section) => t(`song.sections.${section.key}`)"
         :current="current >= 0 ? current : null"

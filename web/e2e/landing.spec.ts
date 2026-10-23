@@ -40,6 +40,15 @@ test('landing shows the anthem, the friend band and legal links', async ({ page 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Politique de confidentialité')
 })
 
+test('the title card paints the club at once, then gives way to the page', async ({ page }) => {
+  const response = await page.goto('/')
+  // Premier affichage depuis le HTML, avant tout le code
+  expect(await response?.text()).toContain('id="title-card"')
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Skull Darts 71')
+  await expect(page.locator('#title-card')).toHaveCount(0)
+})
+
 test('the home page is a guitar neck: strings to strum down, cards to slide along', async ({ page }) => {
   await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [], past: [] } }))
   await page.goto('/')
@@ -65,6 +74,8 @@ test('a rock hand greets whoever reaches the bottom of the page, every time', as
   await page.goto('/')
   const hand = page.locator('.rock-hand')
   const footer = page.locator('footer')
+  // Cordes montées une par tâche : la page a sa hauteur finale une fois la dernière arrivée
+  await expect(page.locator('#rejoindre')).toBeAttached()
   await expect(hand).toHaveClass(/rock-hand--rocking/)
   // Plus haut, elle attend sous le bord sans allonger la page : rien à faire défiler après le pied de page
   await expect.poll(() => playback(hand)).toBe('held')
@@ -81,6 +92,7 @@ test('a rock hand greets whoever reaches the bottom of the page, every time', as
 
 test('entrance animations play again each time they come back into view', async ({ page }) => {
   await page.goto('/')
+  await expect(page.locator('#rejoindre')).toBeAttached()
   const hero = page.locator('.hero__text')
   const anthemIntro = page.locator('#hymne .song__intro')
   await expect.poll(() => playback(hero)).toBe('playing')
@@ -96,6 +108,8 @@ test('entrance animations play again each time they come back into view', async 
 
 test('the page scrolls freely: no section pulls it back', async ({ page }) => {
   await page.goto('/')
+  // Cordes montées une par tâche : la page a sa hauteur finale une fois la dernière arrivée
+  await expect(page.locator('#rejoindre')).toBeAttached()
   // Aucun accrochage vertical : seules les bandes horizontales en ont
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('none')
   const snapping = await page.locator('section, footer').evaluateAll((elements) => elements.filter((element) => getComputedStyle(element).scrollSnapAlign !== 'none').length)

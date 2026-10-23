@@ -134,7 +134,7 @@ jobs:
           docker run --rm skull-darts-71:ci sh -c 'ls -a /app; test ! -e /app/.env.local && test ! -e /app/.env.dev.local && test -f /app/web/index.html'
 
   lighthouse:
-    name: Lighthouse (100, performance ≥ 95)
+    name: Lighthouse (100)
     needs: web
     runs-on: ubuntu-latest
     steps:
@@ -150,7 +150,32 @@ jobs:
           name: web-dist
           path: web/dist
       # vite preview : routes de la SPA (/connexion…) servies comme en production ; ses appels
-      # d'API vont au bouchon (web/lighthouse/api-stub.mjs), lancé avec lui par lighthouserc.json
-      - run: npx --yes @lhci/cli@0.15.x autorun
+      # d'API vont au bouchon (web/lighthouse/api-stub.mjs). Lancés une fois pour toute la mesure.
+      - name: Serveurs de la mesure
+        run: |
+          node web/lighthouse/api-stub.mjs &
+          npm --prefix web run preview -- --port 4173 --strictPort &
+          timeout 60 bash -c 'until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done'
         env:
           VITE_API_PROXY: http://127.0.0.1:8787
+      # Premier passage sur une machine neuve (Chrome, Node et disque froids) : toujours bien plus lent
+      # que les suivants (0,71 à 0,80 contre 0,99 à 1 sur la même page, quatre CI de suite). Il prépare la
+      # machine et n'est pas compté ; les trois passages de chaque page qui suivent le sont, le pire décide.
+      - name: Préchauffage (non compté)
+        run: |
+          npx --yes @lhci/cli@0.15.x collect --url=http://localhost:4173/ --numberOfRuns=1
+          node web/lighthouse/summary.mjs
+          rm -rf .lighthouseci
+      - run: npx --yes @lhci/cli@0.15.x autorun
+      - name: Résumé de chaque passage
+        if: always()
+        run: node web/lighthouse/summary.mjs
+      # Échec : tous les passages (seul le médian est publié), pour lire celui qui a échoué
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: lighthouse-runs
+          path: .lighthouseci/lhr-*.json
+          # Dossier caché, ignoré sans cette option
+          include-hidden-files: true
+          retention-days: 7

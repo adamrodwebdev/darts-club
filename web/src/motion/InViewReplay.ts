@@ -12,6 +12,8 @@ export const WELL_IN_VIEW: IntersectionObserverInit = { rootMargin: '-15% 0px -1
  */
 export class InViewReplay {
   private held: Animation[] = []
+  /** Retenue demandée, faite à l'image suivante (annulée si l'élément revient d'ici là) */
+  private holding = false
   private readonly observers: IntersectionObserver[]
 
   constructor(
@@ -36,8 +38,21 @@ export class InViewReplay {
     this.play()
   }
 
+  /**
+   * À l'image suivante : relever les animations met la page à jour (styles, mise en page) ;
+   * faite au moment où le navigateur le fait de toute façon, elle ne coûte pas une mise en page
+   * forcée de plus. Onglet en arrière-plan (pas d'images) : tout de suite.
+   */
   private hold(): void {
     if (!motionEnabled()) return
+    this.holding = true
+    if (document.visibilityState === 'visible') requestAnimationFrame(() => this.holdNow())
+    else this.holdNow()
+  }
+
+  private holdNow(): void {
+    if (!this.holding) return
+    this.holding = false
     this.held = timedAnimations(this.element)
     for (const animation of this.held) {
       animation.pause()
@@ -46,6 +61,7 @@ export class InViewReplay {
   }
 
   private play(): void {
+    this.holding = false
     for (const animation of this.held) animation.play()
     this.held = []
   }
