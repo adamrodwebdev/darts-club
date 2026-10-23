@@ -65,7 +65,9 @@
 - ✅ Accueil « manche de guitare » : on gratte de haut en bas d'une corde (section) à l'autre et on glisse de côté sur chacune (cartes du club, rendez-vous, onze parties de l'hymne) ; entrées en alternance gauche / droite liées au défilement. Accueil ramené de 6,1 à 5,2 écrans sur téléphone et de 5,6 à 4,2 sur ordinateur, rendez-vous passés compris
 - ✅ Carrousel 3D des rendez-vous ouverts à tous, du prochain au plus ancien (passés compris, annulés exclus) ; main « cornes » qui surgit au pied de page ; tout reste immobile si les animations sont coupées
 
-## 10. Performance (Lighthouse ≥ 95)
+## 10. Performance (Lighthouse 100)
+- ✅ Seuil Lighthouse relevé (2026-10-23) : 100 en accessibilité, bonnes pratiques et SEO sur le pire des 3 passages ; la CI mesure les pages publiques avec un bouchon d'API (réponses de la production pour un visiteur, plus d'erreur 502 en console)
+- À faire : performance 100 (aujourd'hui 96–97 : FCP ≈ 1,9 s, LCP ≈ 2,4 s en mobile simulé) : premier écran peint depuis le HTML statique, code chargé après le premier rendu, CSS critique en ligne (empreintes CSP générées au build)
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
 - ✅ Images à dimensions fixes (CLS = 0), photos WebP + vignettes en lazy loading, animations transform/opacity uniquement
 - ✅ Budget vérifié en CI : JS initial ≤ 150 Ko gzip (actuel ≈ 54 Ko), CSS ≤ 30 Ko, module à la demande ≤ 100 Ko

@@ -4,4 +4,4 @@
 - [ ] Tests ajoutés / à jour
 - [ ] PHPStan, CS-Fixer, ESLint OK
 - [ ] Impact sécurité / RGPD évalué
-- [ ] Lighthouse ≥ 95 conservé
+- [ ] Lighthouse : 100 en accessibilité, bonnes pratiques et SEO ; performance ≥ 95
