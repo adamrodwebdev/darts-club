@@ -17,14 +17,13 @@ const playback = useMediaPlayback(audio)
 const { playing, time, started, failed } = playback
 
 /**
- * Cartes des paroles rendues par paquets, un par tâche : leur mise en page (surtout du texte)
- * ne forme pas une seule tâche longue au chargement. Le premier paquet contient la carte la plus
- * haute : la bande a sa hauteur finale dès le début, rien ne bouge quand les suivantes arrivent.
+ * Cartes des paroles rendues par paquets, chacun dans sa propre image, après l'intro : leur mise
+ * en page (surtout du texte) ne forme pas une tâche longue au chargement. Le premier paquet
+ * contient la carte la plus haute : une fois là, la bande ne change plus de hauteur.
  */
-const FIRST_CARDS = 3
 const CARDS_PER_TASK = 3
-const batches = useStages(Math.ceil((SONG.sections.length - FIRST_CARDS) / CARDS_PER_TASK), { all: false })
-const sections = computed(() => SONG.sections.slice(0, FIRST_CARDS + batches.value * CARDS_PER_TASK))
+const batches = useStages(Math.ceil(SONG.sections.length / CARDS_PER_TASK), { all: false })
+const sections = computed(() => SONG.sections.slice(0, batches.value * CARDS_PER_TASK))
 
 /** Indications de jeu d'une partie instrumentale, dans la langue courante */
 function directions(key: InstrumentalKey): string[] {
