@@ -25,9 +25,12 @@
   --tc-metal: linear-gradient(180deg, #2a2a30 0%, #55555f 45%, #0b0b0d 52%, #3a3a42 100%);
 }
 
-/* Plus grand que tout ce que le site peint ensuite : il reste l'élément principal du premier affichage */
+/*
+ * Plus grand que tout ce que le site peint ensuite, y compris l'écusson de la cible au début de
+ * son intro (échelle 1,22) : il reste l'élément principal du premier affichage.
+ */
 .title-card__logo {
-  width: min(78vw, 46svh, 28rem);
+  width: min(92vw, 52svh, 30rem);
   height: auto;
   border-radius: 50%;
   box-shadow: 0 1.5rem 2.5rem rgb(0 0 0 / 0.5);

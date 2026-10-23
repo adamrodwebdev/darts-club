@@ -44,7 +44,7 @@
 		header @other Cache-Control "no-cache"
 
 		header {
-			Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-3bfSnBFBSEZLh3JBULgCCFhdAI+P+orU0+xQBCgnQmo=' 'sha256-zZTt4bBHZ6K3utXiPgFX3i9VrKUB6BNSJU6sL98kSdo='; style-src 'self' 'sha256-wvzFYQqq+be7GzOPsdjSQCnFbRV7ndYGFh1oLW4vFsU='; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+			Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-3bfSnBFBSEZLh3JBULgCCFhdAI+P+orU0+xQBCgnQmo=' 'sha256-zZTt4bBHZ6K3utXiPgFX3i9VrKUB6BNSJU6sL98kSdo='; style-src 'self' 'sha256-Adt85b8YRQRtycBLV9sHG9wpLm2lPWLZ5R8uL3Gw+ws='; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 			X-Frame-Options "DENY"
 			Cross-Origin-Opener-Policy "same-origin"
 		}
