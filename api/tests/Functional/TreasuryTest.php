@@ -67,6 +67,12 @@ final class TreasuryTest extends ApiTestCase
         self::assertResponseIsSuccessful();
         self::assertSame('impayee', $this->dig($this->json(), 'status', 'id'));
         self::assertSame('0.00', $this->json()['paid']);
+
+        // Chaque mouvement est au journal, avec qui l'a fait
+        $trail = $this->auditTrail();
+        self::assertSame(['season.open', 'payment.record', 'payment.cancel'], array_column($trail, 'action'));
+        self::assertSame(['season' => '2026-2027', 'amount' => '30.00', 'reason' => 'Chèque sans provision'], $trail[2]['details']);
+        self::assertSame('alice', $trail[2]['target']);
     }
 
     public function testInvalidPaymentsAreRejected(): void

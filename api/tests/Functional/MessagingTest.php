@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\User;
 use App\Enum\Role;
 use App\Tests\ApiTestCase;
 
@@ -82,6 +83,44 @@ final class MessagingTest extends ApiTestCase
         self::assertCount(2, $items);
         self::assertSame('Oui, bien sûr.', $items[1]['body']);
         self::assertFalse($items[1]['mine']);
+    }
+
+    public function testAFormerHolderLosesTheMailboxTheyAnswered(): void
+    {
+        $this->createUser('member@example.com');
+        $treasurer = $this->createUser('treasurer@example.com');
+        $treasurer->grantRole(Role::Treasurer);
+        $this->entityManager()->flush();
+        $secret = $this->enableTwoFactor($treasurer);
+
+        $this->loginAs('member@example.com');
+        $this->postJson('/api/conversations', ['mailbox' => 'tresorier', 'subject' => 'Reçu', 'body' => 'Puis-je avoir un reçu ?']);
+        $id = $this->json()['id'];
+        self::assertIsString($id);
+
+        $this->switchTo('treasurer@example.com', $secret);
+        $this->postJson("/api/conversations/{$id}/messages", ['body' => 'Je te l\'envoie.']);
+        self::assertResponseStatusCodeSame(201);
+
+        // Le trésorier quitte sa fonction : le fil de la boîte ne lui appartient pas
+        $treasurer = $this->entityManager()->getRepository(User::class)->findOneBy(['email' => 'treasurer@example.com']);
+        self::assertInstanceOf(User::class, $treasurer);
+        $treasurer->revokeRole(Role::Treasurer);
+        $this->entityManager()->flush();
+        $this->switchTo('treasurer@example.com', $secret);
+
+        $this->client->request('GET', "/api/conversations/{$id}/messages");
+        self::assertResponseStatusCodeSame(403);
+        $this->client->request('GET', '/api/conversations');
+        self::assertSame([], $this->items());
+
+        // Ni notification des nouveaux messages ; l'adhérent garde son fil
+        $this->switchTo('member@example.com');
+        $this->postJson("/api/conversations/{$id}/messages", ['body' => 'Merci !']);
+        self::assertResponseStatusCodeSame(201);
+        self::assertEmailCount(0);
+        $this->client->request('GET', "/api/conversations/{$id}/messages");
+        self::assertCount(3, $this->items());
     }
 
     public function testOutsiderCannotReadOrReply(): void

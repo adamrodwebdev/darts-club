@@ -63,7 +63,18 @@
     "audit": {
       "intro": "Every presidency and administration action is recorded here and cannot be modified.",
       "by": "by {actor}",
-      "detail": "{key}: {value}"
+      "detail": "{key}: {value}",
+      "keys": {
+        "season": "Season",
+        "amount": "Amount",
+        "method": "Method",
+        "reason": "Reason",
+        "before": "Before",
+        "after": "After",
+        "created": "Created",
+        "author": "Author",
+        "recipients": "Recipients"
+      }
     }
   }
 }

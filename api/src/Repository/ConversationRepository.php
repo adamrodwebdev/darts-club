@@ -34,7 +34,8 @@ class ConversationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Conversations où l'adhérent participe, plus celles des boîtes du bureau qu'il gère.
+     * Fils directs où l'adhérent participe, fils qu'il a ouverts vers le bureau, plus ceux des boîtes
+     * du bureau qu'il gère aujourd'hui (MailboxAccess::canAccess).
      *
      * @param list<Mailbox> $managedMailboxes
      *
@@ -48,10 +49,11 @@ class ConversationRepository extends ServiceEntityRepository
             ->orderBy('c.lastMessageAt', 'DESC')
             ->setMaxResults($limit);
 
+        $visible = '(c.mailbox IS NULL AND p.id IS NOT NULL) OR c.requester = :user';
         if ([] === $managedMailboxes) {
-            $qb->andWhere('p.id IS NOT NULL');
+            $qb->andWhere($visible);
         } else {
-            $qb->andWhere('p.id IS NOT NULL OR c.mailbox IN (:mailboxes)')
+            $qb->andWhere($visible.' OR c.mailbox IN (:mailboxes)')
                 ->setParameter('mailboxes', array_map(static fn (Mailbox $m): string => $m->value, $managedMailboxes));
         }
 

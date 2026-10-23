@@ -2,6 +2,8 @@
 
 namespace App\ClubEvent;
 
+use App\Admin\AuditEntry;
+use App\Admin\AuditTrail;
 use App\Entity\ClubEvent;
 use App\Entity\User;
 use App\Security\TokenGenerator;
@@ -18,6 +20,7 @@ final class ClubEvents
         private readonly EntityManagerInterface $em,
         private readonly ClockInterface $clock,
         private readonly TokenGenerator $tokens,
+        private readonly AuditTrail $audit,
     ) {
     }
 
@@ -43,9 +46,11 @@ final class ClubEvents
         $this->em->flush();
     }
 
-    public function cancel(ClubEvent $event, string $reason): void
+    /** Tous les inscrits sont prévenus : l'annulation est inscrite au journal, avec son motif */
+    public function cancel(ClubEvent $event, string $reason, User $organizer): void
     {
         $event->cancel($reason);
+        $this->audit->record($organizer, new AuditEntry('event.cancel', $event->getTitle(), ['reason' => (string) $event->getCancelReason()]));
         $this->em->flush();
     }
 

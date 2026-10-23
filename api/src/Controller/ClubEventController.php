@@ -87,10 +87,10 @@ final class ClubEventController extends AbstractController
 
     #[Route('/api/events/{id}/cancel', name: 'events_cancel', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
     #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
-    public function cancel(ClubEvent $event, Request $request): Response
+    public function cancel(ClubEvent $event, Request $request, #[CurrentUser] User $organizer): Response
     {
         $reason = $request->toArray()['reason'] ?? '';
-        DomainCall::run(fn () => $this->events->cancel($event, \is_string($reason) ? $reason : ''));
+        DomainCall::run(fn () => $this->events->cancel($event, \is_string($reason) ? $reason : '', $organizer));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

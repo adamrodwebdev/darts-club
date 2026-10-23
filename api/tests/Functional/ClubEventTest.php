@@ -189,10 +189,14 @@ final class ClubEventTest extends ApiTestCase
         self::assertSame('alice', $this->dig($this->json(), 'posts', 0, 'author', 'displayName'));
         self::assertFalse($this->dig($this->json(), 'posts', 0, 'mine'));
 
-        // La secrétaire modère
+        // La secrétaire modère : inscrit au journal, contrairement au retrait par l'auteur
         $this->loginAsSecretaryAgain();
         $this->client->request('DELETE', "/api/event-photos/{$photoId}", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
         self::assertResponseStatusCodeSame(204);
+        self::assertSame([['photo.delete', 'Soirée passée', ['author' => 'alice']]], array_map(
+            static fn (array $entry): array => [$entry['action'], $entry['target'], $entry['details']],
+            $this->auditTrail(),
+        ));
         unset($alice);
     }
 

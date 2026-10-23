@@ -50,6 +50,11 @@ class EventPhoto
         return null !== $this->uploader && $this->uploader->getId()->equals($user->getId());
     }
 
+    public function uploaderName(): string
+    {
+        return $this->uploaderName;
+    }
+
     public function getId(): Uuid
     {
         return $this->id;

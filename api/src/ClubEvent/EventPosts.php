@@ -2,6 +2,8 @@
 
 namespace App\ClubEvent;
 
+use App\Admin\AuditEntry;
+use App\Admin\AuditTrail;
 use App\Entity\ClubEvent;
 use App\Entity\EventPost;
 use App\Entity\User;
@@ -15,6 +17,7 @@ final class EventPosts
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly ClockInterface $clock,
+        private readonly AuditTrail $audit,
     ) {
     }
 
@@ -35,8 +38,14 @@ final class EventPosts
         return $post;
     }
 
-    public function delete(EventPost $post): void
+    /** Retiré par un organisateur plutôt que par son auteur : modération, inscrite au journal */
+    public function delete(EventPost $post, User $actor): void
     {
+        if (!$post->isWrittenBy($actor)) {
+            $this->audit->record($actor, new AuditEntry('post.delete', $post->getEvent()->getTitle(), [
+                'author' => $post->getAuthor()?->displayName()->value ?? '',
+            ]));
+        }
         $this->em->remove($post);
         $this->em->flush();
     }
