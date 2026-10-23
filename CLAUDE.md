@@ -30,15 +30,18 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - **Aucun texte en dur** : toute chaîne visible passe par `vue-i18n` (`src/i18n/locales/fr.json` + `en.json`, mêmes clés) ; dates, nombres et montants via `Intl` dans la langue courante. Couleurs uniquement via les jetons CSS (thèmes clair et sombre).
 
 ## Responsive design (obligatoire)
-- **Mobile-first** : styles de base pour ~360 px, puis `min-width` aux points de rupture `640 / 768 / 1024 / 1280 px`.
-- **Aucun défilement horizontal** de 320 px à 1920 px. Mises en page en **Grid/Flexbox**, largeurs fluides (`%`, `fr`, `clamp()`, `min()`), jamais de largeurs fixes en px pour les conteneurs.
-- **Typographie fluide** (`clamp()`), espacements en `rem`.
+- **Mobile-first** : styles de base pour ~360 px, puis des paliers `width >=` en `rem` (`40 / 48 / 64 / 80rem` = 640 / 768 / 1024 / 1280 px à 16 px), en syntaxe d'intervalle (`@media (width >= 48rem)`), placés là où le contenu casse. Jamais de requête en px : les paliers suivent la taille de texte de l'utilisateur.
+- **Intrinsèque d'abord** : grilles `repeat(auto-fit, minmax(min(100%, 16rem), 1fr))`, flex qui passe à la ligne, `min()` / `clamp()`. Les **composants** s'adaptent à leur emplacement par **requêtes de conteneur** (nommées : `container: event-card / inline-size`) ; les requêtes média ne servent qu'au squelette de page et aux préférences (`prefers-*`, `pointer`, hauteur).
+- **Aucun défilement horizontal** de 320 px à 2560 px, vérifié automatiquement (`e2e/responsive.spec.ts`, 17 largeurs, éléments en cause nommés). Largeurs fluides (`%`, `fr`, `clamp()`, `min()`), jamais de largeur fixe en px pour un conteneur, `100%` au lieu de `100vw`.
+- **Hauteur d'écran** : `svh` (stable) au lieu de `vh` ; `dvh` seulement pour une coque d'application (messagerie, dialogue).
+- **Typographie fluide** : `clamp(rem, rem + vw, rem)`, jamais de `vw` seul (le texte doit grossir avec le zoom), maximum ≤ 2,5 × minimum ; `text-wrap: balance` sur les titres. Espacements en `rem`. Champs de formulaire à 16 px au moins (sinon iOS zoome).
+- **En-tête collant** seulement si la hauteur le permet (`@media (height >= 40rem)`) et `scroll-padding-block-start` : le focus n'est jamais caché (WCAG 2.4.11), la page se réorganise à 320 × 256 (zoom 400 %, WCAG 1.4.10).
 - **Cibles tactiles ≥ 44 × 44 px**, pas d'interaction réservée au survol.
-- **Images responsives** : `srcset`/`sizes`, AVIF/WebP, `width`/`height` déclarés (CLS ≈ 0), `loading="lazy"` hors écran.
+- **Images responsives** : `srcset` avec un `sizes` exact (déduit du CSS), AVIF/WebP, `width`/`height` déclarés (CLS ≈ 0), `loading="lazy"` hors écran, jamais sur l'image principale.
 - Tableaux (trésorerie, membres) : vue en cartes sur mobile ou défilement contenu dans le tableau.
 - Navigation : menu compact accessible au clavier sur mobile.
 - Respect de `prefers-reduced-motion` et `prefers-color-scheme`.
-- **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800) ; Lighthouse ≥ 95 sur mobile.
+- **Tests** : Playwright exécute les parcours en viewports mobile (390×844) et desktop (1280×800), le balayage 320 → 2560 px et le test de réorganisation à 320 × 256 ; Lighthouse ≥ 95 sur mobile.
 
 ## Qualité et sécurité (rappel)
 - API : PHPStan niveau max, PHP-CS-Fixer, PHPUnit. Web : ESLint, oxlint, `vue-tsc`, Vitest, Playwright.

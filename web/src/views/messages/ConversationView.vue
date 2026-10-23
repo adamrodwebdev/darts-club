@@ -118,7 +118,7 @@ onUnmounted(stop)
 
 .chat__head h1 {
   margin: 0;
-  font-size: clamp(1.2rem, 4vw, 1.6rem);
+  font-size: clamp(1.2rem, 1.0857rem + 0.5714vw, 1.6rem);
   overflow-wrap: anywhere;
 }
 

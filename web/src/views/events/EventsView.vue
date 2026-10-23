@@ -184,9 +184,9 @@ select {
   list-style: none;
 }
 
-@media (min-width: 900px) {
+@media (width >= 56.25rem) {
   .list {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

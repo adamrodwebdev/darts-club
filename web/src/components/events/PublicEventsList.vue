@@ -75,6 +75,7 @@ onMounted(async () => {
 }
 
 .tile {
+  container: public-event-tile / inline-size;
   display: flex;
   gap: 1rem;
   align-items: center;
@@ -101,7 +102,7 @@ onMounted(async () => {
 
 .tile__poster {
   flex: none;
-  width: clamp(4rem, 20vw, 5.5rem);
+  width: clamp(4rem, 20cqi, 5.5rem);
   height: auto;
   max-height: 7.5rem;
   border-radius: calc(var(--radius) / 2);

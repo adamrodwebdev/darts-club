@@ -80,7 +80,7 @@ async function deleteCurrent(): Promise<void> {
         <img
           :src="current.largeUrl"
           :srcset="`${current.thumbUrl} 480w, ${current.largeUrl} 1600w`"
-          sizes="(max-width: 600px) 100vw, 900px"
+          sizes="(min-width: 32.5rem) 27.5rem, calc(100vw - 4.5rem)"
           :alt="current.caption ?? t('events.gallery.photoBy', { name: current.uploader })"
           :width="current.width"
           :height="current.height"
