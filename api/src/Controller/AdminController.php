@@ -80,6 +80,7 @@ final class AdminController extends AbstractController
                 'admin' => \in_array(Role::Admin, $u->assignedRoles(), true),
                 'badges' => $badges->present($u),
                 'verified' => $u->isVerified(),
+                'approved' => $u->isApproved(),
                 'twoFactorEnabled' => $u->hasTwoFactor(),
                 'suspended' => $u->isSuspended(),
                 'suspensionReason' => $u->suspensionReason(),
@@ -103,6 +104,15 @@ final class AdminController extends AbstractController
         }
 
         $administration->changeBoardRoles($actor, $member, $roles);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    /** Nouveau compte confirmé : l'espace membres lui est ouvert (président et administrateur) */
+    #[Route('/members/{id}/approve', name: 'member_approve', requirements: ['id' => self::UUID], methods: ['POST'])]
+    public function approve(User $member, #[CurrentUser] User $actor, MemberAdministration $administration): Response
+    {
+        $administration->approve($actor, $member);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

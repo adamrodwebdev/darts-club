@@ -15,3 +15,5 @@
 'message.to_mailbox': '%author% → %mailbox%'
 'message.to_mailbox_with_subject': '%author% → %mailbox%: %subject%'
 'message.body': '%preview%'
+'member.pending.title': 'New account to approve: %name%'
+'member.pending.body': '%email% confirmed their address. Approve the account from Administration › Members.'

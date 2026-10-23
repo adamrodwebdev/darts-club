@@ -8,7 +8,7 @@ import { useServices } from '@/services'
 
 const services = useServices()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const entries = ref<AuditEntry[]>([])
 const load = useAsyncAction()
 
@@ -17,9 +17,14 @@ onMounted(async () => {
   if (list) entries.value = list
 })
 
+/** Nom d'un détail dans la langue courante (« reason » → « Motif »), sinon la clé telle quelle */
+function detailName(key: string): string {
+  return te(`admin.audit.keys.${key}`) ? t(`admin.audit.keys.${key}`) : key
+}
+
 function details(entry: AuditEntry): string {
   return Object.entries(entry.details)
-    .map(([key, value]) => t('admin.audit.detail', { key, value: String(value ?? '—') }))
+    .map(([key, value]) => t('admin.audit.detail', { key: detailName(key), value: String(value ?? '—') }))
     .join(' · ')
 }
 </script>

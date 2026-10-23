@@ -26,7 +26,10 @@
       "suspendHint": "They are signed out immediately and can no longer sign in or be contacted. This can be undone and is logged.",
       "reason": "Reason",
       "suspended": "{name} has been suspended and signed out.",
-      "reactivated": "{name} has been reactivated."
+      "reactivated": "{name} has been reactivated.",
+      "pending": "Waiting for approval",
+      "approve": "Approve",
+      "approved": "{name} can now use the members’ area."
     },
     "broadcast": {
       "title": "New message",
@@ -63,7 +66,19 @@
     "audit": {
       "intro": "Every presidency and administration action is recorded here and cannot be modified.",
       "by": "by {actor}",
-      "detail": "{key}: {value}"
+      "detail": "{key}: {value}",
+      "keys": {
+        "season": "Season",
+        "amount": "Amount",
+        "method": "Method",
+        "reason": "Reason",
+        "before": "Before",
+        "after": "After",
+        "created": "Created",
+        "author": "Author",
+        "recipients": "Recipients",
+        "name": "Name"
+      }
     }
   }
 }

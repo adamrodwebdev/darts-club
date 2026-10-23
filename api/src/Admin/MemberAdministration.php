@@ -10,8 +10,9 @@ use Symfony\Component\Clock\ClockInterface;
 /**
  * Gestion des membres par le président (et l'admin technique).
  * Règles : on ne se retire pas soi-même la présidence ni ne se suspend
- * (pas de verrouillage accidentel) ; seul un admin gère le rôle admin
- * ou modère un admin.
+ * (pas de verrouillage accidentel) ; seul un admin gère le rôle admin,
+ * la présidence (nommer, retirer, modifier les rôles d'un président)
+ * et modère un admin ou un président.
  */
 final class MemberAdministration
 {
@@ -36,9 +37,7 @@ final class MemberAdministration
         if (!$member->isVerified()) {
             throw new AdministrationException('Le compte doit être vérifié avant de recevoir un rôle.');
         }
-        if ($member->getId()->equals($actor->getId()) && $member->hasRole(Role::President) && !\in_array(Role::President, $roles, true) && !$actor->hasRole(Role::Admin)) {
-            throw new AdministrationException('Tu ne peux pas te retirer toi-même la présidence : demande à un autre président ou à l\'admin.');
-        }
+        $this->assertPresidencyRules($actor, $member, \in_array(Role::President, $roles, true));
 
         $before = array_map(static fn (Role $r): string => $r->value, $member->assignedRoles());
         foreach (self::BOARD_ROLES as $role) {
@@ -55,6 +54,21 @@ final class MemberAdministration
         $this->em->flush();
     }
 
+    /** Ouvre l'espace membres à un compte confirmé ; le membre reçoit un email (MemberApproved). */
+    public function approve(User $actor, User $member): void
+    {
+        if (!$member->isVerified()) {
+            throw new AdministrationException('Le compte doit être vérifié avant d’être validé.');
+        }
+        if ($member->isApproved()) {
+            return;
+        }
+
+        $member->approve($this->clock->now());
+        $this->audit->record($actor, new AuditEntry('member.approve', $member->displayName()->value));
+        $this->em->flush();
+    }
+
     public function suspend(User $actor, User $member, string $reason): void
     {
         if ($member->getId()->equals($actor->getId())) {
@@ -62,6 +76,9 @@ final class MemberAdministration
         }
         if ($member->hasRole(Role::Admin) && !\in_array(Role::Admin, $actor->assignedRoles(), true)) {
             throw new AdministrationException('Seul un administrateur peut suspendre un administrateur.');
+        }
+        if ($member->hasRole(Role::President) && !$actor->hasRole(Role::Admin)) {
+            throw new AdministrationException('Seul l\'administrateur peut suspendre un président.');
         }
 
         try {
@@ -74,10 +91,37 @@ final class MemberAdministration
         $this->em->flush();
     }
 
+    /**
+     * La présidence vient d'un vote : seul l'administrateur la confie, la retire ou touche aux rôles
+     * d'un président. Un compte de président volé ne peut ainsi ni écarter l'autre président, ni
+     * nommer un complice. Un président garde la main sur ses propres rôles du bureau, sauf la présidence.
+     */
+    private function assertPresidencyRules(User $actor, User $member, bool $staysPresident): void
+    {
+        if ($actor->hasRole(Role::Admin)) {
+            return;
+        }
+
+        $isPresident = $member->hasRole(Role::President);
+        if ($member->getId()->equals($actor->getId())) {
+            if ($isPresident && !$staysPresident) {
+                throw new AdministrationException('Tu ne peux pas te retirer toi-même la présidence : demande à l\'administrateur.');
+            }
+
+            return;
+        }
+        if ($isPresident || $staysPresident) {
+            throw new AdministrationException('Seul l\'administrateur nomme un président ou modifie ses rôles.');
+        }
+    }
+
     public function reactivate(User $actor, User $member): void
     {
         if ($member->hasRole(Role::Admin) && !\in_array(Role::Admin, $actor->assignedRoles(), true)) {
             throw new AdministrationException('Seul un administrateur peut réactiver un administrateur.');
+        }
+        if ($member->hasRole(Role::President) && !$actor->hasRole(Role::Admin)) {
+            throw new AdministrationException('Seul l\'administrateur peut réactiver un président.');
         }
 
         $member->reactivate();

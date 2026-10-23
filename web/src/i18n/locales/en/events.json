@@ -115,7 +115,10 @@
     },
     "guests": {
       "title": "Guests without an account ({count})",
-      "privacy": "These addresses are only used for this event; they are deleted 30 days after it."
+      "privacy": "These addresses are only used for this event; they are deleted 30 days after it.",
+      "remove": "Remove",
+      "removeTitle": "Remove {name} from the guests?",
+      "removeNotice": "Their answer is deleted and their place freed. The action is recorded in the log."
     },
     "audience": {
       "title": "Announcement audience",

@@ -2,6 +2,8 @@
 
 namespace App\Membership;
 
+use App\Admin\AuditEntry;
+use App\Admin\AuditTrail;
 use App\Entity\Membership;
 use App\Entity\Payment;
 use App\Entity\User;
@@ -11,7 +13,10 @@ use App\Translation\InvalidValue;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
-/** Cas d'usage du trésorier. Les événements (MembershipPaid) partent après le flush. */
+/**
+ * Cas d'usage du trésorier. Les événements (MembershipPaid) partent après le flush ; chaque
+ * opération qui touche à l'argent ou aux données des adhérents est inscrite au journal.
+ */
 final class Treasury
 {
     public function __construct(
@@ -19,6 +24,7 @@ final class Treasury
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $em,
         private readonly ClockInterface $clock,
+        private readonly AuditTrail $audit,
     ) {
     }
 
@@ -32,8 +38,10 @@ final class Treasury
      *
      * @return int nombre de cotisations créées
      */
-    public function openSeason(Season $season, Money $amountDue): int
+    public function openSeason(SeasonFee $fee, User $treasurer): int
     {
+        $season = $fee->season;
+        $amountDue = $fee->amount;
         $existing = [];
         foreach ($this->memberships->forSeason($season) as $membership) {
             if (null !== $user = $membership->getUser()) {
@@ -48,27 +56,35 @@ final class Treasury
                 ++$created;
             }
         }
+        $this->audit->record($treasurer, new AuditEntry('season.open', $season->label(), ['amount' => $amountDue->toDecimal(), 'created' => $created]));
         $this->em->flush();
 
         return $created;
     }
 
-    public function openFor(User $user, Season $season, Money $amountDue): Membership
+    public function openFor(User $user, SeasonFee $fee, User $treasurer): Membership
     {
-        if (null !== $this->memberships->findOneFor($user, $season)) {
-            throw new InvalidValue('Une cotisation %season% existe déjà pour cet adhérent.', ['%season%' => (string) $season]);
+        if (null !== $this->memberships->findOneFor($user, $fee->season)) {
+            throw new InvalidValue('Une cotisation %season% existe déjà pour cet adhérent.', ['%season%' => (string) $fee->season]);
         }
 
-        $membership = Membership::open($user, new SeasonFee($season, $amountDue), $this->clock->now());
+        $membership = Membership::open($user, $fee, $this->clock->now());
         $this->em->persist($membership);
+        $this->audit->record($treasurer, new AuditEntry('membership.open', $membership->holderName(), ['season' => $fee->season->label(), 'amount' => $fee->amount->toDecimal()]));
         $this->em->flush();
 
         return $membership;
     }
 
-    public function changeAmountDue(Membership $membership, Money $amount): void
+    public function changeAmountDue(Membership $membership, Money $amount, User $treasurer): void
     {
+        $before = $membership->amountDue()->toDecimal();
         $membership->changeAmountDue($amount);
+        $this->audit->record($treasurer, new AuditEntry('membership.amount', $membership->holderName(), [
+            'season' => $membership->season()->label(),
+            'before' => $before,
+            'after' => $amount->toDecimal(),
+        ]));
         $this->em->flush();
     }
 
@@ -80,12 +96,30 @@ final class Treasury
         }
 
         $membership->recordPayment($details, $treasurer, $now);
+        $this->audit->record($treasurer, new AuditEntry('payment.record', $membership->holderName(), [
+            'season' => $membership->season()->label(),
+            'amount' => $details->amount->toDecimal(),
+            'method' => $details->method->value,
+        ]));
         $this->em->flush();
     }
 
-    public function cancelPayment(Payment $payment, string $reason): void
+    public function cancelPayment(Payment $payment, string $reason, User $treasurer): void
     {
-        $payment->getMembership()->cancelPayment($payment, $reason, $this->clock->now());
+        $membership = $payment->getMembership();
+        $membership->cancelPayment($payment, $reason, $this->clock->now());
+        $this->audit->record($treasurer, new AuditEntry('payment.cancel', $membership->holderName(), [
+            'season' => $membership->season()->label(),
+            'amount' => $payment->amount()->toDecimal(),
+            'reason' => (string) $payment->cancelReason(),
+        ]));
+        $this->em->flush();
+    }
+
+    /** Export des cotisations (données personnelles) : qui l'a téléchargé, et quand */
+    public function recordExport(Season $season, User $treasurer): void
+    {
+        $this->audit->record($treasurer, new AuditEntry('members.export', $season->label()));
         $this->em->flush();
     }
 

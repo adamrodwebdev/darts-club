@@ -83,6 +83,17 @@ async function confirmSuspend(): Promise<void> {
   }
 }
 
+async function approve(member: AdminMember): Promise<void> {
+  const ok = await action.run(async () => {
+    await services.admin.approve(member.id)
+    return true
+  })
+  if (ok) {
+    info.value = t('admin.members.approved', { name: member.displayName })
+    await refresh()
+  }
+}
+
 async function reactivate(member: AdminMember): Promise<void> {
   const ok = await action.run(async () => {
     await services.admin.reactivate(member.id)
@@ -110,6 +121,7 @@ async function reactivate(member: AdminMember): Promise<void> {
           <span class="muted">{{ m.email }}<template v-if="m.phone"> · {{ m.phone }}</template></span>
           <span class="tags">
             <span v-if="!m.verified" class="tag">{{ t('admin.members.unverified') }}</span>
+            <span v-else-if="!m.approved" class="tag tag--warn">{{ t('admin.members.pending') }}</span>
             <span v-if="m.admin" class="tag">{{ t('admin.members.admin') }}</span>
             <span v-if="m.roles.length && !m.twoFactorEnabled" class="tag tag--warn">{{ t('admin.members.twoFactorMissing') }}</span>
             <span class="tag">{{ t('admin.members.membershipTag', { status: membershipLabel(m.membership) }) }}</span>
@@ -117,6 +129,7 @@ async function reactivate(member: AdminMember): Promise<void> {
           </span>
         </div>
         <div class="member__actions">
+          <BaseButton v-if="m.verified && !m.approved" :pending="action.pending.value" @click="approve(m)">{{ t('admin.members.approve') }}</BaseButton>
           <BaseButton variant="ghost" :disabled="!m.verified" @click="editRoles(m)">{{ t('admin.members.roles') }}</BaseButton>
           <BaseButton v-if="m.suspended" variant="ghost" :pending="action.pending.value" @click="reactivate(m)">{{ t('admin.members.reactivate') }}</BaseButton>
           <BaseButton v-else variant="danger" @click="suspending = m">{{ t('admin.members.suspend') }}</BaseButton>

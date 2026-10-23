@@ -2,7 +2,9 @@
 
 namespace App\Tests;
 
+use App\Entity\AuditLog;
 use App\Entity\User;
+use App\Security\TwoFactor\BackupCodes;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\NewAccount;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,7 +44,8 @@ abstract class ApiTestCase extends WebTestCase
         return $this->service('clock', ClockInterface::class)->now();
     }
 
-    protected function createUser(string $email, bool $verified = true): User
+    /** Compte de test : confirmé et validé par le bureau, sauf demande contraire */
+    protected function createUser(string $email, bool $verified = true, bool $approved = true): User
     {
         $hasher = $this->service(PasswordHasherFactoryInterface::class, PasswordHasherFactoryInterface::class)
             ->getPasswordHasher(User::class);
@@ -52,6 +55,10 @@ abstract class ApiTestCase extends WebTestCase
         $user->releaseEvents();
         if ($verified) {
             $user->markVerified();
+            if ($approved) {
+                $user->approve($this->now());
+            }
+            $user->releaseEvents();
         }
 
         $em = $this->entityManager();
@@ -72,7 +79,7 @@ abstract class ApiTestCase extends WebTestCase
     {
         $secret = TOTP::generate()->getSecret();
         $user->startTotpEnrollment($secret);
-        $user->enableTotp($backupCodes);
+        $user->enableTotp($this->service(BackupCodes::class, BackupCodes::class)->hashes($backupCodes));
         $this->entityManager()->flush();
 
         return $secret;
@@ -111,9 +118,15 @@ abstract class ApiTestCase extends WebTestCase
         return $value;
     }
 
-    /** Connexion complète d'un compte protégé par 2FA. */
+    /**
+     * Connexion complète d'un compte protégé par 2FA. L'horloge des tests est figée : chaque
+     * connexion repart d'un compte dont aucun code n'a servi (codes à usage unique).
+     */
     protected function loginWithTwoFactor(string $email, string $secret): void
     {
+        $this->entityManager()->createQuery('UPDATE '.User::class.' u SET u.totpLastTimestep = NULL WHERE u.email = :email')
+            ->setParameter('email', $email)
+            ->execute();
         $this->login($email, self::PASSWORD);
         self::assertResponseStatusCodeSame(202);
         $this->postJson('/api/auth/2fa/check', ['code' => $this->totpCode($secret)]);
@@ -143,6 +156,14 @@ abstract class ApiTestCase extends WebTestCase
         self::assertIsArray($data);
 
         return $data;
+    }
+
+    /** @return list<array<string, mixed>> journal d'audit, du plus ancien au plus récent */
+    protected function auditTrail(): array
+    {
+        $logs = $this->entityManager()->getRepository(AuditLog::class)->findBy([], ['id' => 'ASC']);
+
+        return array_map(static fn (AuditLog $log): array => $log->toArray(), $logs);
     }
 
     protected function entityManager(): EntityManagerInterface

@@ -32,7 +32,10 @@
     "privacy": "Privacy",
     "notFound": "Page not found",
     "publicEvent": "Event",
-    "guestResponse": "My answer"
+    "guestResponse": "My answer",
+    "confirmEmail": "Confirm my address",
+    "forgotPassword": "Forgotten password",
+    "resetPassword": "New password"
   },
   "app": {
     "twoFactorBanner": "Board member: {link} to access the club tools.",
@@ -231,7 +234,9 @@
       "resend": "Resend the confirmation link",
       "resent": "If a pending account exists, a new link has just been sent.",
       "noAccount": "No account yet?",
-      "join": "Join the club"
+      "join": "Join the club",
+      "forgot": "Forgot your password?",
+      "resetSuccess": "Password changed: log in with the new one."
     },
     "register": {
       "title": "Join the club",
@@ -243,6 +248,26 @@
       "submit": "Create my account",
       "alreadyMember": "Already a member?",
       "login": "Log in"
+    },
+    "confirm": {
+      "title": "Confirm my address",
+      "intro": "Enter the password you chose when signing up: your account is activated and you are logged in.",
+      "submit": "Confirm and log in",
+      "notYou": "You didn’t choose this password, or you forgot it?",
+      "choosePassword": "Choose my password"
+    },
+    "forgot": {
+      "title": "Forgotten password",
+      "intro": "Enter your address: you will receive a link, valid for one hour, to choose a new password.",
+      "submit": "Send me the link",
+      "sent": "If an account exists with this address, the link is on its way. Check your spam folder too.",
+      "back": "Back to log in"
+    },
+    "reset": {
+      "title": "New password",
+      "password": "New password",
+      "submit": "Save",
+      "newLink": "Link expired? Ask for a new one"
     }
   },
   "notFound": {
@@ -302,7 +327,8 @@
       "member": {
         "roles": "Roles changed",
         "suspend": "Account suspended",
-        "reactivate": "Account reactivated"
+        "reactivate": "Account reactivated",
+        "approve": "Account approved"
       },
       "broadcast": {
         "send": "Message broadcast"
@@ -311,6 +337,32 @@
         "publish": "Announcement published",
         "edit": "Announcement edited",
         "delete": "Announcement deleted"
+      },
+      "payment": {
+        "record": "Payment recorded",
+        "cancel": "Payment cancelled"
+      },
+      "membership": {
+        "open": "Membership opened",
+        "amount": "Amount due changed"
+      },
+      "season": {
+        "open": "Season opened"
+      },
+      "members": {
+        "export": "Memberships exported"
+      },
+      "event": {
+        "cancel": "Event cancelled"
+      },
+      "photo": {
+        "delete": "Photo removed (moderation)"
+      },
+      "post": {
+        "delete": "Post removed (moderation)"
+      },
+      "guest": {
+        "remove": "Guest removed"
       }
     }
   }

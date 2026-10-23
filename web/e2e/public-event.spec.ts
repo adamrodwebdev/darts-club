@@ -149,6 +149,9 @@ test('the home carousel keeps track of every open event, the next one first', as
 
   await frets.getByRole('button', { name: 'Soirée cricket' }).click()
   await expect(frets.getByRole('button', { name: 'Soirée cricket' })).toHaveAttribute('aria-current', 'true')
-  await slides.nth(1).getByRole('link').click()
-  await expect(page).toHaveURL(new RegExp(`/e/${slug}$`))
+  // Le défilement doux peut encore centrer la carte : un clic trop tôt la recentre au lieu de l'ouvrir
+  await expect(async () => {
+    await slides.nth(1).getByRole('link').click()
+    await expect(page).toHaveURL(new RegExp(`/e/${slug}$`), { timeout: 1000 })
+  }).toPass({ timeout: 10_000 })
 })

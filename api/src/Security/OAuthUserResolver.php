@@ -52,8 +52,8 @@ final class OAuthUserResolver
             $user = User::registerViaOAuth($address, $language, $this->clock->now());
             $this->em->persist($user);
         } else {
-            // Le fournisseur prouve la possession de l'adresse
-            $user->verifyThroughProvider();
+            // Le fournisseur prouve la possession de l'adresse ; le titulaire est prévenu (ProviderLinked)
+            $user->linkProvider($profile->provider);
         }
 
         $this->em->persist(new OAuthIdentity(user: $user, provider: $profile->provider, subject: $profile->subject, now: $this->clock->now()));

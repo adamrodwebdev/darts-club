@@ -10,3 +10,5 @@ scheb_two_factor:
         leeway: 10
     backup_codes:
         enabled: true
+        # Empreintes HMAC à clé du serveur, anciens codes acceptés jusqu'à leur usage
+        manager: App\Security\TwoFactor\BackupCodes

@@ -37,7 +37,7 @@ final class NotifyOnMessagePosted
 
         $mailbox = $conversation->getMailbox();
         $recipients = [];
-        foreach ([...$conversation->participantUsers(), ...(null !== $mailbox ? $this->mailboxAccess->holdersOf($mailbox) : [])] as $user) {
+        foreach ($this->mailboxAccess->readersOf($conversation) as $user) {
             if (!$user->getId()->equals($author->getId())) {
                 $recipients[$user->getId()->toRfc4122()] = $user->getId();
             }

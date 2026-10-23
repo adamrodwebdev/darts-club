@@ -3,15 +3,17 @@
 namespace App\Controller;
 
 use App\Dto\EmailRequest;
+use App\Dto\PasswordConfirmation;
 use App\Dto\Registration;
 use App\Message\SendVerificationEmail;
 use App\Preference\Language;
 use App\Repository\UserRepository;
 use App\Security\ClientNetwork;
+use App\Security\EmailConfirmation;
 use App\Security\RequestThrottle;
 use App\Service\UserRegistrar;
+use App\Translation\Unprocessable;
 use App\ValueObject\EmailAddress;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,8 +24,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
-use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
+use Symfony\Component\Uid\Uuid;
 
 #[Route('/api/auth', name: 'auth_')]
 final class RegistrationController extends AbstractController
@@ -49,31 +50,37 @@ final class RegistrationController extends AbstractController
         return $this->accepted();
     }
 
-    /** Lien signé reçu par email. */
+    /**
+     * Lien reçu par email (cliqué tel quel) : renvoie vers la page de confirmation, qui demande le
+     * mot de passe choisi à l'inscription (EmailConfirmation). Les paramètres signés suivent.
+     */
     #[Route('/verify', name: 'verify', methods: ['GET'])]
-    public function verify(
+    public function verify(Request $request): RedirectResponse
+    {
+        return new RedirectResponse(rtrim($this->frontendUrl, '/').'/confirmer-email?'.$request->getQueryString());
+    }
+
+    /** Paramètres signés du lien dans l'adresse, mot de passe dans le corps ; renvoie l'email du compte (connexion). */
+    #[Route('/verify', name: 'verify_confirm', methods: ['POST'], format: 'json')]
+    public function confirm(
         Request $request,
+        #[MapRequestPayload(acceptFormat: 'json')] PasswordConfirmation $input,
         UserRepository $users,
-        VerifyEmailHelperInterface $verifyEmailHelper,
-        EntityManagerInterface $em,
-    ): RedirectResponse {
-        $user = $users->find($request->query->getString('id'));
+        EmailConfirmation $confirmation,
+        RateLimiterFactoryInterface $verificationConfirmLimiter,
+    ): JsonResponse {
+        // Le mot de passe se devine ici aussi : essais limités par origine et par compte
+        $this->requestThrottle->consume($verificationConfirmLimiter, (string) ClientNetwork::of($request));
+        $id = $request->query->getString('id');
+        $user = Uuid::isValid($id) ? $users->find($id) : null;
         if (null === $user) {
-            return $this->toFront('invalid');
+            throw new Unprocessable('Lien invalide ou expiré : demande un nouveau lien.');
         }
+        $this->requestThrottle->consume($verificationConfirmLimiter, $user->getId()->toRfc4122());
 
-        if (!$user->isVerified()) {
-            try {
-                $verifyEmailHelper->validateEmailConfirmationFromRequest($request, $user->getId()->toRfc4122(), $user->getEmail());
-            } catch (VerifyEmailExceptionInterface) {
-                return $this->toFront('invalid');
-            }
+        $confirmation->confirm($user, $request, $input->password);
 
-            $user->markVerified();
-            $em->flush();
-        }
-
-        return $this->toFront('success');
+        return $this->json(['email' => $user->getEmail()]);
     }
 
     #[Route('/verify/resend', name: 'verify_resend', methods: ['POST'], format: 'json')]
@@ -103,10 +110,5 @@ final class RegistrationController extends AbstractController
             ['message' => 'Si l\'adresse est valide, un email vient d\'être envoyé.'],
             Response::HTTP_ACCEPTED,
         );
-    }
-
-    private function toFront(string $status): RedirectResponse
-    {
-        return new RedirectResponse(rtrim($this->frontendUrl, '/').'/connexion?verify='.$status);
     }
 }

@@ -189,10 +189,14 @@ final class ClubEventTest extends ApiTestCase
         self::assertSame('alice', $this->dig($this->json(), 'posts', 0, 'author', 'displayName'));
         self::assertFalse($this->dig($this->json(), 'posts', 0, 'mine'));
 
-        // La secrétaire modère
+        // La secrétaire modère : inscrit au journal, contrairement au retrait par l'auteur
         $this->loginAsSecretaryAgain();
         $this->client->request('DELETE', "/api/event-photos/{$photoId}", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
         self::assertResponseStatusCodeSame(204);
+        self::assertSame([['photo.delete', 'Soirée passée', ['author' => 'alice']]], array_map(
+            static fn (array $entry): array => [$entry['action'], $entry['target'], $entry['details']],
+            $this->auditTrail(),
+        ));
         unset($alice);
     }
 
@@ -349,6 +353,49 @@ final class ClubEventTest extends ApiTestCase
         self::assertResponseStatusCodeSame(204, 'Se retirer reste possible (données effacées)');
         $this->tokenAction('lookup', 'x');
         self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testGuestNamesWaitForConfirmationAndOrganizersRemoveFakeGuests(): void
+    {
+        $this->loginAsSecretary();
+        $this->postJson('/api/events', self::payload(['public' => true, 'city' => 'Mâcon']));
+        $id = $this->digString($this->json(), 'id');
+        $slug = substr($this->digString($this->json(), 'publicPath'), 3);
+        $this->client->request('POST', '/api/auth/logout', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+
+        $this->guestAnswer($slug, ['name' => 'Zoé', 'email' => 'zoe@example.net']);
+        $this->tokenAction('confirm', (string) $this->linkSentTo('zoe@example.net'));
+        self::assertResponseIsSuccessful();
+
+        // Quelqu'un qui connaît son adresse renvoie le formulaire : sans l'email, il ne la renomme pas
+        $this->guestAnswer($slug, ['name' => 'Usurpateur', 'email' => 'zoe@example.net']);
+        self::assertResponseStatusCodeSame(202);
+
+        // Adresses jetables : au-delà du plafond du jour (3 en test, 30 en production), plus de confirmation
+        foreach (['bot-a', 'bot-b'] as $bot) {
+            $this->guestAnswer($slug, ['name' => 'Robot', 'email' => "{$bot}@example.net"]);
+            $this->tokenAction('confirm', (string) $this->linkSentTo("{$bot}@example.net"));
+            self::assertResponseIsSuccessful();
+        }
+        $this->guestAnswer($slug, ['name' => 'Robot', 'email' => 'bot-c@example.net']);
+        $this->tokenAction('confirm', (string) $this->linkSentTo('bot-c@example.net'));
+        self::assertResponseStatusCodeSame(429);
+
+        // L'organisatrice voit Zoé sous son nom et retire un faux invité (inscrit au journal)
+        $this->loginAsSecretaryAgain();
+        $this->client->request('GET', "/api/events/{$id}");
+        $guests = (array) $this->json()['guests'];
+        self::assertSame(['Zoé', 'Robot', 'Robot'], array_column($guests, 'name'));
+        $bot = $this->digString($guests, 1, 'id');
+
+        $this->client->request('DELETE', "/api/events/{$id}/guests/{$bot}", server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+        self::assertResponseStatusCodeSame(204);
+        $this->client->request('GET', "/api/events/{$id}");
+        self::assertCount(2, (array) $this->json()['guests']);
+        self::assertSame([['guest.remove', ['name' => 'Robot']]], array_map(
+            static fn (array $entry): array => [$entry['action'], $entry['details']],
+            $this->auditTrail(),
+        ));
     }
 
     public function testVisitorsDiscoverUpcomingPublicEventsOnly(): void

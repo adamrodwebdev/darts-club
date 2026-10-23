@@ -32,7 +32,7 @@ const canManage = ref(false)
 const load = useAsyncAction()
 
 async function refresh(): Promise<void> {
-  if (!auth.isAuthenticated) return
+  if (!auth.isMember) return
   const data = await load.run(() =>
     services.events.list({ period: period.value, season: season.value || undefined, q: search.value || undefined }),
   )
@@ -56,7 +56,7 @@ onMounted(refresh)
 
 <template>
   <!-- Visiteur sans compte : seulement les événements ouverts au public -->
-  <section v-if="!auth.isAuthenticated" class="page stack">
+  <section v-if="!auth.isMember" class="page stack">
     <h1>{{ t('events.list.title') }}</h1>
     <p class="muted">{{ t('publicEvents.intro') }}</p>
     <PublicEventsList />

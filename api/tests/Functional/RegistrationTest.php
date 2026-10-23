@@ -19,11 +19,44 @@ final class RegistrationTest extends ApiTestCase
         self::assertSame('+33612345678', $user->getPhone());
 
         self::assertEmailCount(1);
-        $this->client->request('GET', $this->verificationLink());
-        self::assertResponseRedirects('http://localhost:5173/connexion?verify=success');
+        $this->confirmAddress($this->verificationQuery(), self::PASSWORD);
+        self::assertResponseIsSuccessful();
+        self::assertSame('new.member@example.com', $this->json()['email']);
 
         $this->login('new.member@example.com', self::PASSWORD);
         self::assertResponseIsSuccessful();
+    }
+
+    public function testConfirmingNeedsThePasswordChosenAtSignUp(): void
+    {
+        $this->register('new@example.com');
+        $query = $this->verificationQuery();
+
+        // Le titulaire de l'adresse, s'il n'a pas choisi ce mot de passe, n'active pas le compte d'un autre
+        $this->confirmAddress($query, 'Un-Autre-Mot-De-Passe-2026');
+        self::assertResponseStatusCodeSame(422);
+        self::assertFalse($this->findUser('new@example.com')->isVerified());
+
+        // Un lien cliqué tel quel mène à la page qui demande le mot de passe
+        $this->client->request('GET', 'http://localhost:5173/api/auth/verify?'.$query);
+        self::assertResponseRedirects('http://localhost:5173/confirmer-email?'.$query);
+    }
+
+    public function testAnUnconfirmedAddressCanBeRegisteredAgainWithANewPassword(): void
+    {
+        // Quelqu'un inscrit l'adresse d'un autre avec son propre mot de passe…
+        $this->register('victim@example.com', password: 'Mot-De-Passe-Intrus-2026');
+        $this->client->setServerParameter('REMOTE_ADDR', '198.51.100.20');
+        // … le titulaire s'inscrit à son tour : son mot de passe remplace celui de l'intrus
+        $this->register('victim@example.com');
+        self::assertResponseStatusCodeSame(202);
+        $query = $this->verificationQuery();
+
+        $this->confirmAddress($query, 'Mot-De-Passe-Intrus-2026');
+        self::assertResponseStatusCodeSame(422);
+        $this->confirmAddress($query, self::PASSWORD);
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $this->users()->findAll());
     }
 
     public function testExistingEmailGetsSameResponseAndNoticeEmail(): void
@@ -56,8 +89,8 @@ final class RegistrationTest extends ApiTestCase
     public function testTamperedVerificationLinkIsRefused(): void
     {
         $this->register('new@example.com');
-        $this->client->request('GET', str_replace('signature=', 'signature=x', $this->verificationLink()));
-        self::assertResponseRedirects('http://localhost:5173/connexion?verify=invalid');
+        $this->confirmAddress(str_replace('signature=', 'signature=x', $this->verificationQuery()), self::PASSWORD);
+        self::assertResponseStatusCodeSame(422);
         self::assertFalse($this->findUser('new@example.com')->isVerified());
     }
 
@@ -96,17 +129,29 @@ final class RegistrationTest extends ApiTestCase
         ));
     }
 
-    private function verificationLink(): string
+    /** Paramètres signés du lien reçu (page /confirmer-email du site) */
+    private function verificationQuery(): string
     {
         $email = self::getMailerMessage();
         self::assertInstanceOf(TemplatedEmail::class, $email);
         $body = $email->getTextBody();
         self::assertIsString($body);
-        if (1 !== preg_match('#http\S+/api/auth/verify\?\S+#', $body, $match)) {
+        if (1 !== preg_match('#http\S+/confirmer-email\?(\S+)#', $body, $match)) {
             self::fail('Lien de vérification absent de l\'email.');
         }
 
-        return $match[0];
+        return $match[1];
+    }
+
+    /** La page renvoie les paramètres du lien et le mot de passe saisi */
+    private function confirmAddress(string $query, string $password): void
+    {
+        $this->client->request(
+            'POST',
+            'http://localhost:5173/api/auth/verify?'.$query,
+            server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ORIGIN' => self::FRONT_ORIGIN],
+            content: json_encode(['password' => $password], \JSON_THROW_ON_ERROR),
+        );
     }
 
     private function findUser(string $email): User

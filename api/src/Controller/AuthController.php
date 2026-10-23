@@ -20,8 +20,9 @@ final class AuthController extends AbstractController
         return $this->me($user, $view);
     }
 
+    /** Ouvert aux comptes pas encore validés : le site leur montre qu'ils attendent la validation */
     #[Route('/me', name: 'me', methods: ['GET'])]
-    #[IsGranted('ROLE_MEMBER')]
+    #[IsGranted('ROLE_USER')]
     public function me(#[CurrentUser] User $user, ProfileView $view): JsonResponse
     {
         return $this->json($view->of($user));

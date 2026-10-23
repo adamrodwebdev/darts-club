@@ -34,8 +34,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/** Son propre compte : ouvert dès la confirmation de l'adresse, avant la validation par le bureau */
 #[Route('/api/me', name: 'profile_', format: 'json')]
-#[IsGranted('ROLE_MEMBER')]
+#[IsGranted('ROLE_USER')]
 final class ProfileController extends AbstractController
 {
     private const MAX_AVATAR_BYTES = 2 * 1024 * 1024;

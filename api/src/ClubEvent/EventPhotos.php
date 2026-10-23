@@ -2,6 +2,8 @@
 
 namespace App\ClubEvent;
 
+use App\Admin\AuditEntry;
+use App\Admin\AuditTrail;
 use App\Entity\ClubEvent;
 use App\Entity\EventPhoto;
 use App\Entity\User;
@@ -22,6 +24,7 @@ final class EventPhotos
         private readonly ClockInterface $clock,
         private readonly EventPhotoFiles $files,
         private readonly EventPhotoRepository $photos,
+        private readonly AuditTrail $audit,
     ) {
     }
 
@@ -70,8 +73,12 @@ final class EventPhotos
         return $added;
     }
 
-    public function delete(EventPhoto $photo): void
+    /** Retirée par un organisateur plutôt que par son auteur : modération, inscrite au journal */
+    public function delete(EventPhoto $photo, User $actor): void
     {
+        if (!$photo->isUploadedBy($actor)) {
+            $this->audit->record($actor, new AuditEntry('photo.delete', $photo->getEvent()->getTitle(), ['author' => $photo->uploaderName()]));
+        }
         $this->em->remove($photo);
         $this->em->flush();
         $this->files->delete($photo);
