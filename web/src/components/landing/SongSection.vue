@@ -146,7 +146,7 @@ function announce(): void {
   font-size: 0.9rem;
 }
 
-/* Une partie de l'hymne : une carte de la corde, mise en avant pendant son écoute */
+/* Une partie de l'hymne : une carte de la corde, mise en avant pendant son écoute (anneau intérieur : la carte ne déborde pas de sa case) */
 .part {
   display: grid;
   gap: 0.4rem;
@@ -162,7 +162,7 @@ function announce(): void {
 
 .part--current {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 1px var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
 }
 
 .part__head {
