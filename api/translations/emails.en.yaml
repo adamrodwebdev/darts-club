@@ -30,3 +30,7 @@
 'guest.change': '(to change your mind, use the link you received when answering, or answer again from this page).'
 'guest.why': 'You receive this message because you answered this event on the Skull Darts 71 website.'
 'guest.privacy': 'Your name and email are only used for this event and are deleted 30 days after it.'
+'provider_linked.subject': '%provider% sign-in added to your account'
+'provider_linked.intro': 'Your Skull Darts 71 account now accepts sign-in with %provider%.'
+'provider_linked.not_you': 'If this wasn''t you, change your password and tell the board: someone has access to this %provider% account.'
+'provider_linked.button': 'My account security'

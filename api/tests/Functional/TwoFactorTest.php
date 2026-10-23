@@ -130,7 +130,11 @@ final class TwoFactorTest extends ApiTestCase
         $this->request('DELETE', '/api/me/2fa', ['code' => '000000']);
         self::assertResponseStatusCodeSame(422);
 
+        // Le code de la connexion a déjà servi : il ne désactive rien (usage unique)
         $this->request('DELETE', '/api/me/2fa', ['code' => $this->totpCode($secret)]);
+        self::assertResponseStatusCodeSame(422);
+
+        $this->request('DELETE', '/api/me/2fa', ['code' => 'AAAAA 11111']);
         self::assertResponseStatusCodeSame(204);
 
         $this->entityManager()->clear();

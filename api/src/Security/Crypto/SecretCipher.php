@@ -47,6 +47,15 @@ final class SecretCipher
         return $plaintext;
     }
 
+    /**
+     * Empreinte à clé (HMAC-SHA256, sous-clé dérivée pour cet usage) : sans la clé du serveur, une
+     * empreinte volée avec la base ne permet pas de retrouver la valeur en essayant toutes les possibilités.
+     */
+    public function keyedHash(string $value, string $purpose): string
+    {
+        return hash_hmac('sha256', $value, hash_hkdf('sha256', $this->key(), 32, $purpose));
+    }
+
     /** @return non-empty-string */
     private function key(): string
     {
