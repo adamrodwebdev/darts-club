@@ -1,4 +1,6 @@
+import { inject, type InjectionKey } from 'vue'
 import { ApiClient } from '@/api/ApiClient'
+import { systemClock, type Clock } from '@/time/Clock'
 import { AdminService } from './AdminService'
 import { AuthService } from './AuthService'
 import { EventService } from './EventService'
@@ -10,20 +12,40 @@ import { PushService } from './PushService'
 import { RealtimeClient } from './RealtimeClient'
 import { TreasuryService } from './TreasuryService'
 
-/** Composition des services de l'application (une instance chacun). */
-const api = new ApiClient()
-
-export const services = {
-  auth: new AuthService(api),
-  profile: new ProfileService(api),
-  notifications: new NotificationService(api),
-  messaging: new MessagingService(api),
-  push: new PushService(api),
-  realtime: new RealtimeClient(api),
-  treasury: new TreasuryService(api),
-  admin: new AdminService(api),
-  events: new EventService(api),
-  publicEvents: new PublicEventService(api),
+/** Dépendances remplaçables (tests) : client HTTP et horloge */
+export interface ServiceDependencies {
+  api?: ApiClient
+  clock?: Clock
 }
 
-export type Services = typeof services
+/**
+ * Racine de composition : une instance de chaque service, créée au démarrage
+ * (main.ts) puis fournie à l'application. Aucun service global : composants,
+ * composables et stores les reçoivent par useServices().
+ */
+export function createServices({ api = new ApiClient(), clock = systemClock }: ServiceDependencies = {}) {
+  return {
+    clock,
+    auth: new AuthService(api),
+    profile: new ProfileService(api),
+    notifications: new NotificationService(api),
+    messaging: new MessagingService(api),
+    push: new PushService(api),
+    realtime: new RealtimeClient(api),
+    treasury: new TreasuryService(api),
+    admin: new AdminService(api),
+    events: new EventService(api),
+    publicEvents: new PublicEventService(api),
+  }
+}
+
+export type Services = ReturnType<typeof createServices>
+
+export const SERVICES: InjectionKey<Services> = Symbol('services')
+
+/** Services de l'application (dans un setup, un composable ou un store). */
+export function useServices(): Services {
+  const services = inject(SERVICES)
+  if (!services) throw new Error('Services absents : app.provide(SERVICES, createServices()) dans main.ts')
+  return services
+}

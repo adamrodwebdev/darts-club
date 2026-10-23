@@ -5,7 +5,9 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { EventPhoto } from '@/models/ClubEvent'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const props = defineProps<{ eventId: string; photos: EventPhoto[]; canUpload: boolean; canManage: boolean }>()
 const emit = defineEmits<{ changed: [] }>()

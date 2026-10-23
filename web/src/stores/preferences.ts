@@ -3,10 +3,10 @@ import { computed, ref } from 'vue'
 import { i18n, loadLocaleMessages } from '@/i18n'
 import type { Locale } from '@/i18n/locales'
 import type { DisplayPreferences } from '@/models/Profile'
-import { localeController, motionController, themeController } from '@/preferences'
+import { usePreferenceControllers } from '@/preferences'
 import { MOTION_PREFERENCES, type Motion, type MotionPreference } from '@/preferences/MotionController'
 import { THEME_PREFERENCES, type Theme, type ThemePreference } from '@/preferences/ThemeController'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from './auth'
 
 /**
@@ -14,6 +14,8 @@ import { useAuthStore } from './auth'
  * navigateur et, une fois connecté, sur le compte (langue des emails et notifications).
  */
 export const usePreferencesStore = defineStore('preferences', () => {
+  const services = useServices()
+  const { theme: themeController, motion: motionController, locale: localeController } = usePreferenceControllers()
   const theme = ref<ThemePreference>(themeController.preference)
   const appliedTheme = ref<Theme>(themeController.apply(theme.value))
   themeController.onSystemChange(() => {

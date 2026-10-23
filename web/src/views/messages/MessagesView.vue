@@ -9,8 +9,10 @@ import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { ConversationSummary, Mailbox, Member } from '@/models/Conversation'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useNotificationStore } from '@/stores/notifications'
+
+const services = useServices()
 
 const { t } = useI18n()
 const router = useRouter()

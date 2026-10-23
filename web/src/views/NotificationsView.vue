@@ -15,7 +15,8 @@ onMounted(() => {
   if (!store.loaded) store.load().catch(() => undefined)
 })
 
-async function open(notification: AppNotification): Promise<void> {
+/** Notification de la liste (proxy réactif) : seuls les membres utilisés sont requis */
+async function open(notification: Pick<AppNotification, 'id' | 'read' | 'markRead' | 'link'>): Promise<void> {
   await store.markRead(notification).catch(() => undefined)
   if (notification.link?.startsWith('/')) await router.push(notification.link)
 }

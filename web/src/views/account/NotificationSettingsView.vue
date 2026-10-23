@@ -5,7 +5,9 @@ import BaseButton from '@/components/BaseButton.vue'
 import CalendarSubscription from '@/components/events/CalendarSubscription.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CATEGORIES, type OptionalChannel, type Preferences } from '@/models/Notification'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 

@@ -4,8 +4,10 @@ import { useI18n } from 'vue-i18n'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { Announcement } from '@/models/Admin'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useNotificationStore } from '@/stores/notifications'
+
+const services = useServices()
 
 const { t } = useI18n()
 const announcements = ref<Announcement[]>([])

@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n'
 import RelativeTime from '@/components/RelativeTime.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { auditLabel, type AuditEntry } from '@/models/Admin'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 const entries = ref<AuditEntry[]>([])

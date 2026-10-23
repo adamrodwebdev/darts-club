@@ -5,7 +5,9 @@ import { RouterLink } from 'vue-router'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { dateBlock, formatEventDate } from '@/models/ClubEvent'
 import type { PublicEvent } from '@/models/PublicEvent'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 /**
  * Événements ouverts au public à venir : visibles sans compte, chacun menant

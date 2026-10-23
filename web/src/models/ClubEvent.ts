@@ -14,6 +14,12 @@ export interface EventPoster {
 export type Attendance = 'je-viens' | 'pas-sur'
 export const ATTENDANCES: readonly Attendance[] = ['je-viens', 'pas-sur']
 
+/** Libellé de chaque réponse (clé de traduction) : une seule table, aucun test répété */
+export const ATTENDANCE_LABELS = {
+  'je-viens': 'events.answer.going',
+  'pas-sur': 'events.answer.maybe',
+} as const satisfies Record<Attendance, string>
+
 export function parseAttendance(value: unknown): Attendance {
   const answer = str(value, 'réponse')
   if (!(ATTENDANCES as readonly string[]).includes(answer)) throw new InvalidResponseError('réponse')
@@ -26,62 +32,89 @@ export function parsePoster(value: unknown): EventPoster | null {
   return { cardUrl: str(d.cardUrl), largeUrl: str(d.largeUrl), width: num(d.width), height: num(d.height) }
 }
 
+/** Champs d'un événement tels que l'API les décrit */
+export interface EventSummaryData {
+  id: string
+  title: string
+  location: string
+  startsAt: Date
+  endsAt: Date
+  season: string
+  cancelled: boolean
+  cancelReason: string | null
+  capacity: number | null
+  /** « je viens » (adhérents et invités confirmés) */
+  registered: number
+  /** « pas sûr » (adhérents et invités confirmés) */
+  maybe: number
+  isRegistered: boolean
+  myAnswer: Attendance | null
+  full: boolean
+  started: boolean
+  past: boolean
+  hasSummary: boolean
+  poster: EventPoster | null
+  isPublic: boolean
+  city: string | null
+  /** Page publique (« /e/… »), si l'événement est ouvert au public */
+  publicPath: string | null
+}
+
 export class EventSummary {
-  constructor(
-    readonly id: string,
-    readonly title: string,
-    readonly location: string,
-    readonly startsAt: Date,
-    readonly endsAt: Date,
-    readonly season: string,
-    readonly cancelled: boolean,
-    readonly cancelReason: string | null,
-    readonly capacity: number | null,
-    readonly registered: number,
-    readonly isRegistered: boolean,
-    readonly full: boolean,
-    readonly started: boolean,
-    readonly past: boolean,
-    readonly hasSummary: boolean,
-    readonly poster: EventPoster | null = null,
-    /** « pas sûr » (adhérents et invités confirmés) */
-    readonly maybe: number = 0,
-    readonly myAnswer: Attendance | null = null,
-    readonly isPublic: boolean = false,
-    readonly city: string | null = null,
-    /** Page publique (« /e/… »), si l'événement est ouvert au public */
-    readonly publicPath: string | null = null,
-  ) {}
+  declare readonly id: string
+  declare readonly title: string
+  declare readonly location: string
+  declare readonly startsAt: Date
+  declare readonly endsAt: Date
+  declare readonly season: string
+  declare readonly cancelled: boolean
+  declare readonly cancelReason: string | null
+  declare readonly capacity: number | null
+  declare readonly registered: number
+  declare readonly maybe: number
+  declare readonly isRegistered: boolean
+  declare readonly myAnswer: Attendance | null
+  declare readonly full: boolean
+  declare readonly started: boolean
+  declare readonly past: boolean
+  declare readonly hasSummary: boolean
+  declare readonly poster: EventPoster | null
+  declare readonly isPublic: boolean
+  declare readonly city: string | null
+  declare readonly publicPath: string | null
+
+  constructor(data: EventSummaryData) {
+    Object.assign(this, data)
+  }
 
   static parse(value: unknown): EventSummary {
     return EventSummary.fromJson(obj(value, 'événement'))
   }
 
   protected static fromJson(d: Json): EventSummary {
-    const capacity = d.capacity === null ? null : num(d.capacity)
-    return new EventSummary(
-      str(d.id),
-      str(d.title),
-      str(d.location),
-      new Date(str(d.startsAt)),
-      new Date(str(d.endsAt)),
-      str(d.season),
-      str(d.status) === 'annule',
-      optStr(d.cancelReason),
-      capacity,
-      num(d.registered),
-      bool(d.isRegistered),
-      bool(d.full),
-      bool(d.started),
-      bool(d.past),
-      bool(d.hasSummary),
-      parsePoster(d.poster),
-      typeof d.maybe === 'number' ? d.maybe : 0,
-      d.myAnswer === null || d.myAnswer === undefined ? null : parseAttendance(d.myAnswer),
-      d.public === true,
-      optStr(d.city),
-      optStr(d.publicPath),
-    )
+    return new EventSummary({
+      id: str(d.id),
+      title: str(d.title),
+      location: str(d.location),
+      startsAt: new Date(str(d.startsAt)),
+      endsAt: new Date(str(d.endsAt)),
+      season: str(d.season),
+      cancelled: str(d.status) === 'annule',
+      cancelReason: optStr(d.cancelReason),
+      capacity: d.capacity === null ? null : num(d.capacity),
+      registered: num(d.registered),
+      maybe: typeof d.maybe === 'number' ? d.maybe : 0,
+      isRegistered: bool(d.isRegistered),
+      myAnswer: d.myAnswer === null || d.myAnswer === undefined ? null : parseAttendance(d.myAnswer),
+      full: bool(d.full),
+      started: bool(d.started),
+      past: bool(d.past),
+      hasSummary: bool(d.hasSummary),
+      poster: parsePoster(d.poster),
+      isPublic: d.public === true,
+      city: optStr(d.city),
+      publicPath: optStr(d.publicPath),
+    })
   }
 
   get placesLeft(): number | null {

@@ -10,8 +10,10 @@ import { usePageHead } from '@/composables/useDocumentHead'
 import { useViewBeacon } from '@/composables/useViewBeacon'
 import { formatEventDate, type Attendance } from '@/models/ClubEvent'
 import type { PublicEvent } from '@/models/PublicEvent'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 /** Page publique d'un événement : réponse sans compte, confirmée par email. */
 const props = defineProps<{ slug: string }>()

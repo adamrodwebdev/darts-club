@@ -5,13 +5,16 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { formatEuro, type MembershipRecord, type Option } from '@/models/Membership'
-import { services } from '@/services'
+import { useServices } from '@/services'
+import { toDateInput } from '@/time/Clock'
+
+const services = useServices()
 
 const props = defineProps<{ membership: MembershipRecord; methods: Option[] }>()
 const emit = defineEmits<{ saved: [MembershipRecord]; close: [] }>()
 const { t } = useI18n()
 
-const today = new Date().toISOString().slice(0, 10)
+const today = toDateInput(services.clock.now())
 const amount = ref(props.membership.remaining)
 const method = ref(props.methods[0]?.id ?? 'especes')
 const paidAt = ref(today)

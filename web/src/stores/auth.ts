@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { ApiError } from '@/api/ApiError'
 import type { Profile } from '@/models/Profile'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import type { LoginResult, Registration } from '@/services/AuthService'
 
 export const useAuthStore = defineStore('auth', () => {
+  const services = useServices()
   const user = ref<Profile | null>(null)
   let initialization: Promise<void> | null = null
 

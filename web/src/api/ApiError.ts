@@ -1,16 +1,26 @@
 import { i18n } from '@/i18n'
 
+/** Détails facultatifs d'une erreur : violations par champ et code stable */
+export interface ApiErrorDetails {
+  violations?: Readonly<Record<string, string>>
+  /** Code stable fourni par l'API (« email_not_verified »…), indépendant de la langue */
+  code?: string | null
+}
+
 /** Erreur HTTP de l'API, avec les violations de validation par champ. */
 export class ApiError extends Error {
+  readonly violations: Readonly<Record<string, string>>
+  readonly code: string | null
+
   constructor(
     readonly status: number,
     message: string,
-    readonly violations: Readonly<Record<string, string>> = {},
-    /** Code stable fourni par l'API (« email_not_verified »…), indépendant de la langue */
-    readonly code: string | null = null,
+    { violations = {}, code = null }: ApiErrorDetails = {},
   ) {
     super(message)
     this.name = 'ApiError'
+    this.violations = violations
+    this.code = code
   }
 
   get isUnauthorized(): boolean {
@@ -46,7 +56,7 @@ export class ApiError extends Error {
 
     const code = typeof data.code === 'string' ? data.code : null
 
-    return new ApiError(status, message ?? ApiError.defaultMessage(status), violations, code)
+    return new ApiError(status, message ?? ApiError.defaultMessage(status), { violations, code })
   }
 
   private static defaultMessage(status: number): string {

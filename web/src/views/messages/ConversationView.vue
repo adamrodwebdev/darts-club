@@ -8,8 +8,10 @@ import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { ChatMessage, ConversationSummary } from '@/models/Conversation'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useNotificationStore } from '@/stores/notifications'
+
+const services = useServices()
 
 const props = defineProps<{ id: string }>()
 const { t } = useI18n()

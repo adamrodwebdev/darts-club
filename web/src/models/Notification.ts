@@ -9,18 +9,41 @@ export type CategoryId = (typeof CATEGORY_IDS)[number]
 export const CATEGORIES = CATEGORY_IDS.map((id) => labelled('category', id))
 export type OptionalChannel = 'email' | 'push'
 
+export interface AppNotificationData {
+  id: string
+  category: string
+  /** Libellé fourni par l'API (repli) */
+  apiLabel: string
+  title: string
+  body: string
+  link: string | null
+  createdAt: Date
+  read: boolean
+}
+
 export class AppNotification {
-  constructor(
-    readonly id: string,
-    readonly category: string,
-    /** Libellé fourni par l'API (repli) */
-    readonly apiLabel: string,
-    readonly title: string,
-    readonly body: string,
-    readonly link: string | null,
-    readonly createdAt: Date,
-    public read: boolean,
-  ) {}
+  declare readonly id: string
+  declare readonly category: string
+  declare readonly apiLabel: string
+  declare readonly title: string
+  declare readonly body: string
+  declare readonly link: string | null
+  declare readonly createdAt: Date
+  /** Lue : ne change que par markRead() (champ « privé » TypeScript, compatible avec la réactivité Vue) */
+  private wasRead: boolean
+
+  constructor({ read, ...data }: AppNotificationData) {
+    Object.assign(this, data)
+    this.wasRead = read
+  }
+
+  get read(): boolean {
+    return this.wasRead
+  }
+
+  markRead(): void {
+    this.wasRead = true
+  }
 
   /** Libellé de la catégorie dans la langue courante */
   get label(): string {
@@ -29,16 +52,16 @@ export class AppNotification {
 
   static parse(value: unknown): AppNotification {
     const d = obj(value, 'notification')
-    return new AppNotification(
-      str(d.id),
-      str(d.category),
-      str(d.label),
-      str(d.title),
-      str(d.body),
-      optStr(d.link),
-      new Date(str(d.createdAt)),
-      bool(d.read),
-    )
+    return new AppNotification({
+      id: str(d.id),
+      category: str(d.category),
+      apiLabel: str(d.label),
+      title: str(d.title),
+      body: str(d.body),
+      link: optStr(d.link),
+      createdAt: new Date(str(d.createdAt)),
+      read: bool(d.read),
+    })
   }
 }
 

@@ -21,37 +21,53 @@ function parsePreferences(value: unknown): DisplayPreferences | null {
 
 export const BOARD_ROLES = ['ROLE_SECRETARY', 'ROLE_TREASURER', 'ROLE_PRESIDENT', 'ROLE_ADMIN'] as const
 
+export interface ProfileData {
+  id: string
+  email: string
+  displayName: string
+  phone: string | null
+  avatarUrl: string | null
+  roles: readonly string[]
+  hasPassword: boolean
+  twoFactorEnabled: boolean
+  /** Membre du bureau sans 2FA : fonctions du club bloquées */
+  twoFactorSetupRequired: boolean
+  badges: readonly Badge[]
+  preferences: DisplayPreferences | null
+}
+
 export class Profile {
-  constructor(
-    readonly id: string,
-    readonly email: string,
-    readonly displayName: string,
-    readonly phone: string | null,
-    readonly avatarUrl: string | null,
-    readonly roles: readonly string[],
-    readonly hasPassword: boolean,
-    readonly twoFactorEnabled: boolean,
-    /** Membre du bureau sans 2FA : fonctions du club bloquées */
-    readonly twoFactorSetupRequired: boolean,
-    readonly badges: readonly Badge[] = [],
-    readonly preferences: DisplayPreferences | null = null,
-  ) {}
+  declare readonly id: string
+  declare readonly email: string
+  declare readonly displayName: string
+  declare readonly phone: string | null
+  declare readonly avatarUrl: string | null
+  declare readonly roles: readonly string[]
+  declare readonly hasPassword: boolean
+  declare readonly twoFactorEnabled: boolean
+  declare readonly twoFactorSetupRequired: boolean
+  declare readonly badges: readonly Badge[]
+  declare readonly preferences: DisplayPreferences | null
+
+  constructor(data: ProfileData) {
+    Object.assign(this, data)
+  }
 
   static parse(value: unknown): Profile {
     const d = obj(value, 'profil')
-    return new Profile(
-      str(d.id),
-      str(d.email),
-      str(d.displayName),
-      optStr(d.phone),
-      optStr(d.avatarUrl),
-      strList(d.roles),
-      bool(d.hasPassword),
-      bool(d.twoFactorEnabled),
-      bool(d.twoFactorSetupRequired),
-      parseBadges(d.badges),
-      parsePreferences(d.preferences),
-    )
+    return new Profile({
+      id: str(d.id),
+      email: str(d.email),
+      displayName: str(d.displayName),
+      phone: optStr(d.phone),
+      avatarUrl: optStr(d.avatarUrl),
+      roles: strList(d.roles),
+      hasPassword: bool(d.hasPassword),
+      twoFactorEnabled: bool(d.twoFactorEnabled),
+      twoFactorSetupRequired: bool(d.twoFactorSetupRequired),
+      badges: parseBadges(d.badges),
+      preferences: parsePreferences(d.preferences),
+    })
   }
 
   get initials(): string {

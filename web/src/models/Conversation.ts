@@ -22,27 +22,38 @@ function parseMailbox(value: unknown): Mailbox {
   return labelled('mailbox', str(d.id), str(d.label))
 }
 
+export interface ConversationSummaryData {
+  id: string
+  mailbox: Mailbox | null
+  subject: string | null
+  counterpart: Member | null
+  lastMessage: { preview: string; at: Date } | null
+  unread: number
+}
+
 export class ConversationSummary {
-  constructor(
-    readonly id: string,
-    readonly mailbox: Mailbox | null,
-    readonly subject: string | null,
-    readonly counterpart: Member | null,
-    readonly lastMessage: { preview: string; at: Date } | null,
-    public unread: number,
-  ) {}
+  declare readonly id: string
+  declare readonly mailbox: Mailbox | null
+  declare readonly subject: string | null
+  declare readonly counterpart: Member | null
+  declare readonly lastMessage: { preview: string; at: Date } | null
+  declare readonly unread: number
+
+  constructor(data: ConversationSummaryData) {
+    Object.assign(this, data)
+  }
 
   static parse(value: unknown): ConversationSummary {
     const d = obj(value, 'conversation')
     const last = d.lastMessage === null ? null : obj(d.lastMessage)
-    return new ConversationSummary(
-      str(d.id),
-      d.mailbox === null ? null : parseMailbox(d.mailbox),
-      optStr(d.subject),
-      d.with === null ? null : parseMember(d.with),
-      last === null ? null : { preview: str(last.preview), at: new Date(str(last.at)) },
-      num(d.unread),
-    )
+    return new ConversationSummary({
+      id: str(d.id),
+      mailbox: d.mailbox === null ? null : parseMailbox(d.mailbox),
+      subject: optStr(d.subject),
+      counterpart: d.with === null ? null : parseMember(d.with),
+      lastMessage: last === null ? null : { preview: str(last.preview), at: new Date(str(last.at)) },
+      unread: num(d.unread),
+    })
   }
 
   /** Titre affiché : l'autre adhérent, ou la boîte du bureau et le sujet. */
@@ -53,18 +64,28 @@ export class ConversationSummary {
   }
 }
 
+export interface ChatMessageData {
+  id: string
+  body: string
+  at: Date
+  mine: boolean
+  author: Member
+}
+
 export class ChatMessage {
-  constructor(
-    readonly id: string,
-    readonly body: string,
-    readonly at: Date,
-    readonly mine: boolean,
-    readonly author: Member,
-  ) {}
+  declare readonly id: string
+  declare readonly body: string
+  declare readonly at: Date
+  declare readonly mine: boolean
+  declare readonly author: Member
+
+  constructor(data: ChatMessageData) {
+    Object.assign(this, data)
+  }
 
   static parse(value: unknown): ChatMessage {
     const d = obj(value, 'message')
-    return new ChatMessage(str(d.id), str(d.body), new Date(str(d.at)), bool(d.mine), parseMember(d.author))
+    return new ChatMessage({ id: str(d.id), body: str(d.body), at: new Date(str(d.at)), mine: bool(d.mine), author: parseMember(d.author) })
   }
 }
 

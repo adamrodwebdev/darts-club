@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { AppNotification, parseRealtimeNotification } from '@/models/Notification'
-import { services } from '@/services'
+import { useServices } from '@/services'
 
 export const useNotificationStore = defineStore('notifications', () => {
+  const services = useServices()
   const items = ref<AppNotification[]>([])
   const unread = ref(0)
   const loaded = ref(false)
@@ -17,15 +18,16 @@ export const useNotificationStore = defineStore('notifications', () => {
     loaded.value = true
   }
 
-  async function markRead(notification: AppNotification): Promise<void> {
+  /** Ne dépend que de ce qu'elle utilise : une notification réactive (proxy Vue) convient aussi */
+  async function markRead(notification: Pick<AppNotification, 'id' | 'read' | 'markRead'>): Promise<void> {
     if (notification.read) return
-    notification.read = true
+    notification.markRead()
     unread.value = Math.max(0, unread.value - 1)
     await services.notifications.markRead(notification.id)
   }
 
   async function markAllRead(): Promise<void> {
-    items.value.forEach((n) => (n.read = true))
+    items.value.forEach((n) => n.markRead())
     unread.value = 0
     await services.notifications.markAllRead()
   }

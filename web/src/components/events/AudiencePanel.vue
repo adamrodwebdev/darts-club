@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CLUB_TIME_ZONE, formatDate, formatNumber } from '@/i18n/format'
 import type { EventAudience } from '@/models/EventAudience'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 /** Audience de l'annonce (administrateur uniquement, contrôlé par l'API) */
 const props = defineProps<{ eventId: string }>()

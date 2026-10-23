@@ -7,7 +7,9 @@ import BaseField from '@/components/BaseField.vue'
 import PosterField from '@/components/events/PosterField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { localInputToIso, toLocalInput, type EventPoster } from '@/models/ClubEvent'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 /** Création (sans id) ou modification d'un événement — organisateurs uniquement. */
 const props = defineProps<{ id?: string }>()

@@ -5,8 +5,10 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import type { TwoFactorSetup } from '@/services/AuthService'
-import { services } from '@/services'
+import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
+
+const services = useServices()
 
 const auth = useAuthStore()
 const { t } = useI18n()

@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 const feed = ref<{ url: string; webcal: string } | null>(null)

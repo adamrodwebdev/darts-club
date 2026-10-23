@@ -6,7 +6,9 @@ import BaseField from '@/components/BaseField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { formatDate } from '@/i18n/format'
 import { formatEuro, type MembershipRecord, type PaymentRecord } from '@/models/Membership'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const props = defineProps<{ payment: PaymentRecord }>()
 const emit = defineEmits<{ saved: [MembershipRecord]; close: [] }>()

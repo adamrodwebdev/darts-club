@@ -8,7 +8,9 @@ import MemberBadges from '@/components/MemberBadges.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { BOARD_ROLE_OPTIONS, type AdminMember } from '@/models/Admin'
-import { services } from '@/services'
+import { useServices } from '@/services'
+
+const services = useServices()
 
 const { t } = useI18n()
 
