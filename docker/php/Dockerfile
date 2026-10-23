@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Front : build Vite ---
-FROM node:24-alpine AS web-build
+FROM node:25-alpine AS web-build
 WORKDIR /web
 COPY web/package.json web/package-lock.json web/.npmrc ./
 RUN npm ci --no-audit --no-fund
