@@ -26,7 +26,8 @@ final class EventPhotos
     }
 
     /**
-     * Tous les fichiers sont vérifiés avant d'en enregistrer un seul : un envoi refusé ne laisse rien derrière lui.
+     * Tout ou rien : si une photo de l'envoi est refusée (format, dimensions), les fichiers déjà
+     * enregistrés pour les autres sont supprimés, l'envoi ne laisse rien derrière lui.
      *
      * @param list<UploadedFile> $files
      *
@@ -42,21 +43,29 @@ final class EventPhotos
         $uploads = array_map(ImageUpload::from(...), $files);
 
         $added = [];
-        foreach ($uploads as $upload) {
-            $stored = $this->files->store($upload);
-            $photo = new EventPhoto(
-                event: $event,
-                uploader: $uploader,
-                largeId: $stored->largeId,
-                thumbId: $stored->thumbId,
-                width: $stored->width,
-                height: $stored->height,
-                now: $now,
-            );
-            $this->em->persist($photo);
-            $added[] = $photo;
+        $stored = [];
+        try {
+            foreach ($uploads as $upload) {
+                $saved = $stored[] = $this->files->store($upload);
+                $photo = new EventPhoto(
+                    event: $event,
+                    uploader: $uploader,
+                    largeId: $saved->largeId,
+                    thumbId: $saved->thumbId,
+                    width: $saved->width,
+                    height: $saved->height,
+                    now: $now,
+                );
+                $this->em->persist($photo);
+                $added[] = $photo;
+            }
+            $this->em->flush();
+        } catch (\Throwable $e) {
+            foreach ($stored as $saved) {
+                $this->files->discard($saved);
+            }
+            throw $e;
         }
-        $this->em->flush();
 
         return $added;
     }

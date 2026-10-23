@@ -33,4 +33,11 @@ final class EventPhotoFiles
         $this->eventPhotoStorage->delete($photo->largeId());
         $this->eventPhotoStorage->delete($photo->thumbId());
     }
+
+    /** Fichiers enregistrés pour une photo finalement refusée (envoi interrompu) */
+    public function discard(StoredPhoto $photo): void
+    {
+        $this->eventPhotoStorage->delete($photo->largeId);
+        $this->eventPhotoStorage->delete($photo->thumbId);
+    }
 }
