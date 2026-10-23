@@ -154,3 +154,10 @@ jobs:
       - run: npx --yes @lhci/cli@0.15.x autorun
         env:
           VITE_API_PROXY: http://127.0.0.1:8787
+      # Échec : tous les passages (seul le médian est publié), pour lire celui qui a échoué
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: lighthouse-runs
+          path: .lighthouseci/lhr-*.json
+          retention-days: 7
