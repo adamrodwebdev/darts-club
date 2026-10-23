@@ -258,13 +258,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return $this->avatar;
     }
 
-    /** @return string|null identifiant de l'ancien avatar, à supprimer du stockage */
-    public function changeAvatar(?string $avatarId): ?string
+    /** Nouvel avatar (ou aucun) ; l'ancien (avatar()) reste à supprimer du stockage par l'appelant. */
+    public function changeAvatar(?string $avatarId): void
     {
-        $previous = $this->avatar;
         $this->avatar = $avatarId;
-
-        return $previous;
     }
 
     public function hasPassword(): bool

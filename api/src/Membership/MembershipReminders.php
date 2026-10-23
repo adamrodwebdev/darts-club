@@ -39,13 +39,13 @@ final class MembershipReminders
 
             $this->notifier->notify(
                 new TranslatedNotification(
-                    Category::Membership,
-                    new TranslatableMessage('membership.reminder_title', ['%season%' => (string) $season], 'notifications'),
-                    new TranslatableMessage('membership.reminder_body', [
+                    category: Category::Membership,
+                    title: new TranslatableMessage('membership.reminder_title', ['%season%' => (string) $season], 'notifications'),
+                    body: new TranslatableMessage('membership.reminder_body', [
                         '%amount%' => new LocalizedMoney($membership->remaining()),
                         '%date%' => new LocalizedDate($season->dueDate(), withTime: false),
                     ], 'notifications'),
-                    '/compte/cotisation',
+                    link: '/compte/cotisation',
                 ),
                 Recipients::users($user->getId()),
             );

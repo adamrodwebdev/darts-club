@@ -9,18 +9,26 @@ use App\Entity\GuestResponse;
 use App\Entity\Registration;
 use App\Entity\User;
 use App\Messaging\MessagingView;
+use App\Repository\EventPhotoRepository;
+use App\Repository\EventPostRepository;
+use Symfony\Component\Clock\ClockInterface;
 
 /** Représentations JSON du calendrier et des archives. */
 final class ClubEventView
 {
     public function __construct(
         private readonly MessagingView $members,
+        private readonly ClockInterface $clock,
+        private readonly EventPhotoRepository $photos,
+        private readonly EventPostRepository $posts,
     ) {
     }
 
     /** @return array<string, mixed> */
-    public function summary(ClubEvent $event, User $viewer, \DateTimeImmutable $now): array
+    public function summary(ClubEvent $event, User $viewer): array
     {
+        $now = $this->clock->now();
+
         return [
             'id' => $event->getId()->toRfc4122(),
             'title' => $event->getTitle(),
@@ -47,19 +55,20 @@ final class ClubEventView
     }
 
     /**
-     * @param list<EventPhoto> $photos
-     * @param list<EventPost>  $posts
+     * Fiche complète, avec les archives (photos, souvenirs).
+     *
+     * @param bool $canManage organisateur : participants et invités confirmés en plus
      *
      * @return array<string, mixed>
      */
-    public function detail(ClubEvent $event, User $viewer, \DateTimeImmutable $now, array $photos, array $posts, bool $canManage): array
+    public function detail(ClubEvent $event, User $viewer, bool $canManage): array
     {
-        return $this->summary($event, $viewer, $now) + [
+        return $this->summary($event, $viewer) + [
             'description' => $event->getDescription(),
             'organizer' => $event->getOrganizerName(),
             'summary' => $event->getSummary(),
             'canManage' => $canManage,
-            'photos' => array_map(static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)], $photos),
+            'photos' => array_map(static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)], $this->photos->forEvent($event)),
             'posts' => array_map(fn (EventPost $p): array => [
                 'id' => $p->getId()->toRfc4122(),
                 'body' => $p->getBody(),
@@ -68,7 +77,7 @@ final class ClubEventView
                 'author' => null !== $p->getAuthor()
                     ? $this->members->member($p->getAuthor())
                     : ['id' => null, 'displayName' => 'Ancien adhérent', 'avatarUrl' => null, 'badges' => []],
-            ], $posts),
+            ], $this->posts->forEvent($event)),
             // Organisateurs : qui vient, qui hésite (adhérents puis invités confirmés)
             'participants' => $canManage
                 ? array_map(fn (Registration $r): array => $this->members->member($r->getUser()) + ['answer' => $r->answer()->value], $event->registrations())

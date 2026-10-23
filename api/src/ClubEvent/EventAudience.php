@@ -3,7 +3,7 @@
 namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
-use App\Entity\User;
+use App\Entity\EventView;
 use App\Repository\ClubEventRepository;
 use App\Repository\EventViewRepository;
 use App\Security\TokenGenerator;
@@ -33,10 +33,9 @@ final class EventAudience
     ) {
     }
 
-    /** @param bool $organizer les organisateurs ne faussent pas leurs propres statistiques */
-    public function record(ClubEvent $event, ?User $viewer, bool $organizer, ?string $ip, string $userAgent): void
+    public function record(ClubEvent $event, PageVisit $visit): void
     {
-        if ($organizer || 1 === preg_match(self::BOTS, $userAgent) || (null === $viewer && (null === $ip || '' === $userAgent))) {
+        if (1 === preg_match(self::BOTS, $visit->userAgent) || (null === $visit->member && (null === $visit->ip || '' === $visit->userAgent))) {
             return;
         }
 
@@ -50,9 +49,13 @@ final class EventAudience
         }
         $key = (string) $event->audienceKey();
 
-        $subject = null !== $viewer ? 'member:'.$viewer->getId()->toRfc4122() : 'visitor:'.$ip.'|'.$userAgent;
-        $day = $now->setTimezone(new \DateTimeZone(ClubTime::TIMEZONE))->setTime(0, 0);
-        $this->views->recordOnce($event, hash_hmac('sha256', $subject, $key), null !== $viewer, $day);
+        $subject = null !== $visit->member ? 'member:'.$visit->member->getId()->toRfc4122() : 'visitor:'.$visit->ip.'|'.$visit->userAgent;
+        $this->views->recordOnce(new EventView(
+            event: $event,
+            visitorKey: hash_hmac('sha256', $subject, $key),
+            member: null !== $visit->member,
+            firstSeenOn: $now->setTimezone(new \DateTimeZone(ClubTime::TIMEZONE))->setTime(0, 0),
+        ));
     }
 
     /**

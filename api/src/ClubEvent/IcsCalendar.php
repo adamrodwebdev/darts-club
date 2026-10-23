@@ -3,6 +3,7 @@
 namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -13,6 +14,7 @@ final class IcsCalendar
         #[Autowire('%env(FRONTEND_URL)%')]
         private readonly string $frontendUrl,
         private readonly TranslatorInterface $translator,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -20,8 +22,9 @@ final class IcsCalendar
      * @param list<ClubEvent> $events
      * @param string          $locale langue de l'abonné (mentions d'annulation)
      */
-    public function render(array $events, string $name, \DateTimeImmutable $now, string $locale = 'fr'): string
+    public function render(array $events, string $name, string $locale = 'fr'): string
     {
+        $now = $this->clock->now();
         $lines = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',

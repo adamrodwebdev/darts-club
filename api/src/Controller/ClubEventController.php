@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\ClubEvent\ArchiveSearch;
 use App\ClubEvent\Attendance;
 use App\ClubEvent\ClubEvents;
 use App\ClubEvent\ClubEventView;
@@ -15,8 +16,6 @@ use App\Media\ImageStorage;
 use App\Media\InvalidImageException;
 use App\Membership\Season;
 use App\Repository\ClubEventRepository;
-use App\Repository\EventPhotoRepository;
-use App\Repository\EventPostRepository;
 use App\Security\RequestThrottle;
 use App\Security\Voter\ClubEventVoter;
 use App\Translation\InvalidValue;
@@ -60,29 +59,22 @@ final class ClubEventController extends AbstractController
 
         try {
             $items = 'past' === $period
-                ? $repository->past($now, null !== $season && '' !== $season ? Season::fromLabel($season) : null, mb_substr($q, 0, 80))
+                ? $repository->past($now, ArchiveSearch::fromQuery($season, $q))
                 : $repository->upcoming($now);
         } catch (\InvalidArgumentException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
 
         return $this->json([
-            'items' => array_map(fn (ClubEvent $e): array => $this->view->summary($e, $user, $now), $items),
+            'items' => array_map(fn (ClubEvent $e): array => $this->view->summary($e, $user), $items),
             'canManage' => $this->isGranted(ClubEventVoter::MANAGE),
         ]);
     }
 
     #[Route('/api/events/{id}', name: 'events_show', requirements: ['id' => self::UUID], methods: ['GET'], format: 'json')]
-    public function show(ClubEvent $event, #[CurrentUser] User $user, EventPhotoRepository $photos, EventPostRepository $posts): JsonResponse
+    public function show(ClubEvent $event, #[CurrentUser] User $user): JsonResponse
     {
-        return $this->json($this->view->detail(
-            $event,
-            $user,
-            $this->events->now(),
-            $photos->forEvent($event),
-            $posts->forEvent($event),
-            $this->isGranted(ClubEventVoter::MANAGE, $event),
-        ));
+        return $this->json($this->view->detail($event, $user, $this->isGranted(ClubEventVoter::MANAGE, $event)));
     }
 
     #[Route('/api/events', name: 'events_create', methods: ['POST'], format: 'json')]
@@ -91,7 +83,7 @@ final class ClubEventController extends AbstractController
     {
         $event = $this->guard(fn (): ClubEvent => $this->events->schedule($organizer, self::details($request)));
 
-        return $this->json($this->view->summary($event, $organizer, $this->events->now()), Response::HTTP_CREATED);
+        return $this->json($this->view->summary($event, $organizer), Response::HTTP_CREATED);
     }
 
     #[Route('/api/events/{id}', name: 'events_edit', requirements: ['id' => self::UUID], methods: ['PUT'], format: 'json')]
@@ -100,7 +92,7 @@ final class ClubEventController extends AbstractController
     {
         $this->guard(fn () => $this->events->edit($event, self::details($request)));
 
-        return $this->json($this->view->summary($event, $user, $this->events->now()));
+        return $this->json($this->view->summary($event, $user));
     }
 
     #[Route('/api/events/{id}/cancel', name: 'events_cancel', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
@@ -144,7 +136,7 @@ final class ClubEventController extends AbstractController
     #[Route('/api/events/{id}/calendar.ics', name: 'events_ics', requirements: ['id' => self::UUID], methods: ['GET'])]
     public function ics(ClubEvent $event, IcsCalendar $calendar, #[CurrentUser] User $user): Response
     {
-        return new Response($calendar->render([$event], 'Skull Darts 71', $this->events->now(), $user->language()->value), headers: [
+        return new Response($calendar->render([$event], 'Skull Darts 71', $user->language()->value), headers: [
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="evenement-skull-darts-71.ics"',
         ]);
@@ -275,14 +267,14 @@ final class ClubEventController extends AbstractController
         $capacity = $data['capacity'] ?? null;
 
         return new EventDetails(
-            $text('title'),
-            $text('description'),
-            $text('location'),
-            $date('startsAt'),
-            $date('endsAt'),
-            \is_int($capacity) ? $capacity : null,
-            true === ($data['public'] ?? false),
-            $text('city'),
+            title: $text('title'),
+            description: $text('description'),
+            location: $text('location'),
+            startsAt: $date('startsAt'),
+            endsAt: $date('endsAt'),
+            capacity: \is_int($capacity) ? $capacity : null,
+            public: true === ($data['public'] ?? false),
+            city: $text('city'),
         );
     }
 

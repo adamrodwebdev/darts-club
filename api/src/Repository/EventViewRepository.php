@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Doctrine\Types\UuidType;
-use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<EventView>
@@ -24,11 +23,11 @@ class EventViewRepository extends ServiceEntityRepository
      * Enregistre la première vue d'une personne ; les suivantes sont ignorées
      * par la base (contrainte d'unicité), sans erreur même en cas de requêtes simultanées.
      */
-    public function recordOnce(ClubEvent $event, string $visitorKey, bool $member, \DateTimeImmutable $day): void
+    public function recordOnce(EventView $view): void
     {
         $this->getEntityManager()->getConnection()->executeStatement(
             'INSERT INTO event_view (id, event_id, visitor_key, member, first_seen_on) VALUES (?, ?, ?, ?, ?) ON CONFLICT (event_id, visitor_key) DO NOTHING',
-            [Uuid::v7(), $event->getId(), $visitorKey, $member, $day],
+            [$view->getId(), $view->getEvent()->getId(), $view->visitorKey(), $view->isMember(), $view->firstSeenOn()],
             [UuidType::NAME, UuidType::NAME, Types::STRING, Types::BOOLEAN, Types::DATE_IMMUTABLE],
         );
     }

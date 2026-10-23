@@ -4,11 +4,8 @@ namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
 use App\Entity\GuestResponse;
-use App\Preference\Language;
 use App\Repository\GuestResponseRepository;
 use App\Security\TokenGenerator;
-use App\ValueObject\DisplayName;
-use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
@@ -28,17 +25,10 @@ final class GuestResponses
      * Enregistre la demande et envoie le lien de confirmation. Même effet visible
      * que l'adresse ait déjà répondu ou non : rien ne révèle qui participe.
      */
-    public function request(ClubEvent $event, string $name, string $email, Attendance $answer, Language $language): void
+    public function request(ClubEvent $event, GuestRequest $request): void
     {
         $token = $this->tokens->urlSafe(32);
-        $response = $event->requestGuestResponse(
-            DisplayName::fromString($name),
-            EmailAddress::fromString($email),
-            $answer,
-            GuestResponse::hashToken($token),
-            $language,
-            $this->clock->now(),
-        );
+        $response = $event->requestGuestResponse($request, GuestResponse::hashToken($token), $this->clock->now());
         $this->em->persist($response);
         $this->em->flush();
 

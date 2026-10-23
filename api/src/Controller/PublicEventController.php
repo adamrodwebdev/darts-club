@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\ClubEvent\GuestRequest;
 use App\ClubEvent\GuestResponses;
 use App\Entity\ClubEvent;
 use App\Entity\GuestResponse;
@@ -10,6 +11,8 @@ use App\Preference\Language;
 use App\Repository\ClubEventRepository;
 use App\Security\RequestThrottle;
 use App\Translation\Unprocessable;
+use App\ValueObject\DisplayName;
+use App\ValueObject\EmailAddress;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -118,13 +121,12 @@ final class PublicEventController extends AbstractController
         $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.$request->getClientIp());
         $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
 
-        $this->guard(fn () => $this->guests->request(
-            $event,
-            self::text($data, 'name'),
-            self::text($data, 'email'),
-            ClubEventController::attendance($data['answer'] ?? null),
-            Language::fromLocale($request->getLocale()),
-        ));
+        $this->guard(fn () => $this->guests->request($event, new GuestRequest(
+            name: DisplayName::fromString(self::text($data, 'name')),
+            email: EmailAddress::fromString(self::text($data, 'email')),
+            answer: ClubEventController::attendance($data['answer'] ?? null),
+            language: Language::fromLocale($request->getLocale()),
+        )));
 
         return $accepted;
     }

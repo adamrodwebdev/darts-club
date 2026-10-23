@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Admin\AdministrationException;
+use App\Admin\AuditEntry;
 use App\Admin\AuditTrail;
+use App\Admin\BroadcastAudience;
+use App\Admin\BroadcastDraft;
 use App\Admin\BroadcastLabel;
 use App\Admin\MemberAdministration;
 use App\Admin\PresidentialBroadcast;
@@ -138,21 +141,19 @@ final class AdminController extends AbstractController
         $label = BroadcastLabel::tryFrom(\is_string($data['label'] ?? null) ? $data['label'] : '')
             ?? throw new AdministrationException('Label inconnu (cotisation, evenement, reunion, annulation).');
 
-        $userIds = null;
+        $audience = BroadcastAudience::allMembers();
         if (\array_key_exists('userIds', $data) && null !== $data['userIds']) {
             if (!\is_array($data['userIds'])) {
                 throw new AdministrationException('« userIds » doit être une liste.');
             }
-            $userIds = array_values(array_filter($data['userIds'], 'is_string'));
+            $audience = BroadcastAudience::members(array_values(array_filter($data['userIds'], 'is_string')));
         }
 
-        $sent = $broadcast->send(
-            $president,
-            $label,
-            \is_string($data['title'] ?? null) ? $data['title'] : '',
-            \is_string($data['body'] ?? null) ? $data['body'] : '',
-            $userIds,
-        );
+        $sent = $broadcast->send($president, new BroadcastDraft(
+            label: $label,
+            title: \is_string($data['title'] ?? null) ? $data['title'] : '',
+            body: \is_string($data['body'] ?? null) ? $data['body'] : '',
+        ), $audience);
 
         return $this->json($sent->toArray(), Response::HTTP_CREATED);
     }
@@ -172,7 +173,7 @@ final class AdminController extends AbstractController
         }
 
         $this->em->persist($announcement);
-        $this->audit->record($president, 'announcement.publish', $announcement->getTitle());
+        $this->audit->record($president, new AuditEntry('announcement.publish', $announcement->getTitle()));
         $this->em->flush();
 
         return $this->json($announcement->toArray(), Response::HTTP_CREATED);
@@ -200,7 +201,7 @@ final class AdminController extends AbstractController
             true === $data['pinned'] ? $announcement->pin() : $announcement->unpin();
         }
 
-        $this->audit->record($president, 'announcement.edit', $announcement->getTitle());
+        $this->audit->record($president, new AuditEntry('announcement.edit', $announcement->getTitle()));
         $this->em->flush();
 
         return $this->json($announcement->toArray());
@@ -209,7 +210,7 @@ final class AdminController extends AbstractController
     #[Route('/announcements/{id}', name: 'announcement_delete', requirements: ['id' => self::UUID], methods: ['DELETE'])]
     public function deleteAnnouncement(Announcement $announcement, #[CurrentUser] User $president): Response
     {
-        $this->audit->record($president, 'announcement.delete', $announcement->getTitle());
+        $this->audit->record($president, new AuditEntry('announcement.delete', $announcement->getTitle()));
         $this->em->remove($announcement);
         $this->em->flush();
 

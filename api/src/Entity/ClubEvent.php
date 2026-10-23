@@ -8,16 +8,14 @@ use App\ClubEvent\ClubEventRescheduled;
 use App\ClubEvent\ClubEventScheduled;
 use App\ClubEvent\EventDetails;
 use App\ClubEvent\EventStatus;
+use App\ClubEvent\GuestRequest;
 use App\ClubEvent\Poster;
 use App\ClubEvent\RegistrationException;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Membership\Season;
-use App\Preference\Language;
 use App\Repository\ClubEventRepository;
 use App\Translation\InvalidValue;
-use App\ValueObject\DisplayName;
-use App\ValueObject\EmailAddress;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -177,12 +175,8 @@ class ClubEvent implements RecordsDomainEvents
         $this->recordThat(new ClubEventCancelled($this->id));
     }
 
-    /**
-     * Réponse d'un adhérent (ou changement d'avis). « Pas sûr » ne prend pas de place.
-     *
-     * @return Registration|null la nouvelle inscription, null si une réponse existante a changé
-     */
-    public function respond(User $member, Attendance $answer, \DateTimeImmutable $now): ?Registration
+    /** Réponse d'un adhérent (ou changement d'avis), enregistrée avec l'événement. « Pas sûr » ne prend pas de place. */
+    public function respond(User $member, Attendance $answer, \DateTimeImmutable $now): void
     {
         $this->assertOpenForResponses($now);
         $existing = $this->registrationOf($member);
@@ -191,27 +185,25 @@ class ClubEvent implements RecordsDomainEvents
         if (null !== $existing) {
             $existing->changeAnswer($answer);
 
-            return null;
+            return;
         }
 
-        $registration = new Registration($this, $member, $now, $answer);
-        $this->registrations->add($registration);
-
-        return $registration;
+        $this->registrations->add(new Registration(event: $this, user: $member, registeredAt: $now, answer: $answer));
     }
 
     /** Raccourci : « je viens » */
-    public function register(User $member, \DateTimeImmutable $now): ?Registration
+    public function register(User $member, \DateTimeImmutable $now): void
     {
-        return $this->respond($member, Attendance::Going, $now);
+        $this->respond($member, Attendance::Going, $now);
     }
 
     /**
      * Demande d'une personne sans compte (page publique). Rien ne compte avant confirmation.
+     * Fabrique : renvoie la réponse créée (à persister) ou réémise pour la même adresse.
      *
      * @param string $tokenHash empreinte du lien envoyé par email
      */
-    public function requestGuestResponse(DisplayName $name, EmailAddress $email, Attendance $answer, string $tokenHash, Language $language, \DateTimeImmutable $now): GuestResponse
+    public function requestGuestResponse(GuestRequest $request, string $tokenHash, \DateTimeImmutable $now): GuestResponse
     {
         if (!$this->public) {
             throw new RegistrationException('Cet événement n\'est pas ouvert au public.');
@@ -219,14 +211,14 @@ class ClubEvent implements RecordsDomainEvents
         $this->assertOpenForResponses($now);
 
         foreach ($this->guestResponses as $response) {
-            if ($response->isFor($email)) {
-                $response->reissue($name, $answer, $tokenHash, $language, $now);
+            if ($response->isFor($request->email)) {
+                $response->reissue($request, $tokenHash, $now);
 
                 return $response;
             }
         }
 
-        $response = new GuestResponse($this, $name, $email, $answer, $tokenHash, $language, $now);
+        $response = new GuestResponse(event: $this, request: $request, tokenHash: $tokenHash, now: $now);
         $this->guestResponses->add($response);
 
         return $response;
@@ -271,31 +263,21 @@ class ClubEvent implements RecordsDomainEvents
         }
     }
 
-    /**
-     * Pose (ou remplace) l'affiche.
-     *
-     * @return Poster|null l'affiche remplacée, dont les fichiers sont à supprimer
-     */
-    public function attachPoster(Poster $poster): ?Poster
+    /** Pose (ou remplace) l'affiche ; les fichiers de l'ancienne (poster()) restent à supprimer par l'appelant. */
+    public function attachPoster(Poster $poster): void
     {
         $this->assertScheduled();
-        $previous = $this->poster();
         $this->posterLargeId = $poster->largeId;
         $this->posterCardId = $poster->cardId;
         $this->posterWidth = $poster->width;
         $this->posterHeight = $poster->height;
-
-        return $previous;
     }
 
-    /** @return Poster|null l'affiche retirée, dont les fichiers sont à supprimer */
-    public function removePoster(): ?Poster
+    /** Retire l'affiche ; ses fichiers (poster()) restent à supprimer par l'appelant. */
+    public function removePoster(): void
     {
-        $previous = $this->poster();
         $this->posterLargeId = $this->posterCardId = null;
         $this->posterWidth = $this->posterHeight = null;
-
-        return $previous;
     }
 
     public function poster(): ?Poster
@@ -304,7 +286,7 @@ class ClubEvent implements RecordsDomainEvents
             return null;
         }
 
-        return new Poster($this->posterLargeId, $this->posterCardId, $this->posterWidth, $this->posterHeight);
+        return new Poster(largeId: $this->posterLargeId, cardId: $this->posterCardId, width: $this->posterWidth, height: $this->posterHeight);
     }
 
     public function writeSummary(string $summary): void

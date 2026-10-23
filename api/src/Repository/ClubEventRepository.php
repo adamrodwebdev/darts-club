@@ -2,9 +2,9 @@
 
 namespace App\Repository;
 
+use App\ClubEvent\ArchiveSearch;
 use App\ClubEvent\EventStatus;
 use App\Entity\ClubEvent;
-use App\Membership\Season;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -65,22 +65,22 @@ class ClubEventRepository extends ServiceEntityRepository
     }
 
     /** @return list<ClubEvent> archives, les plus récentes d'abord */
-    public function past(\DateTimeImmutable $now, ?Season $season = null, string $query = '', int $limit = 100): array
+    public function past(\DateTimeImmutable $now, ArchiveSearch $search): array
     {
         $qb = $this->createQueryBuilder('e')
             ->andWhere('e.endsAt < :now')
             ->setParameter('now', $now, 'datetimetz_immutable')
             ->orderBy('e.startsAt', 'DESC')
-            ->setMaxResults($limit);
+            ->setMaxResults($search->limit);
 
-        if (null !== $season) {
+        if (null !== $search->season) {
             $qb->andWhere('e.startsAt >= :from AND e.startsAt <= :to')
-                ->setParameter('from', $season->startsAt(), 'datetimetz_immutable')
-                ->setParameter('to', $season->endsAt(), 'datetimetz_immutable');
+                ->setParameter('from', $search->season->startsAt(), 'datetimetz_immutable')
+                ->setParameter('to', $search->season->endsAt(), 'datetimetz_immutable');
         }
-        if ('' !== trim($query)) {
+        if ('' !== $search->query) {
             $qb->andWhere('LOWER(e.title) LIKE :q OR LOWER(e.location) LIKE :q')
-                ->setParameter('q', '%'.addcslashes(mb_strtolower(trim($query)), '%_\\').'%');
+                ->setParameter('q', '%'.addcslashes(mb_strtolower($search->query), '%_\\').'%');
         }
 
         /** @var list<ClubEvent> $result */

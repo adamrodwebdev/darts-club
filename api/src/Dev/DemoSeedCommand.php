@@ -77,7 +77,8 @@ final class DemoSeedCommand
         $president = $this->member('president@demo.local', 'Patrick', Role::President);
         $treasurer = $this->member('tresorier@demo.local', 'Thierry', Role::Treasurer);
         $secretary = $this->member('secretaire@demo.local', 'Sandrine', Role::Secretary);
-        $alice = $this->member('alice@demo.local', 'Alice', null, '06 12 34 56 78');
+        $alice = $this->member('alice@demo.local', 'Alice');
+        $alice->changePhone(PhoneNumber::fromInput('06 12 34 56 78'));
         $bob = $this->member('bob@demo.local', 'Bob la Fléchette');
         $chloe = $this->member('chloe@demo.local', 'Chloé');
 
@@ -86,9 +87,9 @@ final class DemoSeedCommand
             $membership = Membership::open($user, new SeasonFee($season, Money::cents(3000)), $now);
             $this->keep($membership);
             if (\in_array($user, [$president, $treasurer, $secretary, $alice], true)) {
-                $membership->recordPayment(new PaymentDetails(Money::cents(3000), PaymentMethod::Transfer, $season->startsAt()->modify('+5 days'), 'Virement septembre'), $treasurer, $now);
+                $membership->recordPayment(new PaymentDetails(amount: Money::cents(3000), method: PaymentMethod::Transfer, paidAt: $season->startsAt()->modify('+5 days'), reference: 'Virement septembre'), $treasurer, $now);
             } elseif ($user === $bob) {
-                $membership->recordPayment(new PaymentDetails(Money::cents(1500), PaymentMethod::Cash, $season->startsAt()->modify('+12 days')), $treasurer, $now);
+                $membership->recordPayment(new PaymentDetails(amount: Money::cents(1500), method: PaymentMethod::Cash, paidAt: $season->startsAt()->modify('+12 days')), $treasurer, $now);
             }
         }
 
@@ -166,8 +167,8 @@ final class DemoSeedCommand
         $this->keep($toTreasury->post($bob, MessageBody::fromString('Je règle le reste de ma cotisation vendredi, en espèces.'), $now));
 
         // Centre de notifications d'Alice
-        $this->keep(new Notification($alice, new NotificationContent(Category::Event, 'Nouvel événement : Soirée fléchettes du vendredi', 'Bar du club', '/evenements/'.$friday->getId()->toRfc4122()), $now));
-        $this->keep(new Notification($alice, new NotificationContent(Category::Announcement, 'Bienvenue sur le nouveau site !', 'Tout le club au même endroit.', '/infos'), $now));
+        $this->keep(new Notification($alice, new NotificationContent(category: Category::Event, title: 'Nouvel événement : Soirée fléchettes du vendredi', body: 'Bar du club', link: '/evenements/'.$friday->getId()->toRfc4122()), $now));
+        $this->keep(new Notification($alice, new NotificationContent(category: Category::Announcement, title: 'Bienvenue sur le nouveau site !', body: 'Tout le club au même endroit.', link: '/infos'), $now));
 
         // Données de démo : aucun email ni notification à l'enregistrement
         foreach ($this->entities as $entity) {
@@ -192,10 +193,10 @@ final class DemoSeedCommand
         return Command::SUCCESS;
     }
 
-    private function member(string $email, string $name, ?Role $role = null, ?string $phone = null): User
+    private function member(string $email, string $name, ?Role $role = null): User
     {
         $user = User::register(
-            new NewAccount(EmailAddress::fromString($email), null !== $phone ? PhoneNumber::fromInput($phone) : null),
+            new NewAccount(EmailAddress::fromString($email)),
             $this->hashers->getPasswordHasher(User::class)->hash(self::PASSWORD),
             $this->clock->now(),
         );
