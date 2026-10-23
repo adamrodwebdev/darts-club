@@ -426,6 +426,14 @@ class ClubEvent implements RecordsDomainEvents
         return $now >= $this->startsAt;
     }
 
+    /** Archive (photos et posts) : ouverte une fois l'événement commencé, s'il n'a pas été annulé. */
+    public function assertArchiveOpen(\DateTimeImmutable $now): void
+    {
+        if ($this->isCancelled() || !$this->hasStarted($now)) {
+            throw new RegistrationException('Photos et posts sont ouverts une fois l\'événement commencé.');
+        }
+    }
+
     public function isPast(\DateTimeImmutable $now): bool
     {
         return $now > $this->endsAt;
