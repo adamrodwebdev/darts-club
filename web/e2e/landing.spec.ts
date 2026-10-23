@@ -42,8 +42,8 @@ test('a rock hand greets whoever reaches the bottom of the page', async ({ page 
   await page.goto('/')
   const hand = page.locator('.rock-hand')
   await expect(hand).toHaveClass(/rock-hand--waiting/)
-  await page.getByRole('link', { name: 'Confidentialité' }).scrollIntoViewIfNeeded()
-  await page.mouse.wheel(0, 5000)
+  // Défilement par script : la molette n'existe pas sur WebKit mobile
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
   await expect(hand).toHaveClass(/rock-hand--rocking/)
 })
 

@@ -142,7 +142,8 @@ test('the home carousel keeps track of every open event, the next one first', as
   await expect(frets.getByRole('button', { name: 'Halloween Party' })).toHaveAttribute('aria-current', 'true')
   await page.getByRole('region', { name: 'Tous les rendez-vous' }).getByRole('button', { name: 'Carte suivante' }).click()
   await expect(frets.getByRole('button', { name: 'Soirée cricket' })).toHaveAttribute('aria-current', 'true')
-  await slides.nth(2).getByRole('link').click()
+  // Clic direct : Playwright ferait d'abord défiler la carte jusqu'au centre (elle serait alors déjà active)
+  await slides.nth(2).getByRole('link').dispatchEvent('click')
   await expect(frets.getByRole('button', { name: 'Soirée de rentrée' })).toHaveAttribute('aria-current', 'true')
   await expect(page).toHaveURL(/\/$/)
 
