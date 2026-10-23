@@ -16,22 +16,43 @@ function mountStages(total: number, options: { all: boolean; after?: Promise<unk
   return { wrapper, shown: shown as Ref<number> }
 }
 
+/** Une étape, page visible : l'image suivante, puis la tâche */
+function nextStage(): void {
+  vi.advanceTimersToNextFrame()
+  vi.advanceTimersToNextTimer()
+}
+
 describe('useStages', () => {
   afterEach(() => {
     vi.useRealTimers()
+    Reflect.deleteProperty(document, 'visibilityState')
   })
 
-  it('adds one stage per task once mounted', () => {
+  it('adds one stage per task once mounted, each after a frame', () => {
     vi.useFakeTimers()
     const { shown } = mountStages(3, { all: false })
     expect(shown.value).toBe(0)
 
+    // L'image d'abord (la mise en page de l'étape précédente), l'étape ensuite
+    vi.advanceTimersToNextFrame()
+    expect(shown.value).toBe(0)
+    vi.advanceTimersToNextTimer()
+    expect(shown.value).toBe(1)
+    nextStage()
+    nextStage()
+    expect(shown.value).toBe(3)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('does not wait for frames in a background tab, where they are paused', () => {
+    vi.useFakeTimers()
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    const { shown } = mountStages(2, { all: false })
+
     vi.advanceTimersToNextTimer()
     expect(shown.value).toBe(1)
     vi.advanceTimersToNextTimer()
-    vi.advanceTimersToNextTimer()
-    expect(shown.value).toBe(3)
-    expect(vi.getTimerCount()).toBe(0)
+    expect(shown.value).toBe(2)
   })
 
   it('shows everything at once when asked (link to an anchor)', () => {
@@ -44,7 +65,8 @@ describe('useStages', () => {
   it('stops when the page goes away', () => {
     vi.useFakeTimers()
     const { wrapper, shown } = mountStages(3, { all: false })
-    vi.advanceTimersToNextTimer()
+    nextStage()
+    vi.advanceTimersToNextFrame()
     wrapper.unmount()
     expect(vi.getTimerCount()).toBe(0)
     expect(shown.value).toBe(1)
@@ -58,7 +80,7 @@ describe('useStages', () => {
 
     ready()
     await Promise.resolve()
-    vi.advanceTimersToNextTimer()
+    nextStage()
     expect(shown.value).toBe(1)
   })
 
@@ -70,7 +92,7 @@ describe('useStages', () => {
     refuse()
     await Promise.resolve()
     await Promise.resolve()
-    vi.advanceTimersToNextTimer()
+    nextStage()
     expect(shown.value).toBe(1)
   })
 
