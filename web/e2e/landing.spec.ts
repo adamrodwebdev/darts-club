@@ -92,6 +92,7 @@ test('a rock hand greets whoever reaches the bottom of the page, every time', as
 
 test('entrance animations play again each time they come back into view', async ({ page }) => {
   await page.goto('/')
+  await expect(page.locator('#rejoindre')).toBeAttached()
   const hero = page.locator('.hero__text')
   const anthemIntro = page.locator('#hymne .song__intro')
   await expect.poll(() => playback(hero)).toBe('playing')
@@ -107,6 +108,8 @@ test('entrance animations play again each time they come back into view', async 
 
 test('the page scrolls freely: no section pulls it back', async ({ page }) => {
   await page.goto('/')
+  // Cordes montées une par tâche : la page a sa hauteur finale une fois la dernière arrivée
+  await expect(page.locator('#rejoindre')).toBeAttached()
   // Aucun accrochage vertical : seules les bandes horizontales en ont
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('none')
   const snapping = await page.locator('section, footer').evaluateAll((elements) => elements.filter((element) => getComputedStyle(element).scrollSnapAlign !== 'none').length)
