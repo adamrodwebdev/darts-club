@@ -2,13 +2,14 @@
 import { useI18n } from 'vue-i18n'
 import SplitText from '@/components/motion/SplitText.vue'
 import { LANDING } from '@/content/landing'
+import { vReplay } from '@/motion/vReplay'
 
 const { t } = useI18n()
 const band = LANDING.friendBand
 </script>
 
 <template>
-  <section class="friend" aria-labelledby="friend-title">
+  <section v-replay class="friend" aria-labelledby="friend-title">
     <p class="kicker">{{ t('landing.friend.kicker') }}</p>
     <SplitText id="friend-title" tag="h2" class="metal-title levitate" :text="band.name" />
     <p class="friend__text">{{ t('landing.friend.text') }}</p>

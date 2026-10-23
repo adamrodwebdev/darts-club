@@ -91,22 +91,29 @@ function attendance(slide: TimelineSlide): string {
   transform-origin: 50% 100%;
 }
 
-/* La scène se redresse en entrant à l'écran : de la profondeur même avec une seule carte */
+/*
+ * La scène monte en grandissant à son arrivée et redescend en repartant : de la profondeur même
+ * avec une seule carte. En 2D : inclinée en 3D, elle retenait le geste du doigt commencé sur elle
+ * (la page ne défilait plus).
+ */
 @supports (animation-timeline: view()) {
   :root[data-motion='on'] .stage {
     animation: stage-rise linear both;
     animation-timeline: view();
-    animation-range: entry 10% entry 90%;
+    animation-range: entry 10% exit 90%;
   }
 }
 
+/* Rejouée à chaque passage, dans les deux sens */
 @keyframes stage-rise {
-  from {
+  entry 10%,
+  exit 90% {
     opacity: 0.3;
-    transform: perspective(70rem) rotateX(28deg) scale(0.92);
+    transform: translateY(2rem) scale(0.92);
   }
 
-  to {
+  entry 90%,
+  exit 10% {
     opacity: 1;
     transform: none;
   }
