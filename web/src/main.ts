@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
+import { dismissTitleCard } from './boot/titleCard'
 import { i18n, loadLocaleMessages } from './i18n'
 import { createPreferenceControllers, PREFERENCES } from './preferences'
 import { createAppRouter } from './router'
@@ -35,6 +36,9 @@ app.use(i18n)
 app.use(router)
 
 app.mount('#app')
+
+// Première page affichée : l'écran titre de index.html laisse la place
+void router.isReady().then(() => dismissTitleCard(document))
 
 // Service worker (production) : page hors ligne et notifications push
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {

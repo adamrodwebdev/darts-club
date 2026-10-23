@@ -67,7 +67,7 @@
 
 ## 10. Performance (Lighthouse 100)
 - ✅ Seuil Lighthouse relevé (2026-10-23) : 100 en accessibilité, bonnes pratiques et SEO sur le pire des 3 passages ; la CI mesure les pages publiques avec un bouchon d'API (réponses de la production pour un visiteur, plus d'erreur 502 en console)
-- À faire : performance 100 (aujourd'hui 96–97 : FCP ≈ 1,9 s, LCP ≈ 2,4 s en mobile simulé) : premier écran peint depuis le HTML statique, code chargé après le premier rendu, CSS critique en ligne (empreintes CSP générées au build)
+- ✅ Performance 100 : écran titre peint depuis le HTML (logo et nom, style en ligne autorisé par son empreinte CSP), site chargé une fois ce premier affichage signalé (`build/deferredBoot.ts`), effacé en fondu dès la première page prête ; l'aperçu de test applique la CSP de production
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé
 - ✅ Images à dimensions fixes (CLS = 0), photos WebP + vignettes en lazy loading, animations transform/opacity uniquement
 - ✅ Budget vérifié en CI : JS initial ≤ 150 Ko gzip (actuel ≈ 54 Ko), CSS ≤ 30 Ko, module à la demande ≤ 100 Ko

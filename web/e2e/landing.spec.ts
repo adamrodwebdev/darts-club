@@ -19,6 +19,15 @@ test('landing shows the anthem, the friend band and legal links', async ({ page 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Politique de confidentialité')
 })
 
+test('the title card paints the club at once, then gives way to the page', async ({ page }) => {
+  const response = await page.goto('/')
+  // Premier affichage depuis le HTML, avant tout le code
+  expect(await response?.text()).toContain('id="title-card"')
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Skull Darts 71')
+  await expect(page.locator('#title-card')).toHaveCount(0)
+})
+
 test('the home page is a guitar neck: strings to strum down, cards to slide along', async ({ page }) => {
   await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [], past: [] } }))
   await page.goto('/')

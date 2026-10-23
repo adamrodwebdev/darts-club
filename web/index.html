@@ -34,8 +34,13 @@
     </script>
   </head>
   <body>
+    <!-- Écran titre : peint dès ce HTML, avant tout le code ; effacé par src/boot/titleCard.ts -->
+    <div id="title-card" class="title-card" aria-hidden="true">
+      <img class="title-card__logo" src="/logo.svg" width="448" height="448" alt="">
+      <p class="title-card__name">Skull Darts 71</p>
+    </div>
     <noscript>
-      <p style="padding:1rem;font-family:system-ui">Le site de Skull Darts 71 a besoin de JavaScript pour fonctionner.</p>
+      <p class="noscript">Le site de Skull Darts 71 a besoin de JavaScript pour fonctionner.</p>
     </noscript>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

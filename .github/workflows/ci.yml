@@ -134,7 +134,7 @@ jobs:
           docker run --rm skull-darts-71:ci sh -c 'ls -a /app; test ! -e /app/.env.local && test ! -e /app/.env.dev.local && test -f /app/web/index.html'
 
   lighthouse:
-    name: Lighthouse (100, performance ≥ 95)
+    name: Lighthouse (100)
     needs: web
     runs-on: ubuntu-latest
     steps:

@@ -6,14 +6,24 @@ import { describe, it, expect } from 'vitest'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
-describe('Content Security Policy', () => {
-  it('authorises the inlined theme script by its exact hash, and nothing else inline', () => {
-    // Même transformation que build/localizedIndex.ts : contenu du fichier, espaces de début/fin retirés
-    const script = readFileSync(join(ROOT, 'web/public/theme-init.js'), 'utf8').trim()
-    const hash = createHash('sha256').update(script).digest('base64')
-    const caddyfile = readFileSync(join(ROOT, 'docker/frankenphp/Caddyfile'), 'utf8')
-    const scriptSrc = /script-src ([^;]+);/.exec(caddyfile)?.[1] ?? ''
+/** Empreinte CSP d'un fichier intégré à la page : son contenu, espaces de début et de fin retirés (comme au build) */
+function hashOf(file: string): string {
+  const content = readFileSync(join(ROOT, file), 'utf8').trim()
+  return `'sha256-${createHash('sha256').update(content).digest('base64')}'`
+}
 
-    expect(scriptSrc.split(' ')).toEqual(["'self'", `'sha256-${hash}'`])
+function directive(name: string): string[] {
+  const caddyfile = readFileSync(join(ROOT, 'docker/frankenphp/Caddyfile'), 'utf8')
+  return (new RegExp(`${name} ([^;]+);`).exec(caddyfile)?.[1] ?? '').split(' ')
+}
+
+describe('Content Security Policy', () => {
+  it('authorises the inlined scripts by their exact hash, and nothing else inline', () => {
+    // Script de thème (build/localizedIndex.ts) et script de démarrage (build/deferredBoot.ts)
+    expect(directive('script-src')).toEqual(["'self'", hashOf('web/public/theme-init.js'), hashOf('web/build/inline/boot.js')])
+  })
+
+  it('authorises only the title card style inline', () => {
+    expect(directive('style-src')).toEqual(["'self'", hashOf('web/build/inline/title-card.css')])
   })
 })

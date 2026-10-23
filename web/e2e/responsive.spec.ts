@@ -74,6 +74,8 @@ for (const path of ['/', '/connexion', '/e/soiree-cricket-2026-11-14-a1b2c3']) {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.setViewportSize({ width: 320, height: 256 })
     await page.goto(path)
+    // Le site démarre après l'écran titre : on mesure la page, pas lui
+    await page.locator('main').first().waitFor()
     const r = await overflow(page)
     expect(r.sw, `défile de côté : ${r.culprits.join(', ')}`).toBeLessThanOrEqual(r.vw)
     // En-tête non collant à cette hauteur : il ne masque ni le contenu ni le focus
