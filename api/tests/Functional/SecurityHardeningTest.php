@@ -64,7 +64,7 @@ final class SecurityHardeningTest extends ApiTestCase
     {
         $admin = $this->createUser('admin@example.com');
         $admin->grantRole(Role::Admin);
-        $admin->suspend('Test');
+        $admin->suspend('Test', $this->now());
         $president = $this->createUser('president@example.com');
         $president->grantRole(Role::President);
         $this->entityManager()->flush();

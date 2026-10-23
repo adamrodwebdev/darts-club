@@ -27,9 +27,10 @@ class OAuthIdentity
         private string $provider,
         #[ORM\Column(length: 191)]
         private string $subject,
+        \DateTimeImmutable $now,
     ) {
         $this->id = Uuid::v7();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
     public function getId(): Uuid

@@ -4,6 +4,7 @@ namespace App\Tests;
 
 use App\Entity\User;
 use App\ValueObject\EmailAddress;
+use App\ValueObject\NewAccount;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use OTPHP\TOTP;
@@ -35,12 +36,18 @@ abstract class ApiTestCase extends WebTestCase
         $schema->createSchema($metadata);
     }
 
+    /** Instant présent de l'application (horloge figée des tests) */
+    protected function now(): \DateTimeImmutable
+    {
+        return $this->service('clock', ClockInterface::class)->now();
+    }
+
     protected function createUser(string $email, bool $verified = true): User
     {
         $hasher = $this->service(PasswordHasherFactoryInterface::class, PasswordHasherFactoryInterface::class)
             ->getPasswordHasher(User::class);
 
-        $user = User::register(EmailAddress::fromString($email), $hasher->hash(self::PASSWORD));
+        $user = User::register(new NewAccount(EmailAddress::fromString($email)), $hasher->hash(self::PASSWORD), $this->now());
         // Donnée de test : pas d'email de vérification pour les comptes préexistants
         $user->releaseEvents();
         if ($verified) {

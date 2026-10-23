@@ -6,6 +6,7 @@ use App\Entity\ClubEvent;
 use App\Entity\User;
 use App\Repository\ClubEventRepository;
 use App\Repository\EventViewRepository;
+use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
@@ -28,6 +29,7 @@ final class EventAudience
         private readonly ClubEventRepository $events,
         private readonly EntityManagerInterface $em,
         private readonly ClockInterface $clock,
+        private readonly TokenGenerator $tokens,
     ) {
     }
 
@@ -39,11 +41,14 @@ final class EventAudience
         }
 
         $now = $this->clock->now();
-        $key = $event->audienceKey($now);
-        if (null === $key) {
+        if ($event->isAudienceClosed($now)) {
             return;
         }
-        $this->em->flush();
+        if (null === $event->audienceKey()) {
+            $event->openAudience($this->tokens->hex(32), $now);
+            $this->em->flush();
+        }
+        $key = (string) $event->audienceKey();
 
         $subject = null !== $viewer ? 'member:'.$viewer->getId()->toRfc4122() : 'visitor:'.$ip.'|'.$userAgent;
         $day = $now->setTimezone(new \DateTimeZone(ClubTime::TIMEZONE))->setTime(0, 0);

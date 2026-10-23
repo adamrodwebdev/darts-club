@@ -3,6 +3,7 @@
 namespace App\Security\TwoFactor;
 
 use App\Entity\User;
+use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
@@ -16,6 +17,7 @@ final class TwoFactorEnrollment
     public function __construct(
         private readonly TotpAuthenticatorInterface $totp,
         private readonly EntityManagerInterface $em,
+        private readonly TokenGenerator $tokens,
     ) {
     }
 
@@ -48,7 +50,7 @@ final class TwoFactorEnrollment
 
         $codes = [];
         for ($i = 0; $i < self::BACKUP_CODE_COUNT; ++$i) {
-            $raw = strtolower(bin2hex(random_bytes(5)));
+            $raw = strtolower($this->tokens->hex(5));
             $codes[] = substr($raw, 0, 5).'-'.substr($raw, 5);
         }
 

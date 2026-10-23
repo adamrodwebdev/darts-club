@@ -42,14 +42,14 @@ class NotificationRepository extends ServiceEntityRepository
         return $this->count(['recipient' => $user, 'readAt' => null]);
     }
 
-    public function markAllRead(User $user): void
+    public function markAllRead(User $user, \DateTimeImmutable $now): void
     {
         $this->createQueryBuilder('n')
             ->update()
             ->set('n.readAt', ':now')
             ->andWhere('n.recipient = :user')
             ->andWhere('n.readAt IS NULL')
-            ->setParameter('now', new \DateTimeImmutable(), 'datetime_immutable')
+            ->setParameter('now', $now, 'datetime_immutable')
             ->setParameter('user', $user->getId(), 'uuid')
             ->getQuery()
             ->execute();

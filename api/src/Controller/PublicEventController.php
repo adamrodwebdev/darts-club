@@ -8,6 +8,7 @@ use App\Entity\GuestResponse;
 use App\Media\ImageStorage;
 use App\Preference\Language;
 use App\Repository\ClubEventRepository;
+use App\Security\RequestThrottle;
 use App\Translation\Unprocessable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -16,7 +17,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,6 +34,7 @@ final class PublicEventController extends AbstractController
     private const SLUG = '[a-z0-9-]{3,140}';
 
     public function __construct(
+        private readonly RequestThrottle $requestThrottle,
         private readonly ClubEventRepository $events,
         private readonly GuestResponses $guests,
         private readonly ClockInterface $clock,
@@ -105,8 +106,8 @@ final class PublicEventController extends AbstractController
             throw new Unprocessable('Ton accord est nécessaire pour enregistrer ta réponse.');
         }
 
-        self::throttle($guestResponseIpLimiter, 'ip-'.$request->getClientIp());
-        self::throttle($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
+        $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.$request->getClientIp());
+        $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
 
         $this->guard(fn () => $this->guests->request(
             $event,
@@ -167,7 +168,7 @@ final class PublicEventController extends AbstractController
 
     private function response(Request $request, RateLimiterFactoryInterface $limiter): GuestResponse
     {
-        self::throttle($limiter, 'ip-'.$request->getClientIp());
+        $this->requestThrottle->consume($limiter, 'ip-'.$request->getClientIp());
         $response = $this->guests->find(self::text($request->toArray(), 'token'));
         if (null === $response || !$response->getEvent()->isPublic()) {
             throw new NotFoundHttpException();
@@ -219,14 +220,6 @@ final class PublicEventController extends AbstractController
     private static function text(array $data, string $key): string
     {
         return \is_string($data[$key] ?? null) ? $data[$key] : '';
-    }
-
-    private static function throttle(RateLimiterFactoryInterface $factory, string $key): void
-    {
-        $limit = $factory->create($key)->consume();
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
     }
 
     private function guard(callable $action): void

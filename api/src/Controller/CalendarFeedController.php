@@ -6,6 +6,7 @@ use App\ClubEvent\IcsCalendar;
 use App\Entity\User;
 use App\Repository\ClubEventRepository;
 use App\Repository\UserRepository;
+use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -32,9 +33,11 @@ final class CalendarFeedController extends AbstractController
 
     #[Route('/api/me/calendar-feed', name: 'calendar_feed_create', methods: ['POST'], format: 'json')]
     #[IsGranted('ROLE_MEMBER')]
-    public function create(#[CurrentUser] User $user, EntityManagerInterface $em): JsonResponse
+    public function create(#[CurrentUser] User $user, EntityManagerInterface $em, TokenGenerator $tokens): JsonResponse
     {
-        $token = $user->rotateCalendarToken();
+        // Jeton en clair transmis une seule fois ; le compte n'en garde que l'empreinte
+        $token = $tokens->hex(24);
+        $user->replaceCalendarToken($token);
         $em->flush();
 
         $url = rtrim($this->apiUrl, '/').'/api/calendar/'.$token.'.ics';

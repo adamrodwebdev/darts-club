@@ -15,6 +15,7 @@ use App\Preference\Theme;
 use App\Profile\AccountDeleter;
 use App\Profile\PersonalDataExporter;
 use App\Profile\ProfileView;
+use App\Security\RequestThrottle;
 use App\ValueObject\DisplayName;
 use App\ValueObject\PhoneNumber;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,7 +26,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
@@ -40,6 +40,7 @@ final class ProfileController extends AbstractController
     private const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
     public function __construct(
+        private readonly RequestThrottle $requestThrottle,
         private readonly EntityManagerInterface $em,
         private readonly RateLimiterFactoryInterface $sensitiveActionLimiter,
         private readonly ProfileView $view,
@@ -166,10 +167,7 @@ final class ProfileController extends AbstractController
     /** Limite les tentatives sur les actions protégées par mot de passe. */
     private function throttle(User $user): void
     {
-        $limit = $this->sensitiveActionLimiter->create($user->getId()->toRfc4122())->consume();
-        if (!$limit->isAccepted()) {
-            throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time());
-        }
+        $this->requestThrottle->consume($this->sensitiveActionLimiter, $user->getId()->toRfc4122());
     }
 
     /**

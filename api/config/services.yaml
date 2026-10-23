@@ -28,6 +28,9 @@ services:
         arguments:
             $base64Key: '%env(TWO_FACTOR_ENCRYPTION_KEY)%'
 
+    # Aléa cryptographique (jetons, identifiants de fichiers, codes de secours)
+    App\Security\TokenGenerator: '@App\Security\SecureTokenGenerator'
+
     # Stockages d'images (hors racine web), injectés par nom d'argument
     app.storage.avatars:
         class: App\Media\FilesystemImageStorage

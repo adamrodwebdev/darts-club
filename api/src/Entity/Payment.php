@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Membership\Money;
+use App\Membership\PaymentDetails;
 use App\Membership\PaymentMethod;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -47,20 +48,20 @@ class Payment
     #[ORM\Column(length: 200, nullable: true)]
     private ?string $cancelReason = null;
 
-    public function __construct(Membership $membership, Money $amount, PaymentMethod $method, \DateTimeImmutable $paidAt, ?string $reference, ?User $recordedBy)
+    /** Créé uniquement par Membership::recordPayment() */
+    public function __construct(Membership $membership, PaymentDetails $details, ?User $recordedBy, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->membership = $membership;
-        $this->amount = $amount->cents;
-        $this->method = $method;
-        $this->paidAt = $paidAt;
-        $reference = null !== $reference ? trim($reference) : '';
-        $this->reference = '' !== $reference ? mb_substr($reference, 0, 80) : null;
+        $this->amount = $details->amount->cents;
+        $this->method = $details->method;
+        $this->paidAt = $details->paidAt;
+        $this->reference = $details->reference;
         $this->recordedBy = $recordedBy;
-        $this->recordedAt = new \DateTimeImmutable();
+        $this->recordedAt = $now;
     }
 
-    public function cancel(string $reason): void
+    public function cancel(string $reason, \DateTimeImmutable $now): void
     {
         if ($this->isCancelled()) {
             throw new \LogicException('Paiement déjà annulé.');
@@ -70,7 +71,7 @@ class Payment
             throw new \InvalidArgumentException('Le motif d\'annulation est obligatoire.');
         }
 
-        $this->cancelledAt = new \DateTimeImmutable();
+        $this->cancelledAt = $now;
         $this->cancelReason = mb_substr($reason, 0, 200);
     }
 
