@@ -5,6 +5,7 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import { useDocumentHead } from '@/composables/useDocumentHead'
+import { useStages } from '@/composables/useStages'
 import { HOME_PATHS } from '@/i18n/locales'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
@@ -17,6 +18,8 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 useDocumentHead()
+/** Pied de page rendu une tâche après la première page : sous la ligne de flottaison, il n'alourdit pas son rendu */
+const footer = useStages(1, { all: false, after: router.isReady() })
 
 // Cycle de vie de la session : centre de notifications + temps réel
 watch(
@@ -54,7 +57,7 @@ watch(
       </Transition>
     </RouterView>
   </main>
-  <AppFooter />
+  <AppFooter v-if="footer >= 1" />
 </template>
 
 <style scoped>

@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw, START_LOCATION } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import type { MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
 import type { Services } from '@/services'
@@ -19,6 +18,12 @@ declare module 'vue-router' {
     guestOnly?: boolean
   }
 }
+
+/**
+ * Accueil chargé à part, comme les autres pages : elles n'évaluent pas son code au démarrage.
+ * Sur l'accueil, main.ts le télécharge en même temps que les traductions.
+ */
+const HomeView = () => import('../views/HomeView.vue')
 
 /** Pages de l'application (titres : section « routes » des traductions) */
 const ROUTES: RouteRecordRaw[] = [
