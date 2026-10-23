@@ -27,6 +27,7 @@ services:
     ports:
       - "443:443"
       - "80:80"
+    networks: [default, realtime]
     depends_on:
       database:
         condition: service_healthy
@@ -47,6 +48,7 @@ services:
     restart: unless-stopped
     volumes:
       - app_storage:/app/var/storage
+    networks: [default, realtime]
     depends_on:
       database:
         condition: service_healthy
@@ -68,9 +70,12 @@ services:
     volumes:
       - database_data:/var/lib/postgresql/data
 
+  # Hub temps réel, seul service exposé à Internet avec php : sur son propre réseau, il
+  # n'atteint ni la base ni Redis
   mercure:
     image: dunglas/mercure:v0.21
     restart: unless-stopped
+    networks: [realtime]
     environment:
       SERVER_NAME: ":80"
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
@@ -82,9 +87,15 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    # Mémoire bornée : en cas d'afflux, les clés qui expirent (sessions) partent les premières,
+    # jamais la file des messages
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
     volumes:
       - redis_data:/data
+
+networks:
+  default:
+  realtime:
 
 volumes:
   app_storage:

@@ -44,9 +44,9 @@ security:
                 success_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
                 failure_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
                 authentication_required_handler: App\Security\TwoFactor\JsonTwoFactorHandlers
+            # 5 essais par compte et par origine (IPv4, ou réseau /64 en IPv6), 25 par origine, en 15 minutes
             login_throttling:
-                max_attempts: 5
-                interval: '15 minutes'
+                limiter: App\Security\NetworkLoginRateLimiter
             logout:
                 path: auth_logout
                 invalidate_session: true

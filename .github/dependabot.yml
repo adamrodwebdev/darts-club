@@ -14,3 +14,12 @@ updates:
   - package-ecosystem: docker
     directory: /docker/php
     schedule: { interval: monthly }
+  # Images de la base, de Redis et de Mercure (compose.yaml) : nouvelles versions proposées ici, leurs
+  # correctifs installés chaque lundi par le déploiement planifié. Une version majeure de PostgreSQL
+  # demande une migration des données : jamais proposée.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: monthly }
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]

@@ -1,5 +1,15 @@
+# Clés par origine : adresse IPv4 ou réseau /64 en IPv6 (App\Security\ClientNetwork)
 framework:
     rate_limiter:
+        # Connexion (App\Security\NetworkLoginRateLimiter) : par compte et origine, puis par origine
+        login_account:
+            policy: fixed_window
+            limit: 5
+            interval: '15 minutes'
+        login_network:
+            policy: fixed_window
+            limit: 25
+            interval: '15 minutes'
         registration:
             policy: sliding_window
             limit: 5
@@ -7,6 +17,23 @@ framework:
         verification_resend:
             policy: fixed_window
             limit: 3
+            interval: '1 hour'
+        # Emails déclenchés sans connexion (App\Security\ThrottledMailer) : par destinataire, puis en tout
+        visitor_email_recipient:
+            policy: sliding_window
+            limit: 4
+            interval: '1 day'
+        visitor_email_daily:
+            policy: fixed_window
+            limit: 100
+            interval: '1 day'
+        avatar_upload:
+            policy: sliding_window
+            limit: 10
+            interval: '1 hour'
+        push_subscription:
+            policy: sliding_window
+            limit: 10
             interval: '1 hour'
         sensitive_action:
             policy: fixed_window

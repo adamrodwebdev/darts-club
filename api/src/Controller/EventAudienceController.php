@@ -7,6 +7,7 @@ use App\ClubEvent\PageVisit;
 use App\Entity\ClubEvent;
 use App\Entity\User;
 use App\Repository\ClubEventRepository;
+use App\Security\ClientNetwork;
 use App\Security\Voter\ClubEventVoter;
 use App\Security\Voter\EventAudienceVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -91,7 +92,7 @@ final class EventAudienceController extends AbstractController
     private function record(ClubEvent $event, Request $request, RateLimiterFactoryInterface $limiter): void
     {
         // Au-delà de la limite : ignoré sans erreur (la mesure n'a pas à gêner la navigation)
-        if (!$limiter->create('ip-'.$request->getClientIp())->consume()->isAccepted()) {
+        if (!$limiter->create('ip-'.ClientNetwork::of($request))->consume()->isAccepted()) {
             return;
         }
 

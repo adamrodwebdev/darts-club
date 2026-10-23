@@ -62,7 +62,7 @@ final class ConversationController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
-    public function create(#[CurrentUser] User $user, #[MapRequestPayload] NewConversation $input, UserRepository $users): JsonResponse
+    public function create(#[CurrentUser] User $user, #[MapRequestPayload(acceptFormat: 'json')] NewConversation $input, UserRepository $users): JsonResponse
     {
         $this->throttle($user);
         $body = self::body($input->body);
@@ -100,7 +100,7 @@ final class ConversationController extends AbstractController
 
     #[Route('/{id}/messages', name: 'reply', requirements: ['id' => self::UUID], methods: ['POST'])]
     #[IsGranted(ConversationVoter::ACCESS, subject: 'conversation')]
-    public function reply(Conversation $conversation, #[CurrentUser] User $user, #[MapRequestPayload] MessageInput $input): JsonResponse
+    public function reply(Conversation $conversation, #[CurrentUser] User $user, #[MapRequestPayload(acceptFormat: 'json')] MessageInput $input): JsonResponse
     {
         $this->throttle($user);
         $this->conversations->reply($conversation, $user, self::body($input->body));

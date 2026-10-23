@@ -7,6 +7,7 @@ use App\Dto\Registration;
 use App\Message\SendVerificationEmail;
 use App\Preference\Language;
 use App\Repository\UserRepository;
+use App\Security\ClientNetwork;
 use App\Security\RequestThrottle;
 use App\Service\UserRegistrar;
 use App\ValueObject\EmailAddress;
@@ -36,12 +37,12 @@ final class RegistrationController extends AbstractController
 
     #[Route('/register', name: 'register', methods: ['POST'], format: 'json')]
     public function register(
-        #[MapRequestPayload] Registration $registration,
+        #[MapRequestPayload(acceptFormat: 'json')] Registration $registration,
         UserRegistrar $registrar,
         Request $request,
         RateLimiterFactoryInterface $registrationLimiter,
     ): JsonResponse {
-        $this->requestThrottle->consume($registrationLimiter, (string) $request->getClientIp());
+        $this->requestThrottle->consume($registrationLimiter, (string) ClientNetwork::of($request));
 
         $registrar->register($registration, Language::fromLocale($request->getLocale()));
 
@@ -77,14 +78,15 @@ final class RegistrationController extends AbstractController
 
     #[Route('/verify/resend', name: 'verify_resend', methods: ['POST'], format: 'json')]
     public function resend(
-        #[MapRequestPayload] EmailRequest $payload,
+        #[MapRequestPayload(acceptFormat: 'json')] EmailRequest $payload,
         UserRepository $users,
         MessageBusInterface $bus,
         Request $request,
         RateLimiterFactoryInterface $verificationResendLimiter,
     ): JsonResponse {
         $email = EmailAddress::fromString($payload->email);
-        $this->requestThrottle->consume($verificationResendLimiter, $request->getClientIp().'|'.$email);
+        // Par destinataire, le plafond est celui de ThrottledMailer (4 par jour)
+        $this->requestThrottle->consume($verificationResendLimiter, (string) ClientNetwork::of($request));
 
         $user = $users->findOneByEmail($email);
         if (null !== $user && !$user->isVerified()) {

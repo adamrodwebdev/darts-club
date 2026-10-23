@@ -77,6 +77,7 @@ docker run --rm $img php -r 'echo "POSTGRES_PASSWORD=", bin2hex(random_bytes(24)
    ```
    Le script nettoie le collage (clé collée deux fois, espaces), **teste la clé auprès de Brevo**,
    ne modifie rien si elle est refusée, sinon l'enregistre dans `.env` et redéploie.
+   Le DSN enregistré exige TLS (`require_tls=true`) : aucun email ne part en clair.
    Sans `--visible`, la saisie est invisible et un aperçu masqué permet de vérifier le collage.
    Effacer ensuite l'écran du terminal (`cls` / `clear`).
    `MAILER_FROM=no-reply@skulldarts71.fr` (expéditeur à déclarer et vérifier dans Brevo).
@@ -92,11 +93,24 @@ Dans **Settings › Secrets and variables › Actions** du dépôt :
 | Variable | `SERVER_NAME` | `skulldarts71.fr` |
 | Variable | `DEPLOY_HOST` | adresse IP ou nom du serveur |
 | Variable | `DEPLOY_USER` | `deploy` |
-| Secret | `DEPLOY_SSH_KEY` | clé privée SSH **dédiée** (générée par `ssh-keygen -t ed25519 -f deploy_key`), sa clé publique ajoutée à `/home/deploy/.ssh/authorized_keys` |
-| Secret | `DEPLOY_KNOWN_HOSTS` | résultat de `ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR` |
 
-Puis **Settings › Environments › New environment** `production` : cocher *Required reviewers* (le président)
-pour valider chaque mise en production, et limiter l'environnement à la branche `main`.
+**Settings › Environments › New environment** `production`, puis :
+
+1. *Deployment branches and tags* : **Selected branches**, règle `main` (aucune autre branche ne peut déployer).
+2. *Environment secrets* (et non secrets du dépôt) : la clé de déploiement donne la main sur Docker, donc sur
+   tout le serveur ; ainsi seule une exécution sur `main` dans cet environnement peut la lire.
+
+| Type | Nom | Valeur |
+|---|---|---|
+| Secret d'environnement | `DEPLOY_SSH_KEY` | clé privée SSH **dédiée** (générée par `ssh-keygen -t ed25519 -f deploy_key`), sa clé publique ajoutée à `/home/deploy/.ssh/authorized_keys` |
+| Secret d'environnement | `DEPLOY_KNOWN_HOSTS` | résultat de `ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR` |
+
+*Required reviewers* reste facultatif : chaque mise en production, y compris celle du lundi, attendrait alors
+une validation.
+
+Protéger aussi `main` (**Settings › Rules › Rulesets › New branch ruleset**, cible `main`) : pull request
+obligatoire, contrôles de la CI requis, ni force push ni suppression. Un jeton GitHub volé ne peut plus
+alors pousser directement du code qui partirait en production.
 
 Tant que `DEPLOY_HOST` est vide, le workflow « Déploiement » publie seulement l'image sur `ghcr.io`.
 Le lancer une première fois à la main (**Actions › Déploiement › Run workflow**), puis dans
@@ -178,6 +192,9 @@ Journaux : `dc logs -f php worker` (rotation automatique, 50 Mo max par service)
 ## 12. Mises à jour et retour arrière
 
 - Mise à jour : fusionner sur `main` ; le déploiement applique les migrations puis vérifie `/api/health`.
+- Correctifs de sécurité : chaque lundi à 4 h 30 (UTC), le workflow « Déploiement » reconstruit l'image sur
+  la dernière image de base (PHP, Caddy, Alpine), installe les correctifs de PostgreSQL, Redis et Mercure,
+  puis vérifie `/api/health`. Une faille urgente : **Actions › Déploiement › Run workflow** (branche `main`).
 - Retour arrière : relancer avec l'étiquette (SHA court) de la version précédente, visible dans GitHub › Packages :
   `./deploy/deploy.sh 1a2b3c4d5e6f`. Les migrations de base ne sont pas annulées automatiquement.
 - Mises à jour système : automatiques (unattended-upgrades) ; redémarrer le serveur quand le noyau est mis à jour.

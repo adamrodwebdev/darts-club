@@ -4,6 +4,7 @@ namespace App\ClubEvent;
 
 use App\Entity\ClubEvent;
 use App\Entity\GuestResponse;
+use App\Security\ThrottledMailer;
 use App\Translation\LocalizedDate;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -21,19 +22,23 @@ final class GuestMailer
 
     public function __construct(
         private readonly MailerInterface $mailer,
+        private readonly ThrottledMailer $visitorMailer,
         private readonly TranslatorInterface $translator,
         #[Autowire('%env(FRONTEND_URL)%')]
         private readonly string $frontendUrl,
     ) {
     }
 
-    /** Lien personnel (le jeton n'est jamais stocké en clair : il n'existe que dans cet email). */
+    /**
+     * Lien personnel (le jeton n'est jamais stocké en clair : il n'existe que dans cet email).
+     * L'adresse vient d'un visiteur : envoi plafonné (ThrottledMailer).
+     */
     public function sendLink(GuestResponse $response, string $token): void
     {
         $event = $response->getEvent();
         $locale = $response->language()->value;
 
-        $this->mailer->send((new TemplatedEmail())
+        $this->visitorMailer->send((new TemplatedEmail())
             ->to($response->email())
             ->locale($locale)
             ->subject($this->translator->trans('guest.link.subject', ['%title%' => $event->getTitle()], 'emails', $locale))

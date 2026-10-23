@@ -13,6 +13,7 @@ use App\Media\InvalidImageException;
 use App\Preference\Language;
 use App\Preference\Theme;
 use App\Profile\AccountDeleter;
+use App\Profile\PasswordChanger;
 use App\Profile\PersonalDataExporter;
 use App\Profile\ProfileView;
 use App\Security\RequestThrottle;
@@ -43,6 +44,7 @@ final class ProfileController extends AbstractController
         private readonly RequestThrottle $requestThrottle,
         private readonly EntityManagerInterface $em,
         private readonly RateLimiterFactoryInterface $sensitiveActionLimiter,
+        private readonly RateLimiterFactoryInterface $avatarUploadLimiter,
         private readonly ProfileView $view,
     ) {
     }
@@ -54,7 +56,7 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('', name: 'update', methods: ['PATCH'])]
-    public function update(#[CurrentUser] User $user, #[MapRequestPayload] ProfileUpdate $input, Request $request): JsonResponse
+    public function update(#[CurrentUser] User $user, #[MapRequestPayload(acceptFormat: 'json')] ProfileUpdate $input, Request $request): JsonResponse
     {
         $payload = $request->toArray();
 
@@ -73,7 +75,7 @@ final class ProfileController extends AbstractController
 
     /** Langue et thème choisis dans l'interface ; la langue sert aussi aux emails et notifications. */
     #[Route('/preferences', name: 'preferences', methods: ['PUT'])]
-    public function updatePreferences(#[CurrentUser] User $user, #[MapRequestPayload] DisplayPreferencesInput $input): JsonResponse
+    public function updatePreferences(#[CurrentUser] User $user, #[MapRequestPayload(acceptFormat: 'json')] DisplayPreferencesInput $input): JsonResponse
     {
         $user->changeDisplayPreferences(Language::from($input->language), Theme::from($input->theme));
         $this->em->flush();
@@ -84,14 +86,12 @@ final class ProfileController extends AbstractController
     #[Route('/password', name: 'password', methods: ['POST'])]
     public function changePassword(
         #[CurrentUser] User $user,
-        #[MapRequestPayload] PasswordChange $input,
-        UserPasswordHasherInterface $hasher,
+        #[MapRequestPayload(acceptFormat: 'json')] PasswordChange $input,
+        PasswordChanger $passwords,
         Security $security,
     ): Response {
         $this->throttle($user);
-
-        $user->changePassword($hasher->hashPassword($user, $input->newPassword));
-        $this->em->flush();
+        $passwords->change($user, $input);
 
         // Les autres sessions sont invalidées (empreinte du hash changée) ; on garde celle-ci
         $security->login($user, 'json_login', 'main');
@@ -109,6 +109,8 @@ final class ProfileController extends AbstractController
         if ($file->getSize() > self::MAX_AVATAR_BYTES) {
             throw new InvalidImageException('Image trop lourde (2 Mo maximum).');
         }
+        // Décoder une image coûte de la mémoire et du temps : 10 avatars par heure
+        $this->requestThrottle->consume($this->avatarUploadLimiter, $user->getId()->toRfc4122());
 
         $previous = $user->avatar();
         $user->changeAvatar($avatarStorage->store($processor->avatar($file->getPathname())));
@@ -149,7 +151,7 @@ final class ProfileController extends AbstractController
     #[Route('', name: 'delete', methods: ['DELETE'])]
     public function delete(
         #[CurrentUser] User $user,
-        #[MapRequestPayload] AccountDeletion $input,
+        #[MapRequestPayload(acceptFormat: 'json')] AccountDeletion $input,
         UserPasswordHasherInterface $hasher,
         AccountDeleter $deleter,
         Security $security,
