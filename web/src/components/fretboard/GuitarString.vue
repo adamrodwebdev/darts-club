@@ -81,10 +81,20 @@ const from = computed(() => ((props.strings[0] ?? 0) % 2 === 0 ? 'left' : 'right
   transform-origin: left center;
 }
 
+/*
+ * Corde loin de l'écran : mise en page seulement à son approche (au chargement, le texte des
+ * cordes du bas n'est pas mis en forme ; il reste dans le DOM, lu par les lecteurs d'écran).
+ * Boîte élargie jusqu'aux bords de la page et de quoi loger un anneau de focus : le contenu
+ * (bandes pleine largeur) n'est jamais rogné.
+ */
 .string__body {
   display: grid;
   gap: 1rem;
   min-width: 0;
+  margin: -0.5rem calc(-1 * var(--gutter));
+  padding: 0.5rem var(--gutter);
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 30rem;
 }
 
 /*
