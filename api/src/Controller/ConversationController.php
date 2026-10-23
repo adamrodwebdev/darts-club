@@ -6,6 +6,7 @@ use App\Dto\MessageInput;
 use App\Dto\NewConversation;
 use App\Entity\Conversation;
 use App\Entity\User;
+use App\Messaging\ConversationActivity;
 use App\Messaging\Conversations;
 use App\Messaging\Mailbox;
 use App\Messaging\MailboxAccess;
@@ -50,7 +51,7 @@ final class ConversationController extends AbstractController
     public function list(#[CurrentUser] User $user, ConversationRepository $repository, MailboxAccess $access): JsonResponse
     {
         $items = array_map(
-            fn (Conversation $c): array => $this->view->conversation($c, $user, $this->messages->latest($c), $this->messages->countUnread($c, $user)),
+            fn (Conversation $c): array => $this->view->conversation($c, $user, new ConversationActivity($this->messages->latest($c), $this->messages->countUnread($c, $user))),
             $repository->findVisibleTo($user, $access->mailboxesManagedBy($user)),
         );
 
@@ -77,7 +78,7 @@ final class ConversationController extends AbstractController
         }
 
         return $this->json(
-            $this->view->conversation($conversation, $user, $this->messages->latest($conversation), 0),
+            $this->view->conversation($conversation, $user, new ConversationActivity($this->messages->latest($conversation), 0)),
             Response::HTTP_CREATED,
         );
     }
@@ -90,7 +91,7 @@ final class ConversationController extends AbstractController
         $page = $this->messages->page($conversation, $cursor);
 
         return $this->json([
-            'conversation' => $this->view->conversation($conversation, $user, $page[0] ?? null, $this->messages->countUnread($conversation, $user)),
+            'conversation' => $this->view->conversation($conversation, $user, new ConversationActivity($page[0] ?? null, $this->messages->countUnread($conversation, $user))),
             // Ordre chronologique pour l'affichage
             'items' => array_reverse(array_map(fn ($m): array => $this->view->message($m, $user), $page)),
             'nextCursor' => \count($page) > 0 ? end($page)->getId()->toRfc4122() : null,

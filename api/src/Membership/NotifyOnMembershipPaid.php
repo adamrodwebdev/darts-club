@@ -30,10 +30,10 @@ final class NotifyOnMembershipPaid
 
         $this->notifier->notify(
             new TranslatedNotification(
-                Category::Membership,
-                new TranslatableMessage('membership.paid_title', ['%season%' => (string) $membership->season()], 'notifications'),
-                new TranslatableMessage('membership.paid_body', ['%amount%' => new LocalizedMoney($membership->amountDue())], 'notifications'),
-                '/compte/cotisation',
+                category: Category::Membership,
+                title: new TranslatableMessage('membership.paid_title', ['%season%' => (string) $membership->season()], 'notifications'),
+                body: new TranslatableMessage('membership.paid_body', ['%amount%' => new LocalizedMoney($membership->amountDue())], 'notifications'),
+                link: '/compte/cotisation',
             ),
             Recipients::users($user->getId()),
         );

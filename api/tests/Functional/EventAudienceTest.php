@@ -4,6 +4,7 @@ namespace App\Tests\Functional;
 
 use App\ClubEvent\EventAudience;
 use App\ClubEvent\EventDetails;
+use App\ClubEvent\PageVisit;
 use App\Entity\ClubEvent;
 use App\Enum\Role;
 use App\Repository\EventViewRepository;
@@ -80,7 +81,7 @@ final class EventAudienceTest extends ApiTestCase
         $audience->purge();
         $this->entityManager()->refresh($event);
         self::assertNull($event->audienceKey());
-        $audience->record($event, null, false, '198.51.100.20', self::BROWSER_B);
+        $audience->record($event, new PageVisit(member: null, ip: '198.51.100.20', userAgent: self::BROWSER_B));
         self::assertSame(1, $audience->report($event)['unique']);
 
         // 13 mois après : le détail est remplacé par les totaux

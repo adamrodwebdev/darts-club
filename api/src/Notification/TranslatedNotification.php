@@ -27,10 +27,10 @@ final readonly class TranslatedNotification implements NotificationMessage
     public function localize(TranslatorInterface $translator, string $locale): NotificationContent
     {
         return (new NotificationContent(
-            $this->category,
-            mb_substr($this->title->trans($translator, $locale), 0, NotificationContent::TITLE_MAX),
-            mb_substr($this->body->trans($translator, $locale), 0, NotificationContent::BODY_MAX),
-            $this->link,
+            category: $this->category,
+            title: mb_substr($this->title->trans($translator, $locale), 0, NotificationContent::TITLE_MAX),
+            body: mb_substr($this->body->trans($translator, $locale), 0, NotificationContent::BODY_MAX),
+            link: $this->link,
         ))->localize($translator, $locale);
     }
 }

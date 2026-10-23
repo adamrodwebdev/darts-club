@@ -48,10 +48,10 @@ final class NotifyOnMessagePosted
 
         $this->notifier->notify(
             new TranslatedNotification(
-                Category::Message,
-                self::title($author, $mailbox, $conversation->getSubject()),
-                new TranslatableMessage('message.body', ['%preview%' => $message->body()->preview()], 'notifications'),
-                '/messages/'.$conversation->getId()->toRfc4122(),
+                category: Category::Message,
+                title: self::title($author, $mailbox, $conversation->getSubject()),
+                body: new TranslatableMessage('message.body', ['%preview%' => $message->body()->preview()], 'notifications'),
+                link: '/messages/'.$conversation->getId()->toRfc4122(),
             ),
             Recipients::users(...array_values($recipients)),
         );

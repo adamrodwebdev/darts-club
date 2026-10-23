@@ -16,16 +16,15 @@ final class AuditTrail
     ) {
     }
 
-    /** @param array<string, scalar|null> $details */
-    public function record(User $actor, string $action, ?string $target = null, array $details = []): void
+    public function record(User $actor, AuditEntry $entry): void
     {
         $this->em->persist(new AuditLog(
             actorName: mb_substr($actor->displayName()->value, 0, 80),
             actorId: $actor->getId(),
-            action: $action,
-            target: null !== $target ? mb_substr($target, 0, 120) : null,
+            action: $entry->action,
+            target: null !== $entry->target ? mb_substr($entry->target, 0, 120) : null,
             now: $this->clock->now(),
-            details: $details,
+            details: $entry->details,
         ));
     }
 }

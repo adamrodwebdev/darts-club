@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\ClubEvent\Attendance;
+use App\ClubEvent\GuestRequest;
 use App\Preference\Language;
 use App\Repository\GuestResponseRepository;
 use App\ValueObject\DisplayName;
@@ -62,20 +63,17 @@ class GuestResponse
         #[ORM\ManyToOne(inversedBy: 'guestResponses')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private ClubEvent $event,
-        DisplayName $name,
-        EmailAddress $email,
-        Attendance $answer,
+        GuestRequest $request,
         string $tokenHash,
-        Language $language,
         \DateTimeImmutable $now,
     ) {
         $this->id = Uuid::v7();
-        $this->name = $name->value;
-        $this->email = $email->value;
-        $this->pendingAnswer = $answer;
+        $this->name = $request->name->value;
+        $this->email = $request->email->value;
+        $this->pendingAnswer = $request->answer;
         $this->tokenHash = $tokenHash;
         $this->tokenIssuedAt = $now;
-        $this->language = $language;
+        $this->language = $request->language;
         $this->createdAt = $now;
     }
 
@@ -85,13 +83,13 @@ class GuestResponse
     }
 
     /** Nouvelle demande pour la même adresse : nouveau lien, nouvelle réponse à confirmer. */
-    public function reissue(DisplayName $name, Attendance $answer, string $tokenHash, Language $language, \DateTimeImmutable $now): void
+    public function reissue(GuestRequest $request, string $tokenHash, \DateTimeImmutable $now): void
     {
-        $this->name = $name->value;
-        $this->pendingAnswer = $answer;
+        $this->name = $request->name->value;
+        $this->pendingAnswer = $request->answer;
         $this->tokenHash = $tokenHash;
         $this->tokenIssuedAt = $now;
-        $this->language = $language;
+        $this->language = $request->language;
     }
 
     /** Applique la réponse en attente ; appelé par ClubEvent (contrôle des places). */

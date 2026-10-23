@@ -57,10 +57,10 @@ final class EventReminders
     {
         $this->notifier->notify(
             new TranslatedNotification(
-                Category::Event,
-                new TranslatableMessage($titleKey, ['%title%' => $event->getTitle()], 'notifications'),
-                NotifyOnClubEventChanges::body($event),
-                NotifyOnClubEventChanges::link($event),
+                category: Category::Event,
+                title: new TranslatableMessage($titleKey, ['%title%' => $event->getTitle()], 'notifications'),
+                body: NotifyOnClubEventChanges::body($event),
+                link: NotifyOnClubEventChanges::link($event),
             ),
             $recipients,
         );

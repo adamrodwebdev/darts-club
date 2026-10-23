@@ -49,7 +49,7 @@ final class OAuthAuthenticator extends OAuth2Authenticator
         // Identifiant du badge : jamais le jeton d'accès (journaux, limiteur)
         return new SelfValidatingPassport(new UserBadge(
             $provider.':'.$subject,
-            fn () => $this->resolver->resolve($provider, $subject, $email, $verified, $language),
+            fn () => $this->resolver->resolve(new OAuthProfile(provider: $provider, subject: $subject, email: $email, emailVerified: $verified), $language),
         ));
     }
 

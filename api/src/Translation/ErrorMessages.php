@@ -21,9 +21,9 @@ final class ErrorMessages
     ) {
     }
 
-    /** @param array<string, string|int> $parameters */
-    public function trans(string $message, Request $request, array $parameters = [], string $domain = 'errors'): string
+    /** Message du domaine « errors » dans la langue préférée de la requête */
+    public function trans(string $message, Request $request): string
     {
-        return $this->translator->trans($message, $parameters, $domain, $request->getPreferredLanguage($this->locales));
+        return $this->translator->trans($message, [], 'errors', $request->getPreferredLanguage($this->locales));
     }
 }
