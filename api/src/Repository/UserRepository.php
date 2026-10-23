@@ -25,6 +25,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->findOneBy(['email' => $email->value]);
     }
 
+    /** @return int comptes supprimés */
+    public function deleteUnverifiedCreatedBefore(\DateTimeImmutable $limit): int
+    {
+        $deleted = $this->createQueryBuilder('u')
+            ->delete()
+            ->andWhere('u.verified = false AND u.createdAt < :limit')
+            ->setParameter('limit', $limit)
+            ->getQuery()
+            ->execute();
+
+        return \is_int($deleted) ? $deleted : 0;
+    }
+
     public function findOneByCalendarToken(string $token): ?User
     {
         return 1 === preg_match('/^[a-f0-9]{48}$/', $token)

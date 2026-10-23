@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { bool, obj, strList } from '@/models/guards'
+import { bool, obj, str, strList } from '@/models/guards'
 import { Profile } from '@/models/Profile'
 
 export interface Registration {
@@ -63,6 +63,32 @@ export class AuthService {
 
   async resendVerification(email: string): Promise<void> {
     await this.api.post('/api/auth/verify/resend', { email })
+  }
+
+  /**
+   * Paramètres d'un lien reçu par email (confirmation d'adresse, nouveau mot de passe), recopiés tels
+   * quels vers l'API : seulement les clés attendues, une seule valeur chacune.
+   */
+  static linkQuery(query: Readonly<Record<string, unknown>>, keys: readonly string[]): string {
+    const params = new URLSearchParams()
+    for (const key of keys) {
+      const value = query[key]
+      if (typeof value === 'string') params.set(key, value)
+    }
+    return params.toString()
+  }
+
+  /** Confirme l'adresse avec le mot de passe choisi à l'inscription ; renvoie l'email du compte. */
+  async confirmEmail(linkQuery: string, password: string): Promise<string> {
+    return str(obj(await this.api.post(`/api/auth/verify?${linkQuery}`, { password })).email)
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.api.post('/api/auth/password/forgot', { email })
+  }
+
+  async resetPassword(linkQuery: string, password: string): Promise<void> {
+    await this.api.post(`/api/auth/password/reset?${linkQuery}`, { password })
   }
 
   /** Fournisseurs configurés sur le serveur (aucun bouton si l'API est injoignable). */

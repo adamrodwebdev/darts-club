@@ -32,7 +32,10 @@
     "privacy": "Confidentialité",
     "notFound": "Page introuvable",
     "publicEvent": "Événement",
-    "guestResponse": "Ma réponse"
+    "guestResponse": "Ma réponse",
+    "confirmEmail": "Confirmer mon adresse",
+    "forgotPassword": "Mot de passe oublié",
+    "resetPassword": "Nouveau mot de passe"
   },
   "app": {
     "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
@@ -231,7 +234,9 @@
       "resend": "Renvoyer le lien de confirmation",
       "resent": "Si un compte en attente existe, un nouveau lien vient d’être envoyé.",
       "noAccount": "Pas encore de compte ?",
-      "join": "Rejoindre le club"
+      "join": "Rejoindre le club",
+      "forgot": "Mot de passe oublié ?",
+      "resetSuccess": "Mot de passe changé : connecte-toi avec le nouveau."
     },
     "register": {
       "title": "Rejoindre le club",
@@ -243,6 +248,26 @@
       "submit": "Créer mon compte",
       "alreadyMember": "Déjà membre ?",
       "login": "Se connecter"
+    },
+    "confirm": {
+      "title": "Confirmer mon adresse",
+      "intro": "Saisis le mot de passe choisi à l’inscription : ton compte s’active et tu es connecté.",
+      "submit": "Confirmer et me connecter",
+      "notYou": "Ce n’est pas toi qui as choisi ce mot de passe, ou tu l’as oublié ?",
+      "choosePassword": "Choisir mon mot de passe"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "intro": "Indique ton adresse : tu recevras un lien, valable une heure, pour choisir un nouveau mot de passe.",
+      "submit": "Recevoir le lien",
+      "sent": "Si un compte existe avec cette adresse, le lien vient de partir. Pense à regarder dans les indésirables.",
+      "back": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "password": "Nouveau mot de passe",
+      "submit": "Enregistrer",
+      "newLink": "Lien expiré ? En demander un nouveau"
     }
   },
   "notFound": {

@@ -18,7 +18,7 @@ async function audit(page: Page): Promise<void> {
 
 // Contrastes vérifiés dans les deux thèmes (thème du système émulé)
 for (const theme of THEMES) {
-  for (const path of ['/', '/en', '/connexion', '/inscription', '/mentions-legales', '/confidentialite']) {
+  for (const path of ['/', '/en', '/connexion', '/inscription', '/mot-de-passe-oublie', '/nouveau-mot-de-passe', '/confirmer-email', '/mentions-legales', '/confidentialite']) {
     test(`public page ${path} meets WCAG 2.2 AA in ${theme} theme`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' })
       await page.goto(path)

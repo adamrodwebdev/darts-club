@@ -34,6 +34,9 @@ const notice = computed(() => {
   if (route.query.oauth === 'failed') {
     return { kind: 'error', text: t('auth.login.oauthFailed') }
   }
+  if (route.query.reset === 'success') {
+    return { kind: 'success', text: t('auth.login.resetSuccess') }
+  }
   return null
 })
 
@@ -90,6 +93,7 @@ async function resendLink(): Promise<void> {
     <form v-else class="stack" novalidate @submit.prevent="submit">
       <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" required />
       <BaseField v-model="password" :label="t('common.password')" type="password" autocomplete="current-password" required />
+      <RouterLink class="forgot" to="/mot-de-passe-oublie">{{ t('auth.login.forgot') }}</RouterLink>
 
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
 
@@ -118,5 +122,13 @@ async function resendLink(): Promise<void> {
 .switch {
   margin-top: 1.5rem;
   text-align: center;
+}
+
+.forgot {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  min-height: 2.75rem;
+  margin-top: -0.75rem;
 }
 </style>
