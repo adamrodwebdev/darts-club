@@ -41,11 +41,20 @@ final class PublicEventController extends AbstractController
     ) {
     }
 
-    /** Événements ouverts au public à venir (accueil, calendrier des visiteurs) */
+    /**
+     * Événements ouverts au public (accueil, calendrier des visiteurs) : à venir du plus
+     * proche au plus lointain, puis passés du plus récent au plus ancien (hors annulés).
+     */
     #[Route('/api/public/events', name: 'public_event_list', methods: ['GET'], format: 'json')]
     public function list(): JsonResponse
     {
-        return $this->json(['items' => array_map(fn (ClubEvent $e): array => $this->view($e), $this->events->upcomingPublic($this->clock->now()))]);
+        $now = $this->clock->now();
+        $view = fn (ClubEvent $e): array => $this->view($e);
+
+        return $this->json([
+            'items' => array_map($view, $this->events->upcomingPublic($now)),
+            'past' => array_map($view, $this->events->pastPublic($now)),
+        ]);
     }
 
     /**

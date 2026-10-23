@@ -78,3 +78,28 @@ describe('ClubEvent', () => {
     expect(dateBlock(event.startsAt)).toEqual({ day: '24', month: 'oct' })
   })
 })
+
+describe('PublicEventTimeline', () => {
+  const raw = (slug: string, overrides: Record<string, unknown> = {}) => ({
+    slug, title: slug, description: '', city: 'Bellevesvre', startsAt: '2026-10-31T16:00:00+00:00', endsAt: '2026-10-31T22:00:00+00:00',
+    status: 'prevu', cancelReason: null, capacity: null, going: 3, maybe: 1, full: false, started: false, past: false, poster: null,
+    ...overrides,
+  })
+
+  it('shows the next event first, then the later ones, then the past ones newest first', async () => {
+    const { parsePublicEventTimeline, timelineSlides } = await import('../PublicEvent')
+    const timeline = parsePublicEventTimeline({
+      items: [raw('live', { started: true }), raw('cancelled', { status: 'annule' }), raw('halloween'), raw('noel')],
+      past: [raw('rentree', { past: true }), raw('printemps', { past: true })],
+    })
+
+    expect(timelineSlides(timeline).map((s) => `${s.event.slug}:${s.badge}`)).toEqual([
+      'live:live', 'cancelled:cancelled', 'halloween:next', 'noel:upcoming', 'rentree:past', 'printemps:past',
+    ])
+  })
+
+  it('rejects a response without the past events', async () => {
+    const { parsePublicEventTimeline } = await import('../PublicEvent')
+    expect(() => parsePublicEventTimeline({ items: [] })).toThrow(InvalidResponseError)
+  })
+})

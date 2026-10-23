@@ -354,6 +354,24 @@ final class ClubEventTest extends ApiTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testVisitorsKeepTrackOfPastPublicEvents(): void
+    {
+        $this->pastPublicEvent('Tournoi de printemps', '2026-04-11 19:00');
+        $this->pastPublicEvent('Soirée de rentrée', '2026-09-12 19:00');
+        $this->pastEvent('Soirée privée passée', '2026-09-26 19:00');
+        $this->pastPublicEvent('Soirée annulée', '2026-10-03 19:00')->cancel('Salle indisponible');
+        $this->entityManager()->flush();
+
+        // Du plus récent au plus ancien ; ni événement privé ni événement annulé, jamais l'adresse
+        $this->client->request('GET', '/api/public/events');
+        self::assertResponseIsSuccessful();
+        self::assertSame([], $this->json()['items']);
+        self::assertSame(['Soirée de rentrée', 'Tournoi de printemps'], array_column((array) $this->json()['past'], 'title'));
+        self::assertTrue($this->dig($this->json(), 'past', 0, 'past'));
+        self::assertSame('Mâcon', $this->dig($this->json(), 'past', 0, 'city'));
+        self::assertArrayNotHasKey('location', (array) $this->dig($this->json(), 'past', 0));
+    }
+
     public function testUnconfirmedGuestAnswersAreForgotten(): void
     {
         $this->loginAsSecretary();
@@ -419,6 +437,18 @@ final class ClubEventTest extends ApiTestCase
         );
         $event->releaseEvents();
         $this->entityManager()->persist($event);
+        $this->entityManager()->flush();
+
+        return $event;
+    }
+
+    /** Événement passé ouvert au public, avec son adresse /e/{slug} */
+    private function pastPublicEvent(string $title, string $start): ClubEvent
+    {
+        $event = $this->pastEvent($title, $start);
+        $event->edit(new EventDetails($title, 'Archive', 'Club', $event->getStartsAt(), $event->getEndsAt(), null, true, 'Mâcon'), $event->getStartsAt()->modify('-1 day'));
+        $event->assignPublicAddress(substr(hash('sha256', $title), 0, 6));
+        $event->releaseEvents();
         $this->entityManager()->flush();
 
         return $event;
