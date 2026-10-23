@@ -20,7 +20,7 @@ final class NotificationTest extends ApiTestCase
         $alice = $this->createUser('alice@example.com');
         $this->createUser('bob@example.com');
         $this->createUser('pending@example.com', verified: false);
-        $this->subscribePush($alice, 'https://push.example/alice');
+        $this->subscribePush($alice, 'https://fcm.googleapis.com/fcm/send/alice');
 
         $this->notifier()->notify(
             new NotificationContent(Category::Event, 'Tournoi d\'automne', 'Rendez-vous samedi 14 h.', '/evenements/1'),
@@ -114,8 +114,8 @@ final class NotificationTest extends ApiTestCase
     public function testExpiredPushSubscriptionIsRemoved(): void
     {
         $alice = $this->createUser('alice@example.com');
-        $this->subscribePush($alice, 'https://push.example/gone');
-        $this->service(FakePushSender::class, FakePushSender::class)->expiredEndpoints = ['https://push.example/gone'];
+        $this->subscribePush($alice, 'https://updates.push.services.mozilla.com/wpush/v2/gone');
+        $this->service(FakePushSender::class, FakePushSender::class)->expiredEndpoints = ['https://updates.push.services.mozilla.com/wpush/v2/gone'];
 
         $this->notifier()->notify(new NotificationContent(Category::Meeting, 'AG', 'Mardi.'), Recipients::users($alice->getId()));
 
@@ -130,7 +130,7 @@ final class NotificationTest extends ApiTestCase
         $this->client->request('GET', '/api/push/public-key');
         self::assertSame('test-public-key', $this->json()['publicKey']);
 
-        $subscription = ['endpoint' => 'https://push.example/abc', 'keys' => ['p256dh' => 'key', 'auth' => 'secret']];
+        $subscription = ['endpoint' => 'https://web.push.apple.com/abc', 'keys' => ['p256dh' => 'key', 'auth' => 'secret']];
         $this->postJson('/api/push/subscriptions', $subscription);
         self::assertResponseStatusCodeSame(201);
 

@@ -22,9 +22,9 @@ class PushSubscriptionRepository extends ServiceEntityRepository
         return $this->findOneBy(['endpoint' => $endpoint]);
     }
 
-    /** @return list<PushSubscription> */
+    /** @return list<PushSubscription> du plus ancien au plus récent */
     public function findByUser(User $user): array
     {
-        return $this->findBy(['user' => $user]);
+        return $this->findBy(['user' => $user], ['createdAt' => 'ASC']);
     }
 }

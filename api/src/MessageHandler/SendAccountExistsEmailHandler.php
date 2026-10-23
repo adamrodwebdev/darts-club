@@ -4,9 +4,9 @@ namespace App\MessageHandler;
 
 use App\Message\SendAccountExistsEmail;
 use App\Repository\UserRepository;
+use App\Security\ThrottledMailer;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -15,7 +15,7 @@ final class SendAccountExistsEmailHandler
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly MailerInterface $mailer,
+        private readonly ThrottledMailer $mailer,
         private readonly TranslatorInterface $translator,
         #[Autowire('%env(FRONTEND_URL)%')]
         private readonly string $frontendUrl,

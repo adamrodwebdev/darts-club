@@ -101,7 +101,7 @@ final class TreasuryController extends AbstractController
     }
 
     #[Route('/memberships/{id}/payments', name: 'record_payment', requirements: ['id' => self::UUID], methods: ['POST'])]
-    public function recordPayment(Membership $membership, #[MapRequestPayload] PaymentInput $input, #[CurrentUser] User $treasurer): JsonResponse
+    public function recordPayment(Membership $membership, #[MapRequestPayload(acceptFormat: 'json')] PaymentInput $input, #[CurrentUser] User $treasurer): JsonResponse
     {
         try {
             $this->treasury->recordPayment(

@@ -80,3 +80,5 @@
 'Confirme d''abord ta réponse.': 'Confirm your answer first.'
 'Réponse inconnue : « je-viens » ou « pas-sur » attendu.': 'Unknown answer: “je-viens” or “pas-sur” expected.'
 'Ton accord est nécessaire pour enregistrer ta réponse.': 'Your consent is required to record your answer.'
+'Image trop grande (25 mégapixels maximum).': 'Image too large (25 megapixels maximum).'
+'Service push inconnu : seuls ceux des navigateurs sont acceptés.': 'Unknown push service: only browser push services are accepted.'

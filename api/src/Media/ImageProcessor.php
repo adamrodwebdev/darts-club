@@ -13,8 +13,11 @@ final class ImageProcessor
     public const THUMB_MAX_SIDE = 480;
     /** Affiche sur les cartes du calendrier : nette sur écran haute densité */
     public const POSTER_CARD_MAX_SIDE = 900;
-    /** Garde-fou contre les « bombes de décompression » */
-    private const MAX_PIXELS = 40_000_000;
+    /**
+     * Garde-fou contre les « bombes de décompression » : 25 mégapixels décodés occupent 100 Mo,
+     * loin de la limite mémoire de PHP (256 Mo), qu'une image envoyée ne doit jamais atteindre.
+     */
+    private const MAX_PIXELS = 25_000_000;
     private const ALLOWED_TYPES = [\IMAGETYPE_JPEG, \IMAGETYPE_PNG, \IMAGETYPE_WEBP];
 
     /** Avatar : recadrage carré centré. */
@@ -75,8 +78,11 @@ final class ImageProcessor
         }
 
         [$width, $height] = $info;
-        if ($width < 1 || $height < 1 || $width * $height > self::MAX_PIXELS) {
+        if ($width < 1 || $height < 1) {
             throw new InvalidImageException('Dimensions d\'image non prises en charge.');
+        }
+        if ($width * $height > self::MAX_PIXELS) {
+            throw new InvalidImageException('Image trop grande (25 mégapixels maximum).');
         }
 
         $image = match ($info[2]) {
@@ -86,6 +92,12 @@ final class ImageProcessor
         };
         if (false === $image) {
             throw new InvalidImageException('Image illisible.');
+        }
+
+        // Aucune version produite ne dépasse PHOTO_MAX_SIDE : l'original est réduit tout de suite, et la
+        // mémoire ne contient jamais deux images en pleine résolution (pas même pendant la rotation)
+        if (max($width, $height) > self::PHOTO_MAX_SIDE) {
+            $image = $this->fit($image, self::PHOTO_MAX_SIDE);
         }
 
         // Respecte l'orientation des photos de smartphone (EXIF supprimé ensuite)

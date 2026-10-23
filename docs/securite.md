@@ -33,6 +33,14 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 | Faible | Envoi d'email pouvant retomber en clair si STARTTLS est retiré en chemin | `require_tls=true` dans le DSN (ajouté au `.env` existant par `deploy.sh`) | — |
 | Faible | Réglage CORS de développement actif en production | Aucune origine autorisée en production (même origine) | — |
 | Faible | Ports de développement (base, Mailpit, Mercure) ouverts au réseau local | Liés à `127.0.0.1` | — |
+| Moyenne | Abonnement push vers n'importe quelle adresse HTTPS : le worker écrivait à des machines internes ou à des hôtes muets (file des emails bloquée), sans limite d'abonnements | Services push des navigateurs seulement (Google, Mozilla, Microsoft, Apple), ni redirection ni réseau privé, 5 s sans réponse et 10 s en tout au plus ; 10 abonnements par compte, 10 nouveaux par heure | `PushEndpointTest`, `AbuseLimitsTest` |
+| Moyenne | Changement de mot de passe : le mot de passe actuel était vérifié avant la limite d'essais, donc devinable sans fin avec une session volée | Essai décompté d'abord (5 par 15 minutes), erreur toujours affichée sous le champ | `AbuseLimitsTest` |
+| Moyenne | Limites par adresse IP contournées en IPv6 (un abonnement reçoit 2⁶⁴ adresses), connexion comprise | Clés par réseau /64 en IPv6 (`ClientNetwork`), limiteur de connexion dédié | `AbuseLimitsTest`, `ClientNetworkTest` |
+| Moyenne | Emails envoyés à la demande d'un visiteur (inscription, compte existant, réponse sans compte) sans plafond par destinataire ni global : boîte d'une victime inondée, quota d'envoi épuisé | 4 par jour et par adresse, 100 par jour en tout ; au-delà, rien n'est envoyé et la réponse ne change pas | `AbuseLimitsTest` |
+| Faible | Avatar sans limite d'envoi ; images jusqu'à 40 mégapixels, que la rotation doublait en mémoire | 10 avatars par heure ; 25 mégapixels au plus, image réduite avant toute rotation | `ImageProcessorTest` |
+| Faible | Connexion plus rapide pour une adresse inconnue : le chronomètre disait quels comptes existent | Hachage volontaire quand le mot de passe n'a pas été vérifié | `LoginTimingEqualizerTest` |
+| Faible | Routes JSON acceptant aussi XML et formulaires | JSON seulement (415 sinon) | `AbuseLimitsTest` |
+| Faible | Chaque requête anonyme vers une route protégée créait une session dans Redis | Session laissée vide : ni cookie, ni écriture | `AbuseLimitsTest` |
 
 ## Contrôles vérifiés
 
@@ -43,6 +51,6 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 - **CSRF** : contrôle d'origine sur toute requête modifiant l'état (y compris les envois de fichiers) ; aucun GET à effet de bord hormis le lien signé de confirmation ; paramètre `state` OAuth ; CORS sans identifiants.
 - **Injections** : requêtes paramétrées partout ; noms de fichiers téléchargés constants ou validés ; cellules CSV protégées contre les formules ; texte iCal échappé ; aucun `v-html` dans le front ; liens de notification limités aux chemins internes.
 - **Fichiers** : taille limitée, type vérifié sur le contenu, nombre de pixels plafonné, réencodage WebP (métadonnées et position GPS supprimées), identifiants aléatoires validés, fichiers servis hors du dossier public avec `nosniff`.
-- **Limites de débit** : connexion (5 / 15 min), inscription, renvoi de confirmation, actions sensibles, messages, photos, codes 2FA (par session et par compte).
+- **Limites de débit** : connexion (5 / 15 min), inscription, renvoi de confirmation, actions sensibles, messages, photos, avatars, abonnements push, codes 2FA (par session et par compte) ; origine = adresse IPv4 ou réseau /64 en IPv6 ; emails demandés sans connexion plafonnés par destinataire et par jour.
 - **Temps réel (Mercure)** : publications privées, jeton d'abonnement limité aux sujets de l'utilisateur, hub non exposé directement.
 - **Production** : mode debug désactivé, aucun outil de développement, en-têtes HSTS / CSP stricte sans script inline / `frame-ancestors 'none'`, secrets obligatoires au démarrage, aucune base exposée sur Internet, image Docker sans fichier local ni secret (vérifié en CI), actions GitHub tierces épinglées par empreinte, sauvegardes chiffrées.

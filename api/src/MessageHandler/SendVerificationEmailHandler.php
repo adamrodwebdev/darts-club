@@ -4,8 +4,8 @@ namespace App\MessageHandler;
 
 use App\Message\SendVerificationEmail;
 use App\Repository\UserRepository;
+use App\Security\ThrottledMailer;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
@@ -16,7 +16,7 @@ final class SendVerificationEmailHandler
     public function __construct(
         private readonly UserRepository $users,
         private readonly VerifyEmailHelperInterface $verifyEmailHelper,
-        private readonly MailerInterface $mailer,
+        private readonly ThrottledMailer $mailer,
         private readonly TranslatorInterface $translator,
     ) {
     }

@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use App\Security\ClientNetwork;
 use App\Security\RequestThrottle;
 use App\Translation\ErrorMessages;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -13,7 +14,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 
 /**
  * Anti force brute sur la saisie du code 2FA (6 chiffres = 1 million de
- * combinaisons) : 5 essais / 5 min par session et par IP.
+ * combinaisons) : 5 essais / 5 min par session et par origine (IPv4, réseau /64 en IPv6).
  * Priorité 16 : après le routeur (32), avant le pare-feu (8).
  */
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 16)]
@@ -34,7 +35,7 @@ final class TwoFactorCheckThrottle
         }
 
         $session = $request->hasSession() ? $request->getSession()->getId() : '';
-        $limit = $this->twoFactorCheckLimiter->create($request->getClientIp().'|'.$session)->consume();
+        $limit = $this->twoFactorCheckLimiter->create(ClientNetwork::of($request).'|'.$session)->consume();
 
         if (!$limit->isAccepted()) {
             $event->setResponse(new JsonResponse(

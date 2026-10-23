@@ -9,6 +9,7 @@ use App\Entity\GuestResponse;
 use App\Media\ImageStorage;
 use App\Preference\Language;
 use App\Repository\ClubEventRepository;
+use App\Security\ClientNetwork;
 use App\Security\RequestThrottle;
 use App\Translation\Unprocessable;
 use App\ValueObject\DisplayName;
@@ -117,7 +118,7 @@ final class PublicEventController extends AbstractController
             throw new Unprocessable('Ton accord est nécessaire pour enregistrer ta réponse.');
         }
 
-        $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.$request->getClientIp());
+        $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.ClientNetwork::of($request));
         $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
 
         DomainCall::run(fn () => $this->guests->request($event, new GuestRequest(
@@ -178,7 +179,7 @@ final class PublicEventController extends AbstractController
 
     private function response(Request $request, RateLimiterFactoryInterface $limiter): GuestResponse
     {
-        $this->requestThrottle->consume($limiter, 'ip-'.$request->getClientIp());
+        $this->requestThrottle->consume($limiter, 'ip-'.ClientNetwork::of($request));
         $response = $this->guests->find(self::text($request->toArray(), 'token'));
         if (null === $response || !$response->getEvent()->isPublic()) {
             throw new NotFoundHttpException();

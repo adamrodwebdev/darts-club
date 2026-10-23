@@ -8,10 +8,19 @@ use Minishlink\WebPush\WebPush;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpClient\NoPrivateNetworkHttpClient;
+use Symfony\Component\HttpClient\Psr18Client;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsAlias(PushSender::class)]
 final class WebPushSender implements PushSender
 {
+    /**
+     * Un service push qui tarde ne retient pas le worker (et les emails derrière lui) : ni redirection,
+     * 5 s sans réponse ou 10 s en tout au plus, jamais vers une adresse privée.
+     */
+    private const HTTP_OPTIONS = ['max_redirects' => 0, 'timeout' => 5, 'max_duration' => 10];
+
     private ?WebPush $webPush = null;
 
     public function __construct(
@@ -22,6 +31,7 @@ final class WebPushSender implements PushSender
         private readonly string $vapidPrivateKey,
         #[Autowire('%env(VAPID_SUBJECT)%')]
         private readonly string $vapidSubject,
+        private readonly HttpClientInterface $httpClient,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -38,7 +48,13 @@ final class WebPushSender implements PushSender
             return PushResult::Failed;
         }
 
-        $endpoint = $subscription->endpoint();
+        try {
+            $endpoint = $subscription->endpoint();
+        } catch (\InvalidArgumentException) {
+            // Enregistré avant la liste des services push des navigateurs : abonnement à supprimer
+            return PushResult::Expired;
+        }
+
         $report = $webPush->sendOneNotification(
             new Subscription($endpoint->url, $endpoint->publicKey, $endpoint->authToken),
             $payload,
@@ -65,10 +81,13 @@ final class WebPushSender implements PushSender
             return null;
         }
 
-        return $this->webPush ??= new WebPush(['VAPID' => [
-            'subject' => $this->vapidSubject,
-            'publicKey' => $this->vapidPublicKey,
-            'privateKey' => $this->vapidPrivateKey,
-        ]]);
+        return $this->webPush ??= new WebPush(
+            ['VAPID' => [
+                'subject' => $this->vapidSubject,
+                'publicKey' => $this->vapidPublicKey,
+                'privateKey' => $this->vapidPrivateKey,
+            ]],
+            client: new Psr18Client(new NoPrivateNetworkHttpClient($this->httpClient->withOptions(self::HTTP_OPTIONS))),
+        );
     }
 }
