@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\ClubEvent\EventStatus;
 use App\Entity\ClubEvent;
 use App\Membership\Season;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -40,6 +41,22 @@ class ClubEventRepository extends ServiceEntityRepository
             ->andWhere('e.public = true AND e.endsAt >= :now')
             ->setParameter('now', $now, 'datetimetz_immutable')
             ->orderBy('e.startsAt', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /** @return list<ClubEvent> événements publics terminés (sauf annulés), du plus récent au plus ancien */
+    public function pastPublic(\DateTimeImmutable $now, int $limit = 24): array
+    {
+        /** @var list<ClubEvent> $result */
+        $result = $this->createQueryBuilder('e')
+            ->andWhere('e.public = true AND e.endsAt < :now AND e.status <> :cancelled')
+            ->setParameter('now', $now, 'datetimetz_immutable')
+            ->setParameter('cancelled', EventStatus::Cancelled)
+            ->orderBy('e.startsAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
