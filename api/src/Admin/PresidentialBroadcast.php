@@ -9,6 +9,7 @@ use App\Notification\NotificationContent;
 use App\Notification\Recipients;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -22,6 +23,7 @@ final class PresidentialBroadcast
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $em,
         private readonly AuditTrail $audit,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -46,7 +48,15 @@ final class PresidentialBroadcast
             $count = \count($ids);
         }
 
-        $broadcast = new Broadcast($label, $content->title, $content->body, mb_substr($president->displayName()->value, 0, 80), null === $userIds, $count);
+        $broadcast = new Broadcast(
+            label: $label,
+            title: $content->title,
+            body: $content->body,
+            authorName: mb_substr($president->displayName()->value, 0, 80),
+            toAllMembers: null === $userIds,
+            recipientCount: $count,
+            now: $this->clock->now(),
+        );
         $this->em->persist($broadcast);
         $this->audit->record($president, 'broadcast.send', $content->labelledTitle(), ['recipients' => $count]);
         $this->em->flush();

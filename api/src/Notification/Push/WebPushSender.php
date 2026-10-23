@@ -38,8 +38,9 @@ final class WebPushSender implements PushSender
             return PushResult::Failed;
         }
 
+        $endpoint = $subscription->endpoint();
         $report = $webPush->sendOneNotification(
-            new Subscription($subscription->getEndpoint(), $subscription->getPublicKey(), $subscription->getAuthToken()),
+            new Subscription($endpoint->url, $endpoint->publicKey, $endpoint->authToken),
             $payload,
             ['TTL' => 86400, 'urgency' => 'normal'],
         );

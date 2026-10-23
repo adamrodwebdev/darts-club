@@ -6,6 +6,7 @@ use App\Entity\ClubEvent;
 use App\Entity\GuestResponse;
 use App\Preference\Language;
 use App\Repository\GuestResponseRepository;
+use App\Security\TokenGenerator;
 use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +20,7 @@ final class GuestResponses
         private readonly ClockInterface $clock,
         private readonly GuestResponseRepository $responses,
         private readonly GuestMailer $mailer,
+        private readonly TokenGenerator $tokens,
     ) {
     }
 
@@ -28,7 +30,7 @@ final class GuestResponses
      */
     public function request(ClubEvent $event, string $name, string $email, Attendance $answer, Language $language): void
     {
-        $token = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+        $token = $this->tokens->urlSafe(32);
         $response = $event->requestGuestResponse(
             DisplayName::fromString($name),
             EmailAddress::fromString($email),

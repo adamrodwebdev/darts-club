@@ -16,11 +16,12 @@ final class FakePushSender implements PushSender
 
     public function send(PushSubscription $subscription, string $payload): PushResult
     {
-        if (\in_array($subscription->getEndpoint(), $this->expiredEndpoints, true)) {
+        $url = $subscription->endpoint()->url;
+        if (\in_array($url, $this->expiredEndpoints, true)) {
             return PushResult::Expired;
         }
 
-        $this->sent[] = ['endpoint' => $subscription->getEndpoint(), 'payload' => $payload];
+        $this->sent[] = ['endpoint' => $url, 'payload' => $payload];
 
         return PushResult::Sent;
     }

@@ -36,12 +36,13 @@ class EventPhoto
         private int $width,
         #[ORM\Column]
         private int $height,
+        \DateTimeImmutable $now,
         #[ORM\Column(length: 120, nullable: true)]
         private ?string $caption = null,
     ) {
         $this->id = Uuid::v7();
         $this->uploaderName = mb_substr($uploader?->displayName()->value ?? 'Ancien adhérent', 0, 80);
-        $this->uploadedAt = new \DateTimeImmutable();
+        $this->uploadedAt = $now;
     }
 
     public function isUploadedBy(User $user): bool

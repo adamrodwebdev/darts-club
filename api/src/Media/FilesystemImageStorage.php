@@ -2,6 +2,7 @@
 
 namespace App\Media;
 
+use App\Security\TokenGenerator;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -15,6 +16,7 @@ final class FilesystemImageStorage implements ImageStorage
 
     public function __construct(
         private readonly string $directory,
+        private readonly TokenGenerator $tokens,
     ) {
         $this->filesystem = new Filesystem();
     }
@@ -22,7 +24,7 @@ final class FilesystemImageStorage implements ImageStorage
     public function store(string $webpBinary): string
     {
         // Nom aléatoire : jamais dérivé du nom ou du contenu envoyé
-        $id = bin2hex(random_bytes(16));
+        $id = $this->tokens->hex(16);
         $this->filesystem->dumpFile($this->file($id), $webpBinary);
 
         return $id;

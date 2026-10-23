@@ -8,8 +8,10 @@ use App\Message\SendAccountExistsEmail;
 use App\Preference\Language;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
+use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 
@@ -20,6 +22,7 @@ final class UserRegistrar
         private readonly EntityManagerInterface $em,
         private readonly PasswordHasherFactoryInterface $hashers,
         private readonly MessageBusInterface $bus,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -42,10 +45,13 @@ final class UserRegistrar
         }
 
         $user = User::register(
-            $email,
+            new NewAccount(
+                email: $email,
+                phone: null !== $registration->phone && '' !== trim($registration->phone) ? PhoneNumber::fromInput($registration->phone) : null,
+                language: $language,
+            ),
             $this->hashers->getPasswordHasher(User::class)->hash($registration->password),
-            null !== $registration->phone && '' !== trim($registration->phone) ? PhoneNumber::fromInput($registration->phone) : null,
-            $language,
+            $this->clock->now(),
         );
 
         // UserRegistered est publié après le flush (DomainEventPublisher)

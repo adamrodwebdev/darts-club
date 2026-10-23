@@ -5,6 +5,7 @@ namespace App\Admin;
 use App\Entity\User;
 use App\Enum\Role;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * Gestion des membres par le président (et l'admin technique).
@@ -20,6 +21,7 @@ final class MemberAdministration
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly AuditTrail $audit,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -63,7 +65,7 @@ final class MemberAdministration
         }
 
         try {
-            $member->suspend($reason);
+            $member->suspend($reason, $this->clock->now());
         } catch (\InvalidArgumentException $e) {
             throw new AdministrationException($e->getMessage(), $e);
         }

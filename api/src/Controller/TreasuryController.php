@@ -10,6 +10,7 @@ use App\Membership\MembershipCsvExporter;
 use App\Membership\MembershipReminders;
 use App\Membership\MembershipStatus;
 use App\Membership\Money;
+use App\Membership\PaymentDetails;
 use App\Membership\PaymentMethod;
 use App\Membership\Season;
 use App\Membership\Treasury;
@@ -105,10 +106,12 @@ final class TreasuryController extends AbstractController
         try {
             $this->treasury->recordPayment(
                 $membership,
-                Money::fromDecimal($input->amount),
-                PaymentMethod::from($input->method),
-                new \DateTimeImmutable($input->paidAt),
-                $input->reference,
+                new PaymentDetails(
+                    amount: Money::fromDecimal($input->amount),
+                    method: PaymentMethod::from($input->method),
+                    paidAt: new \DateTimeImmutable($input->paidAt),
+                    reference: $input->reference,
+                ),
                 $treasurer,
             );
         } catch (\InvalidArgumentException|\DomainException $e) {

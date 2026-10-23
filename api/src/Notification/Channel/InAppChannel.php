@@ -10,6 +10,7 @@ use App\Notification\NotificationContent;
 use App\Notification\RealtimeTopics;
 use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 
@@ -20,6 +21,7 @@ final class InAppChannel implements NotificationChannelInterface
         private readonly EntityManagerInterface $em,
         private readonly NotificationRepository $notifications,
         private readonly HubInterface $hub,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -30,7 +32,7 @@ final class InAppChannel implements NotificationChannelInterface
 
     public function send(User $recipient, NotificationContent $content): void
     {
-        $notification = new Notification($recipient, $content);
+        $notification = new Notification($recipient, $content, $this->clock->now());
         $this->em->persist($notification);
         $this->em->flush();
 

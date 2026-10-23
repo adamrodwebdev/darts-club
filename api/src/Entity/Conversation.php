@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Event\DomainEventsTrait;
 use App\Event\RecordsDomainEvents;
 use App\Messaging\Mailbox;
+use App\Messaging\MailboxTopic;
 use App\Messaging\MessageBody;
 use App\Messaging\MessagePosted;
 use App\Repository\ConversationRepository;
@@ -43,41 +44,41 @@ class Conversation implements RecordsDomainEvents
     #[ORM\Column]
     private \DateTimeImmutable $lastMessageAt;
 
-    private function __construct()
+    private function __construct(\DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->participants = new ArrayCollection();
-        $this->createdAt = $this->lastMessageAt = new \DateTimeImmutable();
+        $this->createdAt = $this->lastMessageAt = $now;
     }
 
-    public static function between(User $a, User $b): self
+    public static function between(User $a, User $b, \DateTimeImmutable $now): self
     {
         if ($a->getId()->equals($b->getId())) {
             throw new \InvalidArgumentException('Impossible de s\'écrire à soi-même.');
         }
 
-        $conversation = new self();
+        $conversation = new self($now);
         $conversation->join($a);
         $conversation->join($b);
 
         return $conversation;
     }
 
-    public static function toMailbox(User $member, Mailbox $mailbox, ?string $subject = null): self
+    public static function toMailbox(User $member, MailboxTopic $topic, \DateTimeImmutable $now): self
     {
-        $conversation = new self();
-        $conversation->mailbox = $mailbox;
-        $subject = null !== $subject ? trim($subject) : '';
-        $conversation->subject = '' !== $subject ? mb_substr($subject, 0, 120) : null;
+        $conversation = new self($now);
+        $conversation->mailbox = $topic->mailbox;
+        $conversation->subject = $topic->subject;
         $conversation->join($member);
 
         return $conversation;
     }
 
-    public function post(User $author, MessageBody $body): Message
+    /** Publie un message ; renvoie le message créé, à persister (fabrique). */
+    public function post(User $author, MessageBody $body, \DateTimeImmutable $now): Message
     {
-        $message = new Message($this, $author, $body);
-        $this->lastMessageAt = $message->getCreatedAt();
+        $message = new Message(conversation: $this, author: $author, body: $body, now: $now);
+        $this->lastMessageAt = $now;
         // Un titulaire du rôle qui répond devient participant du fil
         $this->join($author)->markRead($this->lastMessageAt);
         $this->recordThat(new MessagePosted($this->id, $message->getId(), $author->getId()));
@@ -85,9 +86,9 @@ class Conversation implements RecordsDomainEvents
         return $message;
     }
 
-    public function markReadBy(User $user): void
+    public function markReadBy(User $user, \DateTimeImmutable $now): void
     {
-        $this->join($user)->markRead(new \DateTimeImmutable());
+        $this->join($user)->markRead($now);
     }
 
     public function isParticipant(User $user): bool

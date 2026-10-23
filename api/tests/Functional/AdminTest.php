@@ -66,7 +66,7 @@ final class AdminTest extends ApiTestCase
         $alice = $this->createUser('alice@example.com');
         $this->login('alice@example.com', self::PASSWORD);
 
-        $alice->suspend('Test');
+        $alice->suspend('Test', $this->now());
         $this->entityManager()->flush();
 
         $this->client->request('GET', '/api/me');

@@ -2,8 +2,16 @@
 
 namespace App\Tests\Unit;
 
+use App\Entity\Membership;
+use App\Entity\User;
+use App\Membership\MembershipStatus;
 use App\Membership\Money;
+use App\Membership\PaymentDetails;
+use App\Membership\PaymentMethod;
 use App\Membership\Season;
+use App\Membership\SeasonFee;
+use App\Preference\Language;
+use App\ValueObject\EmailAddress;
 use PHPUnit\Framework\TestCase;
 
 final class MembershipValuesTest extends TestCase
@@ -37,5 +45,37 @@ final class MembershipValuesTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         Money::fromDecimal('-5');
+    }
+
+    public function testPaymentDetailsNormaliseTheReference(): void
+    {
+        $paidAt = new \DateTimeImmutable('2026-09-05');
+
+        self::assertNull((new PaymentDetails(Money::cents(3000), PaymentMethod::Cash, $paidAt, '   '))->reference);
+        self::assertSame('Virement', (new PaymentDetails(Money::cents(3000), PaymentMethod::Transfer, $paidAt, ' Virement '))->reference);
+    }
+
+    public function testPaymentDetailsRejectAZeroAmount(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new PaymentDetails(Money::zero(), PaymentMethod::Cash, new \DateTimeImmutable('2026-09-05'));
+    }
+
+    public function testPaymentsAreDatedWithTheGivenTime(): void
+    {
+        $now = new \DateTimeImmutable('2026-10-15 12:00');
+        $user = User::registerViaOAuth(EmailAddress::fromString('bob@example.com'), Language::French, $now);
+        $membership = Membership::open($user, new SeasonFee(Season::fromLabel('2026-2027'), Money::cents(3000)), $now);
+
+        $membership->recordPayment(new PaymentDetails(Money::cents(3000), PaymentMethod::Cash, $now->modify('-1 day')), null, $now);
+        self::assertSame(MembershipStatus::Paid, $membership->status());
+
+        [$payment] = $membership->payments();
+        $membership->cancelPayment($payment, 'Erreur de saisie', $now->modify('+1 hour'));
+
+        self::assertEquals($now, $membership->getCreatedAt());
+        self::assertEquals($now, $payment->recordedAt());
+        self::assertEquals($now->modify('+1 hour'), $payment->cancelledAt());
+        self::assertSame(MembershipStatus::Unpaid, $membership->status());
     }
 }

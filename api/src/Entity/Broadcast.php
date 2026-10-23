@@ -34,9 +34,10 @@ class Broadcast
         private bool $toAllMembers,
         #[ORM\Column]
         private int $recipientCount,
+        \DateTimeImmutable $now,
     ) {
         $this->id = Uuid::v7();
-        $this->sentAt = new \DateTimeImmutable();
+        $this->sentAt = $now;
     }
 
     /** @return array<string, mixed> */

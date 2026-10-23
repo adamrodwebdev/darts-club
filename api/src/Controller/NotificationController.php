@@ -8,6 +8,7 @@ use App\Repository\NotificationRepository;
 use App\Security\Voter\NotificationVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -21,6 +22,7 @@ final class NotificationController extends AbstractController
 {
     public function __construct(
         private readonly NotificationRepository $notifications,
+        private readonly ClockInterface $clock,
     ) {
     }
 
@@ -40,7 +42,7 @@ final class NotificationController extends AbstractController
     #[IsGranted(NotificationVoter::OWNER, subject: 'notification')]
     public function read(Notification $notification, EntityManagerInterface $em): Response
     {
-        $notification->markRead();
+        $notification->markRead($this->clock->now());
         $em->flush();
 
         return new Response(status: Response::HTTP_NO_CONTENT);
@@ -49,7 +51,7 @@ final class NotificationController extends AbstractController
     #[Route('/read-all', name: 'read_all', methods: ['POST'])]
     public function readAll(#[CurrentUser] User $user): Response
     {
-        $this->notifications->markAllRead($user);
+        $this->notifications->markAllRead($user, $this->clock->now());
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

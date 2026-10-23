@@ -79,7 +79,7 @@ final class EventAudienceTest extends ApiTestCase
         $clock->modify('+40 days');
         $audience->purge();
         $this->entityManager()->refresh($event);
-        self::assertNull($event->audienceKey($clock->now()));
+        self::assertNull($event->audienceKey());
         $audience->record($event, null, false, '198.51.100.20', self::BROWSER_B);
         self::assertSame(1, $audience->report($event)['unique']);
 
@@ -102,6 +102,7 @@ final class EventAudienceTest extends ApiTestCase
             new \DateTimeImmutable('2026-10-15 12:00 UTC'),
         );
         $event->releaseEvents();
+        $event->assignPublicAddress('a1b2c3');
         $this->entityManager()->persist($event);
         $this->entityManager()->flush();
 

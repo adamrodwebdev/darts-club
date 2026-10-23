@@ -44,7 +44,7 @@ final class Treasury
         $created = 0;
         foreach ($this->users->findBy(['verified' => true]) as $user) {
             if (!isset($existing[$user->getId()->toRfc4122()])) {
-                $this->em->persist(Membership::open($user, $season, $amountDue));
+                $this->em->persist(Membership::open($user, new SeasonFee($season, $amountDue), $this->clock->now()));
                 ++$created;
             }
         }
@@ -59,7 +59,7 @@ final class Treasury
             throw new InvalidValue('Une cotisation %season% existe déjà pour cet adhérent.', ['%season%' => (string) $season]);
         }
 
-        $membership = Membership::open($user, $season, $amountDue);
+        $membership = Membership::open($user, new SeasonFee($season, $amountDue), $this->clock->now());
         $this->em->persist($membership);
         $this->em->flush();
 
@@ -72,21 +72,20 @@ final class Treasury
         $this->em->flush();
     }
 
-    public function recordPayment(Membership $membership, Money $amount, PaymentMethod $method, \DateTimeImmutable $paidAt, ?string $reference, User $treasurer): Payment
+    public function recordPayment(Membership $membership, PaymentDetails $details, User $treasurer): void
     {
-        if ($paidAt > $this->clock->now()) {
+        $now = $this->clock->now();
+        if ($details->paidAt > $now) {
             throw new \DomainException('La date de paiement ne peut pas être dans le futur.');
         }
 
-        $payment = $membership->recordPayment($amount, $method, $paidAt, $reference, $treasurer);
+        $membership->recordPayment($details, $treasurer, $now);
         $this->em->flush();
-
-        return $payment;
     }
 
     public function cancelPayment(Payment $payment, string $reason): void
     {
-        $payment->getMembership()->cancelPayment($payment, $reason);
+        $payment->getMembership()->cancelPayment($payment, $reason, $this->clock->now());
         $this->em->flush();
     }
 

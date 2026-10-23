@@ -13,6 +13,7 @@ use App\Preference\Theme;
 use App\Repository\UserRepository;
 use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
+use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -105,29 +106,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(length: 6, enumType: Theme::class, options: ['default' => 'system'])]
     private Theme $theme = Theme::System;
 
-    private function __construct(EmailAddress $email)
+    private function __construct(EmailAddress $email, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->email = $email->value;
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = $now;
     }
 
     /** Inscription classique : le compte reste inactif jusqu'à la vérification de l'email. */
-    public static function register(EmailAddress $email, string $hashedPassword, ?PhoneNumber $phone = null, Language $language = Language::French): self
+    public static function register(NewAccount $account, string $hashedPassword, \DateTimeImmutable $now): self
     {
-        $user = new self($email);
-        $user->language = $language;
+        $user = new self($account->email, $now);
+        $user->language = $account->language;
         $user->password = $hashedPassword;
-        $user->phone = $phone?->e164;
+        $user->phone = $account->phone?->e164;
         $user->recordThat(new UserRegistered($user->id));
 
         return $user;
     }
 
     /** Inscription via un fournisseur OAuth qui a déjà vérifié l'email. */
-    public static function registerViaOAuth(EmailAddress $email, Language $language = Language::French): self
+    public static function registerViaOAuth(EmailAddress $email, Language $language, \DateTimeImmutable $now): self
     {
-        $user = new self($email);
+        $user = new self($email, $now);
         $user->language = $language;
         $user->verified = true;
         $user->recordThat(new UserRegistered($user->id, viaOAuth: true));
@@ -302,16 +303,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     }
 
     /**
-     * Nouveau lien d'abonnement calendrier ; l'ancien cesse de fonctionner.
-     *
-     * @return string jeton en clair, à transmettre une seule fois
+     * Nouveau lien d'abonnement calendrier (jeton tiré par l'appelant, conservé
+     * seulement par son empreinte) ; l'ancien cesse de fonctionner.
      */
-    public function rotateCalendarToken(): string
+    public function replaceCalendarToken(string $token): void
     {
-        $token = bin2hex(random_bytes(24));
+        if (\strlen($token) < 32) {
+            throw new \LogicException('Jeton de calendrier trop court.');
+        }
         $this->calendarTokenHash = hash('sha256', $token);
-
-        return $token;
     }
 
     public function revokeCalendarToken(): void
@@ -324,14 +324,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return null !== $this->calendarTokenHash;
     }
 
-    public function suspend(string $reason): void
+    public function suspend(string $reason, \DateTimeImmutable $now): void
     {
         $reason = trim($reason);
         if ('' === $reason) {
             throw new \InvalidArgumentException('Le motif de suspension est obligatoire.');
         }
 
-        $this->suspendedAt = new \DateTimeImmutable();
+        $this->suspendedAt = $now;
         $this->suspensionReason = mb_substr($reason, 0, 200);
     }
 
