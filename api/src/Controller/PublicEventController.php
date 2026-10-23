@@ -20,7 +20,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
@@ -121,7 +120,7 @@ final class PublicEventController extends AbstractController
         $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.$request->getClientIp());
         $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
 
-        $this->guard(fn () => $this->guests->request($event, new GuestRequest(
+        DomainCall::run(fn () => $this->guests->request($event, new GuestRequest(
             name: DisplayName::fromString(self::text($data, 'name')),
             email: EmailAddress::fromString(self::text($data, 'email')),
             answer: ClubEventController::attendance($data['answer'] ?? null),
@@ -142,7 +141,7 @@ final class PublicEventController extends AbstractController
     public function confirm(Request $request, RateLimiterFactoryInterface $guestTokenLimiter): JsonResponse
     {
         $response = $this->response($request, $guestTokenLimiter);
-        $this->guard(fn () => $this->guests->confirm($response));
+        DomainCall::run(fn () => $this->guests->confirm($response));
 
         return $this->json($this->responseView($response));
     }
@@ -153,7 +152,7 @@ final class PublicEventController extends AbstractController
     {
         $response = $this->response($request, $guestTokenLimiter);
         $answer = ClubEventController::attendance($request->toArray()['answer'] ?? null);
-        $this->guard(fn () => $this->guests->change($response, $answer));
+        DomainCall::run(fn () => $this->guests->change($response, $answer));
 
         return $this->json($this->responseView($response));
     }
@@ -162,7 +161,7 @@ final class PublicEventController extends AbstractController
     public function cancel(Request $request, RateLimiterFactoryInterface $guestTokenLimiter): Response
     {
         $response = $this->response($request, $guestTokenLimiter);
-        $this->guard(fn () => $this->guests->cancel($response));
+        DomainCall::run(fn () => $this->guests->cancel($response));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -231,14 +230,5 @@ final class PublicEventController extends AbstractController
     private static function text(array $data, string $key): string
     {
         return \is_string($data[$key] ?? null) ? $data[$key] : '';
-    }
-
-    private function guard(callable $action): void
-    {
-        try {
-            $action();
-        } catch (\InvalidArgumentException|\LogicException $e) {
-            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
-        }
     }
 }

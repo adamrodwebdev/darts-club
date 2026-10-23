@@ -196,6 +196,29 @@ final class ClubEventTest extends ApiTestCase
         unset($alice);
     }
 
+    public function testARefusedPhotoBatchLeavesNoFileBehind(): void
+    {
+        $this->createUser('alice@example.com');
+        $pastId = $this->pastEvent()->getId()->toRfc4122();
+        $this->switchTo('alice@example.com');
+        $before = $this->storedPhotoFiles();
+
+        // Une vraie photo, puis un fichier qui n'est pas une image : l'envoi entier est refusé
+        $photo = tempnam(sys_get_temp_dir(), 'photo');
+        $text = tempnam(sys_get_temp_dir(), 'text');
+        self::assertIsString($photo);
+        self::assertIsString($text);
+        copy(__DIR__.'/../Fixtures/avatar.jpg', $photo);
+        file_put_contents($text, 'pas une image');
+        $this->client->request('POST', "/api/events/{$pastId}/photos", files: ['photos' => [
+            new UploadedFile($photo, 'soiree.jpg', test: true),
+            new UploadedFile($text, 'notes.jpg', test: true),
+        ]], server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame($before, $this->storedPhotoFiles());
+    }
+
     public function testOrganizersAttachAPosterToAnUpcomingEvent(): void
     {
         $this->createUser('alice@example.com');
@@ -465,6 +488,16 @@ final class ClubEventTest extends ApiTestCase
         }
 
         $this->client->request('POST', "/api/events/{$eventId}/photos", files: ['photos' => $files], server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
+    }
+
+    /** @return list<string> */
+    private function storedPhotoFiles(): array
+    {
+        $root = self::getContainer()->getParameter('kernel.project_dir');
+        self::assertIsString($root);
+        $files = glob($root.'/var/storage/event-photos/*.webp');
+
+        return false === $files ? [] : $files;
     }
 
     private function uploadPoster(string $eventId): void

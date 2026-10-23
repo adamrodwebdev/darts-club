@@ -9,27 +9,18 @@ use App\ClubEvent\ClubEventView;
 use App\ClubEvent\EventDetails;
 use App\ClubEvent\IcsCalendar;
 use App\Entity\ClubEvent;
-use App\Entity\EventPhoto;
-use App\Entity\EventPost;
 use App\Entity\User;
-use App\Media\ImageStorage;
-use App\Media\InvalidImageException;
 use App\Membership\Season;
 use App\Repository\ClubEventRepository;
-use App\Security\RequestThrottle;
 use App\Security\Voter\ClubEventVoter;
 use App\Translation\InvalidValue;
 use App\Translation\Unprocessable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -40,7 +31,6 @@ final class ClubEventController extends AbstractController
     private const UUID = '[0-9a-f-]{36}';
 
     public function __construct(
-        private readonly RequestThrottle $requestThrottle,
         private readonly ClubEvents $events,
         private readonly ClubEventView $view,
     ) {
@@ -81,7 +71,7 @@ final class ClubEventController extends AbstractController
     #[IsGranted(ClubEventVoter::MANAGE)]
     public function create(Request $request, #[CurrentUser] User $organizer): JsonResponse
     {
-        $event = $this->guard(fn (): ClubEvent => $this->events->schedule($organizer, self::details($request)));
+        $event = DomainCall::run(fn (): ClubEvent => $this->events->schedule($organizer, self::details($request)));
 
         return $this->json($this->view->summary($event, $organizer), Response::HTTP_CREATED);
     }
@@ -90,7 +80,7 @@ final class ClubEventController extends AbstractController
     #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
     public function edit(ClubEvent $event, Request $request, #[CurrentUser] User $user): JsonResponse
     {
-        $this->guard(fn () => $this->events->edit($event, self::details($request)));
+        DomainCall::run(fn () => $this->events->edit($event, self::details($request)));
 
         return $this->json($this->view->summary($event, $user));
     }
@@ -100,7 +90,7 @@ final class ClubEventController extends AbstractController
     public function cancel(ClubEvent $event, Request $request): Response
     {
         $reason = $request->toArray()['reason'] ?? '';
-        $this->guard(fn () => $this->events->cancel($event, \is_string($reason) ? $reason : ''));
+        DomainCall::run(fn () => $this->events->cancel($event, \is_string($reason) ? $reason : ''));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -110,7 +100,7 @@ final class ClubEventController extends AbstractController
     public function summary(ClubEvent $event, Request $request): Response
     {
         $summary = $request->toArray()['summary'] ?? '';
-        $this->guard(fn () => $this->events->writeSummary($event, \is_string($summary) ? $summary : ''));
+        DomainCall::run(fn () => $this->events->writeSummary($event, \is_string($summary) ? $summary : ''));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -140,112 +130,6 @@ final class ClubEventController extends AbstractController
             'Content-Type' => 'text/calendar; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="evenement-skull-darts-71.ics"',
         ]);
-    }
-
-    #[Route('/api/events/{id}/photos', name: 'events_photos_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
-    public function addPhotos(ClubEvent $event, Request $request, #[CurrentUser] User $user, RateLimiterFactoryInterface $photoUploadLimiter): JsonResponse
-    {
-        $files = $request->files->get('photos');
-        $files = array_values(array_filter(\is_array($files) ? $files : [$files], static fn (mixed $f): bool => $f instanceof UploadedFile));
-        if ([] === $files || \count($files) > 10) {
-            throw new InvalidImageException('Envoie entre 1 et 10 photos à la fois (champ « photos[] »).');
-        }
-
-        $this->requestThrottle->consume($photoUploadLimiter, $user->getId()->toRfc4122(), \count($files));
-
-        $added = $this->events->addPhotos($event, $user, $files);
-
-        return $this->json(['items' => array_map(static fn (EventPhoto $p): array => $p->toArray(), $added)], Response::HTTP_CREATED);
-    }
-
-    #[Route('/api/event-photos/{id}', name: 'events_photos_delete', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
-    #[IsGranted(ClubEventVoter::DELETE_CONTENT, subject: 'photo')]
-    public function deletePhoto(EventPhoto $photo): Response
-    {
-        $this->events->deletePhoto($photo);
-
-        return new Response(status: Response::HTTP_NO_CONTENT);
-    }
-
-    #[Route('/api/event-photos/{id}/{size}', name: 'events_photos_file', requirements: ['id' => self::UUID, 'size' => 'thumb|large'], methods: ['GET'])]
-    public function photoFile(EventPhoto $photo, string $size, ImageStorage $eventPhotoStorage, Request $request): BinaryFileResponse
-    {
-        $id = 'thumb' === $size ? $photo->thumbId() : $photo->largeId();
-        $path = $eventPhotoStorage->path($id);
-        if (null === $path) {
-            throw new NotFoundHttpException();
-        }
-
-        $response = new BinaryFileResponse($path, headers: ['Content-Type' => 'image/webp']);
-        $response->setPrivate();
-        $response->setMaxAge(30 * 86400);
-        $response->setEtag($id);
-        $response->isNotModified($request);
-
-        return $response;
-    }
-
-    /** Affiche : multipart, champ « poster » ; remplace l'affiche existante. */
-    #[Route('/api/events/{id}/poster', name: 'events_poster_set', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
-    #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
-    public function setPoster(ClubEvent $event, Request $request, #[CurrentUser] User $user, RateLimiterFactoryInterface $photoUploadLimiter): JsonResponse
-    {
-        $file = $request->files->get('poster');
-        if (!$file instanceof UploadedFile) {
-            throw new InvalidImageException('Joins une image (champ « poster »).');
-        }
-
-        $this->requestThrottle->consume($photoUploadLimiter, $user->getId()->toRfc4122());
-
-        $poster = $this->guard(fn () => $this->events->attachPoster($event, $file));
-
-        return $this->json($poster->toArray($event->getId()->toRfc4122()), Response::HTTP_CREATED);
-    }
-
-    #[Route('/api/events/{id}/poster', name: 'events_poster_delete', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
-    #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
-    public function deletePoster(ClubEvent $event): Response
-    {
-        $this->events->removePoster($event);
-
-        return new Response(status: Response::HTTP_NO_CONTENT);
-    }
-
-    /** Fichier d'affiche : son identifiant fait partie de l'URL, d'où un cache long. */
-    #[Route('/api/events/{id}/poster/{file}', name: 'events_poster_file', requirements: ['id' => self::UUID, 'file' => '[a-f0-9]{32}'], methods: ['GET'])]
-    public function posterFile(ClubEvent $event, string $file, ImageStorage $eventPosterStorage): BinaryFileResponse
-    {
-        $path = true === $event->poster()?->has($file) ? $eventPosterStorage->path($file) : null;
-        if (null === $path) {
-            throw new NotFoundHttpException();
-        }
-
-        $response = new BinaryFileResponse($path, headers: ['Content-Type' => 'image/webp']);
-        $response->setPrivate();
-        $response->setMaxAge(365 * 86400);
-        $response->headers->addCacheControlDirective('immutable');
-
-        return $response;
-    }
-
-    #[Route('/api/events/{id}/posts', name: 'events_posts_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
-    public function addPost(ClubEvent $event, Request $request, #[CurrentUser] User $user, RateLimiterFactoryInterface $messagePostLimiter): JsonResponse
-    {
-        $this->requestThrottle->consume($messagePostLimiter, $user->getId()->toRfc4122());
-
-        $body = $request->toArray()['body'] ?? '';
-        $post = $this->events->addPost($event, $user, \is_string($body) ? $body : '');
-
-        return $this->json(['id' => $post->getId()->toRfc4122()], Response::HTTP_CREATED);
-    }
-
-    #[Route('/api/event-posts/{id}', name: 'events_posts_delete', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
-    #[IsGranted(ClubEventVoter::DELETE_CONTENT, subject: 'post')]
-    public function deletePost(EventPost $post): Response
-    {
-        $this->events->deletePost($post);
-
-        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
     /**
@@ -282,21 +166,5 @@ final class ClubEventController extends AbstractController
     {
         return (\is_string($value) ? Attendance::tryFrom($value) : null)
             ?? throw new Unprocessable('Réponse inconnue : « je-viens » ou « pas-sur » attendu.');
-    }
-
-    /**
-     * @template T
-     *
-     * @param callable(): T $action
-     *
-     * @return T
-     */
-    private function guard(callable $action): mixed
-    {
-        try {
-            return $action();
-        } catch (\InvalidArgumentException|\LogicException $e) {
-            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
-        }
     }
 }
