@@ -9,6 +9,7 @@ import { i18n, loadLocaleMessages } from './i18n'
 import { createPreferenceControllers, PREFERENCES } from './preferences'
 import { createAppRouter } from './router'
 import { createServices, SERVICES } from './services'
+import { afterNextFrame } from './time/afterNextFrame'
 
 // Racine de composition : chaque dépendance est créée ici une fois, puis fournie à l'application
 const services = createServices()
@@ -33,6 +34,13 @@ app.provide(SERVICES, services)
 app.provide(PREFERENCES, preferences)
 app.use(createPinia())
 app.use(i18n)
+
+// Premier affichage en deux temps : l'en-tête d'abord, la page à l'image suivante (deux tâches
+// courtes au lieu d'une longue, sous l'écran titre ; la page arrive sous l'en-tête, rien ne bouge)
+const firstPage = router.beforeResolve(async () => {
+  firstPage()
+  await new Promise<void>((resolve) => afterNextFrame(resolve))
+})
 app.use(router)
 
 app.mount('#app')
