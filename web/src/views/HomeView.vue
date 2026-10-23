@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import PublicEventsCarousel from '@/components/events/PublicEventsCarousel.vue'
 import FretReel from '@/components/fretboard/FretReel.vue'
 import GuitarString from '@/components/fretboard/GuitarString.vue'
@@ -10,6 +10,7 @@ import HeroDartboard from '@/components/landing/HeroDartboard.vue'
 import SongSection from '@/components/landing/SongSection.vue'
 import MarqueeBand from '@/components/motion/MarqueeBand.vue'
 import SplitText from '@/components/motion/SplitText.vue'
+import { useStages } from '@/composables/useStages'
 import { LANDING } from '@/content/landing'
 import { useAuthStore } from '@/stores/auth'
 
@@ -20,6 +21,12 @@ import { useAuthStore } from '@/stores/auth'
  */
 const auth = useAuthStore()
 const { t } = useI18n()
+/**
+ * Cordes rendues une par tâche après le héros : le démarrage n'a aucune tâche longue.
+ * Lien vers une ancre (« #hymne ») : tout de suite, la cible doit exister.
+ */
+const STRINGS = 4
+const strings = useStages(STRINGS, { all: useRoute().hash !== '' })
 /** Corde des rendez-vous affichée seulement s'il en existe d'ouverts à tous */
 const publicEvents = ref(0)
 
@@ -66,7 +73,7 @@ function stringLabel(n: number, name: string): string {
 
     <MarqueeBand />
 
-    <GuitarString :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
+    <GuitarString v-if="strings >= 1" :strings="[2]" :label="stringLabel(2, 'club')" aria-labelledby="club-title">
       <SplitText id="club-title" tag="h2" class="metal-title levitate" :text="t('landing.clubTitle')" />
       <FretReel
         :items="LANDING.pillars"
@@ -87,18 +94,25 @@ function stringLabel(n: number, name: string): string {
     </GuitarString>
 
     <!-- Chargée après l'affichage, sous la ligne de flottaison : pas de décalage visible -->
-    <GuitarString v-show="publicEvents > 0" :strings="[3]" :label="stringLabel(3, 'events')" aria-labelledby="public-events-title">
+    <GuitarString
+      v-if="strings >= 2"
+      v-show="publicEvents > 0"
+      :strings="[3]"
+      :label="stringLabel(3, 'events')"
+      aria-labelledby="public-events-title"
+    >
       <h2 id="public-events-title" class="metal-title">{{ t('publicEvents.carousel.title') }}</h2>
       <p class="muted string-intro">{{ t('publicEvents.carousel.intro') }}</p>
       <PublicEventsCarousel @loaded="publicEvents = $event" />
       <RouterLink to="/evenements" class="btn btn--link more">{{ t('publicEvents.all') }}</RouterLink>
     </GuitarString>
 
-    <GuitarString id="hymne" :strings="[4]" :label="stringLabel(4, 'anthem')" aria-labelledby="song-title">
+    <GuitarString v-if="strings >= 3" id="hymne" :strings="[4]" :label="stringLabel(4, 'anthem')" aria-labelledby="song-title">
       <SongSection />
     </GuitarString>
 
     <GuitarString
+      v-if="strings >= 4"
       id="rejoindre"
       :strings="[5, 6]"
       :label="t('fretboard.strings', { first: 5, second: 6, name: t('fretboard.names.join') })"
@@ -120,6 +134,8 @@ function stringLabel(n: number, name: string): string {
         </section>
       </div>
     </GuitarString>
+    <!-- Place réservée tant que des cordes manquent : le pied de page reste hors de vue, rien ne saute -->
+    <div v-if="strings < STRINGS" class="strings-pending" aria-hidden="true" />
   </div>
 </template>
 
@@ -173,6 +189,10 @@ function stringLabel(n: number, name: string): string {
 
 .string-intro {
   margin: 0;
+}
+
+.strings-pending {
+  min-height: 100svh;
 }
 
 .more {
