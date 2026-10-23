@@ -1,6 +1,6 @@
 import type { Attendance, EventPoster } from './ClubEvent'
 import { parseAttendance, parsePoster } from './ClubEvent'
-import { bool, num, obj, optStr, str, type Json } from './guards'
+import { bool, list, num, obj, optStr, str, type Json } from './guards'
 
 /** Événement ouvert au public : ville seulement, compteurs sans noms. */
 export interface PublicEvent {
@@ -43,6 +43,50 @@ export function parsePublicEvent(value: unknown): PublicEvent {
     poster: parsePoster(d.poster),
     location: d.location === undefined ? null : optStr(d.location),
   }
+}
+
+/** Rendez-vous ouverts à tous : à venir (du plus proche au plus lointain), puis passés (du plus récent au plus ancien) */
+export interface PublicEventTimeline {
+  upcoming: PublicEvent[]
+  past: PublicEvent[]
+}
+
+export function parsePublicEventTimeline(value: unknown): PublicEventTimeline {
+  const d = obj(value, 'événements publics')
+  return { upcoming: list(d.items, parsePublicEvent), past: list(d.past, parsePublicEvent) }
+}
+
+/** Place d'un rendez-vous dans le carrousel de l'accueil */
+export type TimelineBadge = 'next' | 'live' | 'upcoming' | 'past' | 'cancelled'
+
+/** Libellé de chaque place (clé de traduction) */
+export const TIMELINE_BADGE_LABELS: Record<TimelineBadge, string> = {
+  next: 'publicEvents.carousel.badges.next',
+  live: 'publicEvents.carousel.badges.live',
+  upcoming: 'publicEvents.carousel.badges.upcoming',
+  past: 'publicEvents.carousel.badges.past',
+  cancelled: 'publicEvents.carousel.badges.cancelled',
+}
+
+export interface TimelineSlide {
+  event: PublicEvent
+  badge: TimelineBadge
+}
+
+/**
+ * Ordre du carrousel : le prochain rendez-vous d'abord, les suivants, puis les passés
+ * du plus récent au plus ancien (ordre déjà fourni par l'API).
+ */
+export function timelineSlides(timeline: PublicEventTimeline): TimelineSlide[] {
+  let nextShown = false
+  const upcoming = timeline.upcoming.map((event): TimelineSlide => {
+    if (event.cancelled) return { event, badge: 'cancelled' }
+    if (event.started) return { event, badge: 'live' }
+    const badge: TimelineBadge = nextShown ? 'upcoming' : 'next'
+    nextShown = true
+    return { event, badge }
+  })
+  return [...upcoming, ...timeline.past.map((event): TimelineSlide => ({ event, badge: 'past' }))]
 }
 
 /** Réponse d'une personne sans compte, lue avec son lien personnel */

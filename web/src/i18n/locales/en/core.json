@@ -120,6 +120,7 @@
     "login": "Log in",
     "anthem": "Hear the anthem ↓",
     "pillarsLabel": "What the club offers",
+    "clubTitle": "The club spirit",
     "pillars": {
       "fun": {
         "title": "Just for fun",
@@ -159,6 +160,21 @@
       "Skull Darts 71"
     ]
   },
+  "fretboard": {
+    "hint": "Strum ↓ to move from one string to the next, slide ← → along each one.",
+    "string": "String {n} · {name}",
+    "strings": "Strings {first} and {second} · {name}",
+    "previous": "Previous card",
+    "next": "Next card",
+    "position": "{current} / {total}",
+    "frets": "Go to a card: {label}",
+    "names": {
+      "club": "The club",
+      "events": "Events",
+      "anthem": "The anthem",
+      "join": "Friend band and membership"
+    }
+  },
   "song": {
     "kicker": "Club soundtrack",
     "subtitle": "Skull Darts 71 anthem",
@@ -197,6 +213,7 @@
     "clock": "{time} / {duration}",
     "unavailable": "Playback failed: your browser could not load the recording.",
     "chaptersHint": "Tap a timestamp to jump straight to that part.",
+    "partsLabel": "Parts of the anthem",
     "playFrom": "Play “{section}” from {time}"
   },
   "auth": {

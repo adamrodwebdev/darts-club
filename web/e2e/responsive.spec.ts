@@ -18,7 +18,10 @@ const event = {
 }
 
 async function mockPublicApi(page: Page): Promise<void> {
-  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [event] } }))
+  // Plusieurs rendez-vous : le carrousel 3D déborde et doit rester contenu
+  const later = { ...event, slug: 'halloween-party-2026-10-31-d4e5f6', title: 'Halloween Party' }
+  const past = { ...event, slug: 'soiree-de-rentree-2026-10-03-a7b8c9', title: 'Soirée de rentrée', past: true, started: true }
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [event, later], past: [past] } }))
   await page.route(`**/api/public/events/${event.slug}`, (route) => route.fulfill({ json: event }))
   await page.route(`**/api/public/events/${event.slug}/view`, (route) => route.fulfill({ status: 204, body: '' }))
 }

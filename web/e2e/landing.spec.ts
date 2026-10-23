@@ -19,6 +19,40 @@ test('landing shows the anthem, the friend band and legal links', async ({ page 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Politique de confidentialité')
 })
 
+test('the home page is a guitar neck: strings to strum down, cards to slide along', async ({ page }) => {
+  await page.route('**/api/public/events', (route) => route.fulfill({ json: { items: [], past: [] } }))
+  await page.goto('/')
+
+  await expect(page.getByText('Gratte ↓ pour passer d’une corde à l’autre, glisse ← → sur chacune.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'L’esprit du club' })).toBeAttached()
+  const pillars = page.getByRole('list', { name: 'Ce que propose le club', exact: true })
+  await expect(pillars.getByRole('listitem')).toHaveCount(3)
+
+  // Les onze parties de l'hymne tiennent sur une seule corde, parcourue avec les flèches
+  const parts = page.getByRole('list', { name: 'Parties de l’hymne', exact: true })
+  await expect(parts.getByRole('listitem')).toHaveCount(11)
+  const anthem = page.locator('#hymne')
+  await expect(anthem.getByText('1 / 11')).toBeVisible()
+  await anthem.getByRole('button', { name: 'Carte suivante' }).click()
+  await expect(anthem.getByText('2 / 11')).toBeVisible()
+  await expect(parts.getByRole('heading', { name: 'Couplet 1' })).toBeInViewport()
+})
+
+test('a rock hand greets whoever reaches the bottom of the page', async ({ page }) => {
+  await page.goto('/')
+  const hand = page.locator('.rock-hand')
+  await expect(hand).toHaveClass(/rock-hand--waiting/)
+  await page.getByRole('link', { name: 'Confidentialité' }).scrollIntoViewIfNeeded()
+  await page.mouse.wheel(0, 5000)
+  await expect(hand).toHaveClass(/rock-hand--rocking/)
+})
+
+test('without animations the rock hand simply stays there', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect(page.locator('.rock-hand')).toHaveClass(/rock-hand--still/)
+})
+
 test('the anthem can be played from any part of the song', async ({ page }) => {
   await page.goto('/')
   const audio = page.locator('#hymne audio')

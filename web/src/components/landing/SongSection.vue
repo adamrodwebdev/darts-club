@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
+import { computed, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { SONG, type InstrumentalKey } from '@/content/song'
+import FretReel from '@/components/fretboard/FretReel.vue'
 import SplitText from '@/components/motion/SplitText.vue'
 import { useMediaPlayback } from '@/composables/useMediaPlayback'
 import { formatClock } from '@/i18n/format'
@@ -9,6 +10,7 @@ import AnthemPlayer from './AnthemPlayer.vue'
 
 const { t, tm, rt, locale } = useI18n()
 const audio = useTemplateRef<HTMLAudioElement>('audio')
+const deck = useTemplateRef<{ goTo(index: number): void }>('deck')
 const playback = useMediaPlayback(audio)
 const { playing, time, started, failed } = playback
 
@@ -21,6 +23,11 @@ function directions(key: InstrumentalKey): string[] {
 const current = computed(() => {
   if (!started.value) return -1
   return SONG.sections.reduce((found, section, i) => (section.start <= time.value ? i : found), -1)
+})
+
+// Pendant l'écoute, les paroles suivent : la carte de la partie en cours vient se caler
+watch(current, (index) => {
+  if (index >= 0 && playing.value) deck.value?.goTo(index)
 })
 
 async function toggle(): Promise<void> {
@@ -45,8 +52,8 @@ function announce(): void {
 </script>
 
 <template>
-  <section id="hymne" class="song" aria-labelledby="song-title">
-    <div class="song__intro" data-reveal>
+  <div class="song">
+    <div class="song__intro">
       <p class="kicker">{{ t('song.kicker') }}</p>
       <SplitText id="song-title" tag="h2" class="metal-title levitate" :text="SONG.title" />
       <p class="muted">{{ t('song.subtitle') }} · {{ formatClock(SONG.duration) }}</p>
@@ -65,44 +72,50 @@ function announce(): void {
       />
     </div>
 
-    <div class="lyrics-block" data-reveal>
+    <div class="song__deck">
       <p v-if="locale !== 'fr'" class="muted lyrics-note">{{ t('song.lyricsLanguage') }}</p>
       <p class="muted lyrics-note">{{ t('song.chaptersHint') }}</p>
-      <ol class="lyrics">
-        <li
-          v-for="(section, i) in SONG.sections"
-          :key="i"
-          :class="{ 'lyrics__part--instrumental': section.instrumental, 'lyrics__part--current': i === current }"
-          :aria-current="i === current ? 'time' : undefined"
-        >
-          <div class="lyrics__head">
-            <h3>{{ t(`song.sections.${section.key}`) }}</h3>
-            <button
-              type="button"
-              class="chapter"
-              :aria-label="t('song.playFrom', { section: t(`song.sections.${section.key}`), time: formatClock(section.start) })"
-              @click="playSection(section.start)"
-            >
-              <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>
-              <time :datetime="`PT${section.start}S`">{{ formatClock(section.start) }}</time>
-            </button>
-          </div>
-          <template v-if="section.instrumental">
-            <p v-for="(line, j) in directions(section.key)" :key="j">{{ line }}</p>
-          </template>
-          <!-- Paroles chantées en français quelle que soit la langue de l'interface -->
-          <p v-for="(line, j) in section.lines" v-else :key="j" lang="fr">{{ line }}</p>
-        </li>
-      </ol>
+      <FretReel
+        ref="deck"
+        class="lyrics"
+        :items="SONG.sections"
+        :label="t('song.partsLabel')"
+        :item-label="(section) => t(`song.sections.${section.key}`)"
+        :current="current >= 0 ? current : null"
+        current-type="time"
+        variant="deck"
+      >
+        <template #default="{ item: section, index }">
+          <article class="part" :class="{ 'part--instrumental': section.instrumental, 'part--current': index === current }">
+            <div class="part__head">
+              <h3>{{ t(`song.sections.${section.key}`) }}</h3>
+              <button
+                type="button"
+                class="chapter"
+                :aria-label="t('song.playFrom', { section: t(`song.sections.${section.key}`), time: formatClock(section.start) })"
+                @click="playSection(section.start)"
+              >
+                <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor" /></svg>
+                <time :datetime="`PT${section.start}S`">{{ formatClock(section.start) }}</time>
+              </button>
+            </div>
+            <template v-if="section.instrumental">
+              <p v-for="(line, j) in directions(section.key)" :key="j">{{ line }}</p>
+            </template>
+            <!-- Paroles chantées en français quelle que soit la langue de l'interface -->
+            <p v-for="(line, j) in section.lines" v-else :key="j" lang="fr">{{ line }}</p>
+          </article>
+        </template>
+      </FretReel>
     </div>
     <p class="credits muted">{{ t('song.credits') }}</p>
-  </section>
+  </div>
 </template>
 
 <style scoped>
 .song {
   display: grid;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .kicker {
@@ -123,35 +136,41 @@ function announce(): void {
   margin: 0;
 }
 
-.lyrics {
+.song__deck {
   display: grid;
-  gap: 1.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  min-width: 0;
 }
 
 .lyrics-note {
-  margin: 0 0 1rem;
+  margin: 0 0 0.25rem;
   font-size: 0.9rem;
 }
 
-.lyrics li {
-  padding-left: 0.75rem;
-  border-left: 3px solid transparent;
-  transition: border-color 0.3s ease;
+/* Une partie de l'hymne : une carte de la corde, mise en avant pendant son écoute */
+.part {
+  display: grid;
+  gap: 0.4rem;
+  align-content: start;
+  padding: 1.1rem 1.25rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.6);
+  background: var(--color-surface);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.lyrics .lyrics__part--current {
-  border-left-color: var(--color-accent);
+.part--current {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent);
 }
 
-.lyrics__head {
+.part__head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 0.25rem 0.75rem;
-  margin-bottom: 0.25rem;
 }
 
 /* Minutage cliquable : 44 px de haut pour le doigt, discret à l'œil */
@@ -172,12 +191,12 @@ function announce(): void {
 }
 
 .chapter:hover,
-.lyrics__part--current .chapter {
+.part--current .chapter {
   border-color: var(--color-accent);
   color: var(--color-text);
 }
 
-.lyrics h3 {
+.part h3 {
   margin: 0;
   color: var(--color-link);
   font-size: 0.85rem;
@@ -185,12 +204,12 @@ function announce(): void {
   text-transform: uppercase;
 }
 
-.lyrics p {
+.part p {
   margin: 0;
   font-size: clamp(1rem, 0.9571rem + 0.2143vw, 1.15rem);
 }
 
-.lyrics__part--instrumental p {
+.part--instrumental p {
   color: var(--color-muted);
   font-style: italic;
 }
@@ -203,13 +222,8 @@ function announce(): void {
 
 @media (width >= 64rem) {
   .song {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     align-items: start;
-  }
-
-  .song__intro {
-    position: sticky;
-    top: 5rem;
   }
 }
 </style>

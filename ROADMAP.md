@@ -58,10 +58,12 @@
 - À faire : liste d'attente quand l'événement est complet
 
 ## 9. Landing page « metal » (S7)
-- ✅ Identité visuelle unique : titres chromés, cible SVG animée (fléchette qui se plante), apparitions au défilement, hymne original « Triple Vingt » + riff synthétisé (Web Audio)
+- ✅ Identité visuelle unique : titres chromés, cible SVG animée (fléchette qui se plante), animations au défilement, hymne original « Triple Vingt » + riff synthétisé (Web Audio)
 - ✅ Section « Groupe ami » (Blind to Deaf) ; ambiances musicales reprises dans le design et l’hymne, sans citer d’artistes
 - ✅ Pages mentions légales + confidentialité (à compléter par le bureau), Open Graph, JSON-LD
 - ✅ En-têtes SEO de l'accueil générés en FR et EN (étape 10 bis) ; rendu statique complet reporté à l'étape 11
+- ✅ Accueil « manche de guitare » : on gratte de haut en bas d'une corde (section) à l'autre et on glisse de côté sur chacune (cartes du club, rendez-vous, onze parties de l'hymne) ; entrées en alternance gauche / droite liées au défilement. Accueil ramené de 6,1 à 5,2 écrans sur téléphone et de 5,6 à 4,2 sur ordinateur, rendez-vous passés compris
+- ✅ Carrousel 3D des rendez-vous ouverts à tous, du prochain au plus ancien (passés compris, annulés exclus) ; main « cornes » qui surgit au pied de page ; tout reste immobile si les animations sont coupées
 
 ## 10. Performance (Lighthouse ≥ 95)
 - ✅ Code-splitting par route, polices système (aucune police à télécharger), logo SVG optimisé (SVGO) et préchargé

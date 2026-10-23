@@ -169,8 +169,20 @@
     "keepEmail": "Garde l’email reçu : son lien te permet de revenir ici."
   },
   "publicEvents": {
-    "title": "Prochains événements ouverts à tous",
     "intro": "Pas besoin d’être adhérent : choisis un événement et réponds « Je viens » ou « Pas sûr ».",
+    "carousel": {
+      "title": "Tous les rendez-vous",
+      "intro": "Du prochain au plus ancien, ouverts à tous : réponds « Je viens » ou « Pas sûr », sans compte.",
+      "label": "Événements ouverts à tous, du prochain au plus ancien",
+      "badges": {
+        "next": "Prochain",
+        "live": "En cours",
+        "upcoming": "À venir",
+        "past": "Passé",
+        "cancelled": "Annulé"
+      },
+      "attended": "pas d’inscrit | {n} participant | {n} participants"
+    },
     "all": "Tous les événements ouverts →",
     "answer": "Répondre",
     "empty": "Aucun événement ouvert au public pour le moment. Reviens bientôt !",

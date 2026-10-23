@@ -23,6 +23,14 @@
   --radius: 0.6rem;
   --gutter: 1rem;
   --max-width: 72rem;
+  /* Manche de guitare (accueil) : corde métallique, incrustations nacrées, main « cornes » chromée */
+  --wire: linear-gradient(90deg, transparent, #7d7d88 6%, #f4f4f7 50%, #7d7d88 94%, transparent);
+  --inlay: radial-gradient(circle at 35% 30%, #ffffff, #d9d3c6 55%, #a39d90);
+  --hand-light: #f4f4f7;
+  --hand-mid: #b8b8c2;
+  --hand-dark: #6c6c78;
+  --hand-line: #0b0b0d;
+  --hand-band: #1f1f25;
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
@@ -44,6 +52,7 @@
   --badge-gold: #8a6100;
   --badge-teal: #096b62;
   --badge-blue: #1f5fbf;
+  --wire: linear-gradient(90deg, transparent, #9a9aa6 6%, #2c2c34 50%, #9a9aa6 94%, transparent);
   color-scheme: light;
 }
 
@@ -59,6 +68,12 @@
 html {
   scrollbar-gutter: stable;
   scroll-padding-block-start: 4.5rem;
+}
+
+/* Accueil « manche de guitare » : en approchant d'une corde (section), la page s'y cale
+   (le pied de page est aussi un point d'arrêt : voir AppFooter) */
+html:has(.fretboard) {
+  scroll-snap-type: y proximity;
 }
 
 *,
@@ -249,16 +264,10 @@ main {
     color: transparent;
   }
 
-  /* Reflet au chargement (titres visibles), à l'apparition (sections) et au survol */
+  /* Reflet au chargement et au survol */
   :root[data-motion='on'] .metal-title:not(.split),
   :root[data-motion='on'] .metal-title.split .split__word {
     animation: sheen 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) calc(0.5s + var(--i, 0) * 0.12s) 1 both;
-  }
-
-  /* Section pas encore apparue : le reflet attend son entrée à l'écran */
-  :root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) .metal-title,
-  :root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) .metal-title .split__word {
-    animation: none;
   }
 
   :root[data-motion='on'] .metal-title:hover:not(.split),
@@ -395,19 +404,6 @@ main {
 :root[data-motion='on'] .sheen-button:focus-visible::after {
   transform: translateX(120%);
   transition: transform 0.7s cubic-bezier(0.3, 0.6, 0.2, 1);
-}
-
-/* Apparition au défilement (activée par useReveal), décalée par --reveal-index */
-:root[data-motion='on'] .reveal-armed [data-reveal] {
-  transition:
-    opacity 0.7s ease,
-    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transition-delay: calc(var(--reveal-index, 0) * 0.12s);
-}
-
-:root[data-motion='on'] .reveal-armed [data-reveal]:not(.is-revealed) {
-  opacity: 0;
-  transform: translateY(2rem) scale(0.98);
 }
 
 /* Transition entre les pages (App.vue) */

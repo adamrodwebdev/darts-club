@@ -120,6 +120,7 @@
     "login": "Se connecter",
     "anthem": "Écouter l’hymne ↓",
     "pillarsLabel": "Ce que propose le club",
+    "clubTitle": "L’esprit du club",
     "pillars": {
       "fun": {
         "title": "Pour le plaisir",
@@ -159,6 +160,21 @@
       "Skull Darts 71"
     ]
   },
+  "fretboard": {
+    "hint": "Gratte ↓ pour passer d’une corde à l’autre, glisse ← → sur chacune.",
+    "string": "Corde {n} · {name}",
+    "strings": "Cordes {first} et {second} · {name}",
+    "previous": "Carte précédente",
+    "next": "Carte suivante",
+    "position": "{current} / {total}",
+    "frets": "Aller à une carte : {label}",
+    "names": {
+      "club": "Le club",
+      "events": "Événements",
+      "anthem": "L’hymne",
+      "join": "Groupe ami et adhésion"
+    }
+  },
   "song": {
     "kicker": "Bande-son du club",
     "subtitle": "Hymne des Skull Darts 71",
@@ -197,6 +213,7 @@
     "clock": "{time} / {duration}",
     "unavailable": "Lecture impossible : ton navigateur n’a pas pu charger l’enregistrement.",
     "chaptersHint": "Touche un minutage pour écouter directement cette partie.",
+    "partsLabel": "Parties de l’hymne",
     "playFrom": "Écouter « {section} » à partir de {time}"
   },
   "auth": {
