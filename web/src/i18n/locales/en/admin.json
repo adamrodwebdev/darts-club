@@ -73,7 +73,8 @@
         "after": "After",
         "created": "Created",
         "author": "Author",
-        "recipients": "Recipients"
+        "recipients": "Recipients",
+        "name": "Name"
       }
     }
   }

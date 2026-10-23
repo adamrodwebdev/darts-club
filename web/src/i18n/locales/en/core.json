@@ -334,6 +334,9 @@
       },
       "post": {
         "delete": "Post removed (moderation)"
+      },
+      "guest": {
+        "remove": "Guest removed"
       }
     }
   }
