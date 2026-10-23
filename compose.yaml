@@ -73,7 +73,7 @@ services:
   # Hub temps réel, seul service exposé à Internet avec php : sur son propre réseau, il
   # n'atteint ni la base ni Redis
   mercure:
-    image: dunglas/mercure:v0.21
+    image: dunglas/mercure:v1.0
     restart: unless-stopped
     networks: [realtime]
     environment:
