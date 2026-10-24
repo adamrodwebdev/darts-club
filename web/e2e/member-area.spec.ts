@@ -264,6 +264,57 @@ test('an organizer removes a fake guest after confirming', async ({ page }) => {
   expect(removals).toEqual(['DELETE'])
 })
 
+test('an account waiting for approval stays on its own account', async ({ page }) => {
+  const notificationCalls: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: { ...profile, approved: false } }))
+  await page.route('**/api/notifications', (route) => {
+    notificationCalls.push(route.request().url())
+    return route.fulfill({ status: 403, json: {} })
+  })
+
+  await page.goto('/connexion?redirect=/messages')
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+
+  // Espace membres fermé : retour à son compte, qui explique l'attente
+  await expect(page).toHaveURL(/\/compte$/)
+  await expect(page.getByRole('status')).toContainText('Ton compte attend la validation du bureau')
+  await expect(page.getByRole('link', { name: 'Messages' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Ma cotisation' })).toHaveCount(0)
+  expect(notificationCalls).toEqual([])
+})
+
+test('the presidency approves a new member', async ({ page }) => {
+  const president = { ...profile, roles: ['ROLE_PRESIDENT', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const pending = {
+    id: '01a1b2c3-0000-7000-8000-0000000000a9', displayName: 'Nina', email: 'nina@example.com', phone: null, avatarUrl: null,
+    roles: [], admin: false, badges: [], verified: true, approved: false, twoFactorEnabled: false, suspended: false,
+    suspensionReason: null, membership: null, createdAt: '2026-10-23T12:00:00+00:00',
+  }
+  const approvals: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: president }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route('**/api/admin/members?*', (route) => route.fulfill({ json: { season: '2026-2027', items: [pending] } }))
+  await page.route(`**/api/admin/members/${pending.id}/approve`, (route) => {
+    approvals.push(route.request().method())
+    pending.approved = true
+    return route.fulfill({ status: 204, body: '' })
+  })
+
+  await page.goto('/admin')
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+
+  await expect(page.getByText('En attente de validation')).toBeVisible()
+  await page.getByRole('button', { name: 'Valider' }).click()
+  await expect(page.getByRole('status')).toContainText('Nina peut maintenant accéder à l’espace membres.')
+  await expect(page.getByText('En attente de validation')).toHaveCount(0)
+  expect(approvals).toEqual(['POST'])
+})
+
 test('the president does not get the audience panel', async ({ page }) => {
   const president = { ...profile, roles: ['ROLE_PRESIDENT', 'ROLE_MEMBER'], twoFactorEnabled: true }
   const id = '01a1b2c3-0000-7000-8000-0000000000e3'

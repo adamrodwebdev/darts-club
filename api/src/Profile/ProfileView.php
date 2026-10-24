@@ -34,6 +34,7 @@ final class ProfileView
             'hasPassword' => $user->hasPassword(),
             'twoFactorEnabled' => $user->hasTwoFactor(),
             'twoFactorSetupRequired' => $user->mustSetUpTwoFactor(),
+            'approved' => $user->isApproved(),
             'preferences' => ['language' => $user->language()->value, 'theme' => $user->theme()->value],
         ];
     }

@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Doctrine\EncryptedStringType;
 use App\Enum\Role;
 use App\Event\DomainEventsTrait;
+use App\Event\MemberApproved;
+use App\Event\MemberAwaitingApproval;
 use App\Event\ProviderLinked;
 use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
@@ -118,6 +120,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(length: 6, enumType: Theme::class, options: ['default' => 'system'])]
     private Theme $theme = Theme::System;
 
+    /**
+     * Validé par le président ou l'administrateur : l'espace membres (annuaire, événements, photos,
+     * messagerie) n'est ouvert qu'ensuite. Une adresse confirmée ne suffit pas.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $approvedAt = null;
+
     private function __construct(EmailAddress $email, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
@@ -144,6 +153,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $user->language = $language;
         $user->verified = true;
         $user->recordThat(new UserRegistered($user->id, viaOAuth: true));
+        $user->recordThat(new MemberAwaitingApproval($user->id));
 
         return $user;
     }
@@ -176,9 +186,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     }
 
     /** @return list<string> */
+    /** ROLE_MEMBER une fois validé ; avant, ROLE_USER seul (son compte, rien d'autre). Le bureau en hérite. */
     public function getRoles(): array
     {
-        return array_values(array_unique([...$this->roles, Role::Member->value]));
+        return array_values(array_unique([...$this->roles, $this->isApproved() ? Role::Member->value : 'ROLE_USER']));
+    }
+
+    public function isApproved(): bool
+    {
+        return null !== $this->approvedAt || $this->isBoardMember();
+    }
+
+    /** Validé par le bureau ; sans effet sur un compte déjà validé. */
+    public function approve(\DateTimeImmutable $now): void
+    {
+        if (!$this->verified) {
+            throw new \LogicException('Le compte doit être vérifié avant d\'être validé.');
+        }
+
+        if (null === $this->approvedAt) {
+            $this->approvedAt = $now;
+            $this->recordThat(new MemberApproved($this->id));
+        }
     }
 
     public function hasRole(Role $role): bool
@@ -213,8 +242,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return $this->verified;
     }
 
+    /** Adresse confirmée : le bureau est prévenu qu'un compte attend sa validation (MemberAwaitingApproval). */
     public function markVerified(): void
     {
+        if (!$this->verified && !$this->isApproved()) {
+            $this->recordThat(new MemberAwaitingApproval($this->id));
+        }
         $this->verified = true;
     }
 
@@ -228,7 +261,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         if (!$this->verified) {
             $this->password = '';
         }
-        $this->verified = true;
+        $this->markVerified();
     }
 
     /** Compte existant relié à un fournisseur OAuth : l'adresse est prouvée, et le titulaire en est averti. */

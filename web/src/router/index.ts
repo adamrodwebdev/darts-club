@@ -16,6 +16,8 @@ declare module 'vue-router' {
     requiresPresident?: boolean
     requiresOrganizer?: boolean
     guestOnly?: boolean
+    /** Ouverte à un compte en attente de validation par le bureau (son profil, sa sécurité) */
+    pendingAllowed?: boolean
   }
 }
 
@@ -64,7 +66,7 @@ const ROUTES: RouteRecordRaw[] = [
     component: () => import('../views/account/AccountLayout.vue'),
     meta: { requiresAuth: true },
     children: [
-      { path: '', name: 'account', component: () => import('../views/account/ProfileView.vue'), meta: { titleKey: 'account' } },
+      { path: '', name: 'account', component: () => import('../views/account/ProfileView.vue'), meta: { titleKey: 'account', pendingAllowed: true } },
       {
         path: 'notifications',
         name: 'account-notifications',
@@ -77,7 +79,7 @@ const ROUTES: RouteRecordRaw[] = [
         component: () => import('../views/account/MembershipView.vue'),
         meta: { titleKey: 'accountMembership' },
       },
-      { path: 'securite', name: 'account-security', component: () => import('../views/account/SecurityView.vue'), meta: { titleKey: 'accountSecurity' } },
+      { path: 'securite', name: 'account-security', component: () => import('../views/account/SecurityView.vue'), meta: { titleKey: 'accountSecurity', pendingAllowed: true } },
     ],
   },
   {
@@ -230,6 +232,9 @@ export function createAppRouter(services: Services): Router {
       return { name: 'account' }
     }
     if (to.meta.guestOnly && auth.isAuthenticated) {
+      return { name: 'account' }
+    }
+    if (to.meta.requiresAuth && auth.user && !auth.user.approved && !to.meta.pendingAllowed) {
       return { name: 'account' }
     }
     return true

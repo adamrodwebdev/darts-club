@@ -11,6 +11,8 @@ export const useAuthStore = defineStore('auth', () => {
   let initialization: Promise<void> | null = null
 
   const isAuthenticated = computed(() => user.value !== null)
+  /** Connecté et validé par le bureau : espace membres ouvert */
+  const isMember = computed(() => user.value?.approved === true)
 
   /** Restaure la session au démarrage, une seule fois. */
   function init(): Promise<void> {
@@ -56,5 +58,5 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, isAuthenticated, init, login, verifyTwoFactor, logout, register, setUser, forget }
+  return { user, isAuthenticated, isMember, init, login, verifyTwoFactor, logout, register, setUser, forget }
 })

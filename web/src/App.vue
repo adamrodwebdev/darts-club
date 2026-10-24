@@ -32,8 +32,11 @@ watch(
         await preferences.adoptAccount(saved)
         if (route.meta.homeLocale && route.meta.homeLocale !== preferences.locale) await router.replace(HOME_PATHS[preferences.locale])
       }
-      await notifications.load().catch(() => undefined)
-      await notifications.connectRealtime()
+      // Compte en attente de validation : ni centre de notifications ni temps réel (espace membres)
+      if (auth.user?.approved) {
+        await notifications.load().catch(() => undefined)
+        await notifications.connectRealtime()
+      }
     } else {
       notifications.reset()
     }

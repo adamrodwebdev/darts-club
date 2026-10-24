@@ -54,6 +54,21 @@ final class MemberAdministration
         $this->em->flush();
     }
 
+    /** Ouvre l'espace membres à un compte confirmé ; le membre reçoit un email (MemberApproved). */
+    public function approve(User $actor, User $member): void
+    {
+        if (!$member->isVerified()) {
+            throw new AdministrationException('Le compte doit être vérifié avant d’être validé.');
+        }
+        if ($member->isApproved()) {
+            return;
+        }
+
+        $member->approve($this->clock->now());
+        $this->audit->record($actor, new AuditEntry('member.approve', $member->displayName()->value));
+        $this->em->flush();
+    }
+
     public function suspend(User $actor, User $member, string $reason): void
     {
         if ($member->getId()->equals($actor->getId())) {

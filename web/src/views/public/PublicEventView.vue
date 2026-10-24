@@ -74,7 +74,7 @@ async function submit(): Promise<void> {
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <PublicEventCard v-if="event" :event="event">
-      <p v-if="auth.isAuthenticated" class="notice">
+      <p v-if="auth.isMember" class="notice">
         <i18n-t keypath="publicEvent.member" scope="global">
           <template #link>
             <RouterLink to="/evenements">{{ t('publicEvent.memberLink') }}</RouterLink>

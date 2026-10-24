@@ -44,7 +44,8 @@ abstract class ApiTestCase extends WebTestCase
         return $this->service('clock', ClockInterface::class)->now();
     }
 
-    protected function createUser(string $email, bool $verified = true): User
+    /** Compte de test : confirmé et validé par le bureau, sauf demande contraire */
+    protected function createUser(string $email, bool $verified = true, bool $approved = true): User
     {
         $hasher = $this->service(PasswordHasherFactoryInterface::class, PasswordHasherFactoryInterface::class)
             ->getPasswordHasher(User::class);
@@ -54,6 +55,10 @@ abstract class ApiTestCase extends WebTestCase
         $user->releaseEvents();
         if ($verified) {
             $user->markVerified();
+            if ($approved) {
+                $user->approve($this->now());
+            }
+            $user->releaseEvents();
         }
 
         $em = $this->entityManager();

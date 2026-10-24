@@ -32,6 +32,8 @@ export interface ProfileData {
   twoFactorEnabled: boolean
   /** Membre du bureau sans 2FA : fonctions du club bloquées */
   twoFactorSetupRequired: boolean
+  /** Validé par le bureau : espace membres ouvert (sinon, son compte seulement) */
+  approved: boolean
   badges: readonly Badge[]
   preferences: DisplayPreferences | null
 }
@@ -46,6 +48,7 @@ export class Profile {
   declare readonly hasPassword: boolean
   declare readonly twoFactorEnabled: boolean
   declare readonly twoFactorSetupRequired: boolean
+  declare readonly approved: boolean
   declare readonly badges: readonly Badge[]
   declare readonly preferences: DisplayPreferences | null
 
@@ -65,6 +68,8 @@ export class Profile {
       hasPassword: bool(d.hasPassword),
       twoFactorEnabled: bool(d.twoFactorEnabled),
       twoFactorSetupRequired: bool(d.twoFactorSetupRequired),
+      // Absent (API d'avant la validation des membres) : compte validé
+      approved: d.approved === undefined ? true : bool(d.approved),
       badges: parseBadges(d.badges),
       preferences: parsePreferences(d.preferences),
     })

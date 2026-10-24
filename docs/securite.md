@@ -53,6 +53,7 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 | Moyenne | Prise de contrôle préalable : quelqu'un inscrivait l'adresse d'un autre avec son propre mot de passe ; un simple clic du titulaire sur le lien reçu activait ce compte, que l'intrus utilisait ensuite | Confirmation par le lien **et** le mot de passe de l'inscription ; une nouvelle inscription sur une adresse non confirmée remplace le mot de passe ; « mot de passe oublié » rend le compte au titulaire de l'adresse | `RegistrationTest`, `PasswordResetTest` |
 | Faible | Aucun moyen de retrouver l'accès sans l'administrateur après un mot de passe oublié | Lien par email, valable une heure, à usage unique (lié au mot de passe actuel), même réponse que le compte existe ou non ; autres sessions fermées | `PasswordResetTest` |
 | Faible | Comptes jamais confirmés conservés sans limite (adresses inscrites par des tiers, données sans raison d'être) | Supprimés au bout de 7 jours (tâche de nuit) | `PasswordResetTest` |
+| Moyenne | Tout compte à l'adresse confirmée devenait membre : un inconnu voyait l'annuaire, les lieux des soirées, les photos, et écrivait aux adhérents | Validation par le président ou l'administrateur (Administration › Membres, « Valider ») ; en attendant, son compte seulement ; la présidence est prévenue, le membre reçoit un email ; comptes existants validés d'office | `MemberApprovalTest`, `UserTest` |
 
 ## Contrôles vérifiés
 

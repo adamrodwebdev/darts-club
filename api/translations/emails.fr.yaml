@@ -39,3 +39,6 @@
 'password_reset.button': 'Choisir mon mot de passe'
 'password_reset.expires': 'Ce lien est valable une heure et ne sert qu''une fois.'
 'password_reset.ignore': 'Si ce n''est pas toi, ignore ce message : ton mot de passe ne change pas.'
+'member_approved.subject': 'Bienvenue au club : ton compte est validé'
+'member_approved.intro': 'Le bureau a validé ton compte : l''espace membres (événements, photos, messagerie, annuaire) t''est ouvert.'
+'member_approved.button': 'Me connecter'

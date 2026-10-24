@@ -42,6 +42,8 @@ const preferences = usePreferencesStore()
             <span class="nav__label">{{ t('nav.treasury') }}</span>
           </RouterLink>
         </li>
+        <!-- Espace membres : une fois le compte validé par le bureau -->
+        <template v-if="user.approved">
         <li>
           <RouterLink to="/evenements" class="nav__link" :aria-label="t('nav.events')">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" /></svg>
@@ -67,6 +69,7 @@ const preferences = usePreferencesStore()
             <span v-if="unread > 0" class="badge" aria-hidden="true">{{ unread > 99 ? '99+' : unread }}</span>
           </RouterLink>
         </li>
+        </template>
         <li>
           <RouterLink to="/compte" class="nav__link nav__link--account" :aria-label="t('nav.account')">
             <UserAvatar :name="user.displayName" :src="user.avatarUrl" :size="32" />
