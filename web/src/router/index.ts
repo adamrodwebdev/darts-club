@@ -42,6 +42,24 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'register', guestOnly: true },
   },
   {
+    path: '/confirmer-email',
+    name: 'confirm-email',
+    component: () => import('../views/auth/ConfirmEmailView.vue'),
+    meta: { titleKey: 'confirmEmail', guestOnly: true },
+  },
+  {
+    path: '/mot-de-passe-oublie',
+    name: 'forgot-password',
+    component: () => import('../views/auth/ForgotPasswordView.vue'),
+    meta: { titleKey: 'forgotPassword', guestOnly: true },
+  },
+  {
+    path: '/nouveau-mot-de-passe',
+    name: 'reset-password',
+    component: () => import('../views/auth/ResetPasswordView.vue'),
+    meta: { titleKey: 'resetPassword', guestOnly: true },
+  },
+  {
     path: '/compte',
     component: () => import('../views/account/AccountLayout.vue'),
     meta: { requiresAuth: true },
