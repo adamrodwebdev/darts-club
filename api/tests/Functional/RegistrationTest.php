@@ -73,11 +73,24 @@ final class RegistrationTest extends ApiTestCase
         self::assertCount(1, $this->users()->findAll());
     }
 
-    public function testWeakPasswordIsRejected(): void
+    public function testPasswordsFollowTheClubRules(): void
     {
-        $this->register('new@example.com', password: 'password1234');
-        self::assertResponseStatusCodeSame(422);
+        // Règles choisies par l'association : 6 caractères, un chiffre, un caractère spécial
+        $refused = [
+            'password1234' => ['Le mot de passe doit contenir au moins un caractère spécial (! ? @ # …).'],
+            'flèche' => ['Le mot de passe doit contenir au moins un chiffre.', 'Le mot de passe doit contenir au moins un caractère spécial (! ? @ # …).'],
+            'f3!' => ['Le mot de passe doit faire au moins 6 caractères.'],
+        ];
+        foreach ($refused as $password => $messages) {
+            $this->register('new@example.com', password: $password);
+            self::assertResponseStatusCodeSame(422);
+            $violations = array_filter((array) $this->json()['violations'], static fn (mixed $v): bool => \is_array($v) && 'password' === $v['propertyPath']);
+            self::assertSame($messages, array_column($violations, 'title'), $password);
+        }
         self::assertEmailCount(0);
+
+        $this->register('new@example.com', password: 'fl3ch!');
+        self::assertResponseStatusCodeSame(202);
     }
 
     public function testInvalidPhoneIsRejected(): void
