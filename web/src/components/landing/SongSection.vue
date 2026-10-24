@@ -7,6 +7,7 @@ import SplitText from '@/components/motion/SplitText.vue'
 import { useMediaPlayback } from '@/composables/useMediaPlayback'
 import { useStages } from '@/composables/useStages'
 import { formatClock } from '@/i18n/format'
+import { frenchTypography } from '@/i18n/typography'
 import { vReplay } from '@/motion/vReplay'
 import AnthemPlayer from './AnthemPlayer.vue'
 
@@ -114,7 +115,7 @@ function announce(): void {
               <p v-for="(line, j) in directions(section.key)" :key="j">{{ line }}</p>
             </template>
             <!-- Paroles chantées en français quelle que soit la langue de l'interface -->
-            <p v-for="(line, j) in section.lines" v-else :key="j" lang="fr">{{ line }}</p>
+            <p v-for="(line, j) in section.lines" v-else :key="j" lang="fr">{{ frenchTypography(line) }}</p>
           </article>
         </template>
       </FretReel>

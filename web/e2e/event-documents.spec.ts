@@ -187,7 +187,8 @@ test('leaving with unsaved changes asks first', async ({ page }) => {
 
   await page.getByLabel('Commune de la soirée').fill('Pierre-de-Bresse')
   page.once('dialog', (dialog) => {
-    expect(dialog.message()).toBe('Quitter sans enregistrer les modifications ?')
+    // Typographie française : espace insécable avant le point d'interrogation
+    expect(dialog.message()).toBe('Quitter sans enregistrer les modifications ?')
     void dialog.dismiss()
   })
   await page.getByRole('link', { name: '← Démarches · Soirée fléchettes' }).click()

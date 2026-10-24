@@ -1,4 +1,5 @@
 import { i18n } from '@/i18n'
+import { typographyFor } from '@/i18n/typography'
 import { ApiError } from './ApiError'
 
 type Body = Record<string, unknown> | FormData | undefined
@@ -60,7 +61,8 @@ export class ApiClient {
 
     const data = await ApiClient.readJson(response)
     if (!response.ok) {
-      throw ApiError.fromBody(response.status, data)
+      // Messages de l'API rédigés dans la langue demandée : même typographie que le reste de l'écran
+      throw ApiError.fromBody(response.status, data, typographyFor(headers['Accept-Language'] ?? ''))
     }
 
     return data
