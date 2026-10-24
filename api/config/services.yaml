@@ -41,6 +41,10 @@ services:
     app.storage.event_posters:
         class: App\Media\FilesystemImageStorage
         arguments: ['%kernel.project_dir%/var/storage/event-posters']
+    # Justificatifs des bilans (photos WebP, PDF), servis au bureau seulement
+    app.storage.receipts:
+        class: App\Media\FilesystemFileStorage
+        arguments: ['%kernel.project_dir%/var/storage/receipts']
     App\Media\ImageStorage $avatarStorage: '@app.storage.avatars'
     App\Media\ImageStorage $eventPhotoStorage: '@app.storage.event_photos'
     App\Media\ImageStorage $eventPosterStorage: '@app.storage.event_posters'

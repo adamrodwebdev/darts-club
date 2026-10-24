@@ -13,6 +13,8 @@ final class ImageProcessor
     public const THUMB_MAX_SIDE = 480;
     /** Affiche sur les cartes du calendrier : nette sur écran haute densité */
     public const POSTER_CARD_MAX_SIDE = 900;
+    /** Ticket de caisse photographié : 2400 px sur le grand côté (23 Mo en mémoire au plus) */
+    public const RECEIPT_MAX_SIDE = 2400;
     /**
      * Garde-fou contre les « bombes de décompression » : 25 mégapixels décodés occupent 100 Mo,
      * loin de la limite mémoire de PHP (256 Mo), qu'une image envoyée ne doit jamais atteindre.
@@ -70,7 +72,13 @@ final class ImageProcessor
         ];
     }
 
-    private function decode(string $path): \GdImage
+    /** Justificatif (ticket, facture) : plus de définition qu'une photo, pour garder les petits caractères lisibles */
+    public function receipt(string $sourcePath): string
+    {
+        return $this->encode($this->decode($sourcePath, self::RECEIPT_MAX_SIDE));
+    }
+
+    private function decode(string $path, int $maxSide = self::PHOTO_MAX_SIDE): \GdImage
     {
         $info = @getimagesize($path);
         if (false === $info || !\in_array($info[2], self::ALLOWED_TYPES, true)) {
@@ -94,10 +102,10 @@ final class ImageProcessor
             throw new InvalidImageException('Image illisible.');
         }
 
-        // Aucune version produite ne dépasse PHOTO_MAX_SIDE : l'original est réduit tout de suite, et la
+        // Aucune version produite ne dépasse $maxSide : l'original est réduit tout de suite, et la
         // mémoire ne contient jamais deux images en pleine résolution (pas même pendant la rotation)
-        if (max($width, $height) > self::PHOTO_MAX_SIDE) {
-            $image = $this->fit($image, self::PHOTO_MAX_SIDE);
+        if (max($width, $height) > $maxSide) {
+            $image = $this->fit($image, $maxSide);
         }
 
         // Respecte l'orientation des photos de smartphone (EXIF supprimé ensuite)
