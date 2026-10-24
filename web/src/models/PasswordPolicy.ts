@@ -16,6 +16,7 @@ const CHECKS: Readonly<Record<PasswordRule, (password: string) => boolean>> = {
 
 export const PASSWORD_RULES = Object.keys(CHECKS) as readonly PasswordRule[]
 
+/** Champ vide : aucune règle n'est remplie, sans compiler les expressions Unicode au premier affichage */
 export function meetsRule(password: string, rule: PasswordRule): boolean {
-  return CHECKS[rule](password)
+  return password !== '' && CHECKS[rule](password)
 }

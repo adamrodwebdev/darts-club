@@ -6,6 +6,7 @@ import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import OAuthButtons from '@/components/OAuthButtons.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useStages } from '@/composables/useStages'
 import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 
@@ -23,6 +24,12 @@ const code = ref('')
 const { pending, error, errorCode, run } = useAsyncAction()
 const resend = useAsyncAction()
 const resent = ref(false)
+/**
+ * Connexion par un fournisseur une image après le formulaire : le rendu de la page reste sous le
+ * seuil d'une tâche longue au démarrage (Lighthouse : temps de blocage). En bas de page, elle ne
+ * décale rien au-dessus d'elle.
+ */
+const extras = useStages(1, { all: false })
 
 const notice = computed(() => {
   switch (route.query.verify) {
@@ -108,7 +115,7 @@ async function resendLink(): Promise<void> {
       <p v-if="resend.error.value" class="notice notice--error" role="alert">{{ resend.error.value }}</p>
     </div>
 
-    <OAuthButtons v-if="step === 'password'" />
+    <OAuthButtons v-if="step === 'password' && extras >= 1" />
 
     <p class="switch">{{ t('auth.login.noAccount') }} <RouterLink to="/inscription">{{ t('auth.login.join') }}</RouterLink></p>
   </section>
