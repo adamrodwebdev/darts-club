@@ -31,6 +31,15 @@
   --hand-dark: #6c6c78;
   --hand-line: #0b0b0d;
   --hand-band: #1f1f25;
+  /* Affiche QR à imprimer : couleurs du papier, identiques dans les deux thèmes du site */
+  --poster-paper: #ffffff;
+  --poster-ink: #15151a;
+  --poster-ink-muted: #55555f;
+  --poster-night: #0b0b0d;
+  --poster-night-ink: #f2f2f2;
+  --poster-night-muted: #b4b4bd;
+  --poster-accent: #d62839;
+  --poster-gold: #e3b341;
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;

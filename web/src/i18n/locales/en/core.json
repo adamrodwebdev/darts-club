@@ -35,7 +35,8 @@
     "guestResponse": "My answer",
     "confirmEmail": "Confirm my address",
     "forgotPassword": "Forgotten password",
-    "resetPassword": "New password"
+    "resetPassword": "New password",
+    "eventPoster": "QR poster"
   },
   "app": {
     "twoFactorBanner": "Board member: {link} to access the club tools.",

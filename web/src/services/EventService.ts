@@ -78,6 +78,11 @@ export class EventService {
     return `/api/admin/events/${encodeURIComponent(id)}/audience.csv`
   }
 
+  /** QR code d'une affiche (SVG) : le site, ou la page publique d'une soirée */
+  qrUrl(eventId: string | null): string {
+    return eventId === null ? '/api/qr/site.svg' : `/api/events/${encodeURIComponent(eventId)}/qr.svg`
+  }
+
   icsUrl(id: string): string {
     return `/api/events/${encodeURIComponent(id)}/calendar.ics`
   }

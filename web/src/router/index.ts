@@ -107,6 +107,12 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'events' },
   },
   {
+    path: '/evenements/affiche',
+    name: 'event-poster',
+    component: () => import('../views/events/EventPosterView.vue'),
+    meta: { titleKey: 'eventPoster', requiresAuth: true, requiresOrganizer: true },
+  },
+  {
     path: '/evenements/nouveau',
     name: 'event-create',
     component: () => import('../views/events/EventFormView.vue'),
