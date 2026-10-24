@@ -104,7 +104,8 @@
     "justNow": "just now",
     "badges": "Badges",
     "overdue": "overdue",
-    "board": "Board"
+    "board": "Board",
+    "showPassword": "Show what you typed"
   },
   "errors": {
     "fields": "Please check the highlighted fields.",
@@ -249,7 +250,6 @@
       "checkInboxText": "If the address is valid, you have just received a link to activate your account.",
       "phone": "Phone (optional)",
       "phoneHint": "So the board can reach you; never shown to other members.",
-      "passwordHint": "At least 12 characters. A passphrase is ideal.",
       "submit": "Create my account",
       "alreadyMember": "Already a member?",
       "login": "Log in"
@@ -333,7 +333,8 @@
         "roles": "Roles changed",
         "suspend": "Account suspended",
         "reactivate": "Account reactivated",
-        "approve": "Account approved"
+        "approve": "Account approved",
+        "password_link": "Password link sent"
       },
       "broadcast": {
         "send": "Message broadcast"
@@ -391,5 +392,12 @@
         "insurance": "Insurance certificate filed"
       }
     }
+  },
+  "passwordRules": {
+    "length": "at least {n} characters",
+    "digit": "a number",
+    "special": "a special character (! ? {'@'} # …)",
+    "met": "(done)",
+    "unmet": "(to do)"
   }
 }

@@ -104,7 +104,8 @@
     "justNow": "à l’instant",
     "badges": "Badges",
     "overdue": "en retard",
-    "board": "Bureau"
+    "board": "Bureau",
+    "showPassword": "Afficher la saisie"
   },
   "errors": {
     "fields": "Vérifie les champs indiqués.",
@@ -249,7 +250,6 @@
       "checkInboxText": "Si l’adresse est valide, tu viens de recevoir un lien pour activer ton compte.",
       "phone": "Téléphone (facultatif)",
       "phoneHint": "Pour être joint par le bureau, jamais affiché aux autres adhérents.",
-      "passwordHint": "12 caractères minimum. Une phrase de passe est idéale.",
       "submit": "Créer mon compte",
       "alreadyMember": "Déjà membre ?",
       "login": "Se connecter"
@@ -333,7 +333,8 @@
         "roles": "Rôles modifiés",
         "suspend": "Compte suspendu",
         "reactivate": "Compte réactivé",
-        "approve": "Compte validé"
+        "approve": "Compte validé",
+        "password_link": "Lien de mot de passe envoyé"
       },
       "broadcast": {
         "send": "Message diffusé"
@@ -391,5 +392,12 @@
         "insurance": "Attestation d’assurance rangée"
       }
     }
+  },
+  "passwordRules": {
+    "length": "{n} caractères au moins",
+    "digit": "un chiffre",
+    "special": "un caractère spécial (! ? {'@'} # …)",
+    "met": "(respecté)",
+    "unmet": "(à respecter)"
   }
 }

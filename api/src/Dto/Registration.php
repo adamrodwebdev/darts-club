@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Validator\PasswordPolicy;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,10 +14,7 @@ final class Registration
         #[Assert\Length(max: 180)]
         public readonly string $email = '',
 
-        #[Assert\NotBlank]
-        #[Assert\Length(min: 12, max: 4096)]
-        #[Assert\PasswordStrength(minScore: Assert\PasswordStrength::STRENGTH_MEDIUM)]
-        #[Assert\NotCompromisedPassword]
+        #[PasswordPolicy]
         #[\SensitiveParameter]
         public readonly string $password = '',
 
