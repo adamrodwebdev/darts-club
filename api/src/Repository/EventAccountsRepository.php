@@ -7,6 +7,7 @@ use App\Entity\ClubEvent;
 use App\Entity\EventAccounts;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Bridge\Doctrine\Types\UuidType;
 
 /**
  * @extends ServiceEntityRepository<EventAccounts>
@@ -40,6 +41,24 @@ class EventAccountsRepository extends ServiceEntityRepository
     public function taxExemptEventsIn(int $year): int
     {
         return $this->countFlagged('taxExempt', $year);
+    }
+
+    /** Soirées de la même année civile, avant celle-ci, comptées comme buvette temporaire (rang de sa demande) */
+    public function temporaryBarsBefore(ClubEvent $event): int
+    {
+        $local = $event->getStartsAt()->setTimezone(new \DateTimeZone(ClubTime::TIMEZONE));
+
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->join('a.event', 'e')
+            ->where('a.temporaryBar = true')
+            ->andWhere('e.startsAt >= :start AND e.startsAt < :startsAt')
+            ->andWhere('e.id != :event')
+            ->setParameter('start', $local->setDate((int) $local->format('Y'), 1, 1)->setTime(0, 0))
+            ->setParameter('startsAt', $event->getStartsAt())
+            ->setParameter('event', $event->getId(), UuidType::NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     private function countFlagged(string $flag, int $year): int
