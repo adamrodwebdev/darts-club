@@ -36,6 +36,6 @@ final class SendPasswordResetEmailHandler
             ->subject($this->translator->trans('password_reset.subject', [], 'emails', $locale))
             ->htmlTemplate('emails/password_reset.html.twig')
             ->textTemplate('emails/password_reset.txt.twig')
-            ->context(['link' => $this->links->create($user)]));
+            ->context(['link' => $this->links->create($user), 'by_administrator' => $message->byAdministrator]));
     }
 }

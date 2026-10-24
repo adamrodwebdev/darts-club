@@ -3,3 +3,7 @@
 'Montant invalide.': 'Invalid amount.'
 'Mot de passe actuel incorrect.': 'Incorrect current password.'
 'Tape SUPPRIMER pour confirmer.': 'Type DELETE to confirm.'
+'Le mot de passe doit faire au moins {{ limit }} caractères.': 'The password must be at least {{ limit }} characters long.'
+'Le mot de passe doit contenir au moins un chiffre.': 'The password must contain at least one number.'
+'Le mot de passe doit contenir au moins un caractère spécial (! ? @ # …).': 'The password must contain at least one special character (! ? @ # …).'
+'Ce mot de passe figure dans des fuites de données publiques : choisis-en un autre.': 'This password appears in public data leaks: please choose another one.'

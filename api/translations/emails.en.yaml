@@ -39,6 +39,8 @@
 'password_reset.button': 'Choose my password'
 'password_reset.expires': 'This link is valid for one hour and works only once.'
 'password_reset.ignore': 'If it wasn''t you, ignore this message: your password stays the same.'
+'password_reset.intro_admin': 'The club''s administrator sent you this link to choose a new password for your Skull Darts 71 account.'
+'password_reset.ignore_admin': 'If you didn''t ask for anything, ignore this message: your password stays the same.'
 'member_approved.subject': 'Welcome to the club: your account is approved'
 'member_approved.intro': 'The board approved your account: the members'' area (events, photos, messages, directory) is open to you.'
 'member_approved.button': 'Log in'

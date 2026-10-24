@@ -32,7 +32,6 @@
     "security": {
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
-      "newPasswordHint": "12 caractères minimum.",
       "passwordChanged": "Mot de passe modifié. Tes autres appareils ont été déconnectés.",
       "dataTitle": "Mes données",
       "dataText": "Télécharge une copie de toutes les données que le club conserve sur toi (format JSON).",
