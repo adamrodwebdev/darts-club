@@ -24,9 +24,10 @@ const { pending, error, fieldErrors, run } = useAsyncAction()
 
 /** Adresse confirmée avec le mot de passe de l'inscription, puis connexion avec ce même mot de passe */
 async function submit(): Promise<void> {
-  const status = await run(async () => auth.login(await services.auth.confirmEmail(linkQuery.value, password.value), password.value))
-  if (status === 'authenticated') await router.replace('/compte')
-  if (status === 'two-factor') await router.replace('/connexion')
+  const next = await run(async () => auth.login(await services.auth.confirmEmail(linkQuery.value, password.value), password.value))
+  if (next === 'authenticated') await router.replace('/compte')
+  // Deuxième étape (code ou clé d'accès) : elle se fait depuis la page de connexion
+  else if (next) await router.replace('/connexion')
 }
 </script>
 

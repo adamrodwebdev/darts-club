@@ -28,6 +28,7 @@ security:
             entry_point: App\Security\JsonAuthenticationEntryPoint
             custom_authenticators:
                 - App\Security\OAuthAuthenticator
+                - App\Security\Passkey\PasskeyAuthenticator
             json_login:
                 check_path: auth_login
                 username_path: email
@@ -55,6 +56,8 @@ security:
     access_control:
         - { path: ^/api/auth/(login|register|verify|verify/resend)$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/password/(forgot|reset)$, roles: PUBLIC_ACCESS }
+        # Clés d'accès : options et connexion sans mot de passe
+        - { path: ^/api/auth/passkey/(options|login)$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/oauth/, roles: PUBLIC_ACCESS }
         # Sonde de disponibilité
         - { path: ^/api/health$, roles: PUBLIC_ACCESS }
@@ -64,7 +67,7 @@ security:
         - { path: ^/api/public/, roles: PUBLIC_ACCESS }
         # Pendant la saisie du code 2FA, seules ces routes sont accessibles
         - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/(2fa|2fa/check)$, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+        - { path: ^/api/auth/(2fa|2fa/check|2fa/passkey)$, roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

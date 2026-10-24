@@ -36,6 +36,7 @@
     "confirmEmail": "Confirmer mon adresse",
     "forgotPassword": "Mot de passe oublié",
     "resetPassword": "Nouveau mot de passe",
+    "passkeySetup": "Clé d’accès",
     "eventPoster": "Affiche QR",
     "eventAccounts": "Bilan de la soirée",
     "eventDocuments": "Démarches de la soirée",
@@ -43,8 +44,10 @@
     "associationProfile": "Fiche de l’association"
   },
   "app": {
-    "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
-    "twoFactorLink": "active la double authentification"
+    "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
+    "twoFactorLink": "active la double authentification",
+    "passkeyBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
+    "passkeyLink": "crée ta clé d’accès"
   },
   "nav": {
     "skip": "Aller au contenu",
@@ -242,7 +245,9 @@
       "noAccount": "Pas encore de compte ?",
       "join": "Rejoindre le club",
       "forgot": "Mot de passe oublié ?",
-      "resetSuccess": "Mot de passe changé : connecte-toi avec le nouveau."
+      "resetSuccess": "Mot de passe changé : connecte-toi avec le nouveau.",
+      "passkey": "Se connecter avec une clé d’accès",
+      "passkeyHint": "Empreinte, visage ou code du téléphone : ni mot de passe, ni code à taper."
     },
     "register": {
       "title": "Rejoindre le club",
@@ -273,6 +278,20 @@
       "password": "Nouveau mot de passe",
       "submit": "Enregistrer",
       "newLink": "Lien expiré ? En demander un nouveau"
+    },
+    "passkeyStep": {
+      "eyebrow": "Espace du bureau",
+      "title": "Confirme que c’est bien toi",
+      "text": "Ton téléphone va te demander ton empreinte, ton visage ou son code de déverrouillage.",
+      "use": "Utiliser ma clé d’accès",
+      "lostTitle": "Appareil perdu ?",
+      "lostText": "L’administrateur peut réinitialiser ton accès : tu créeras alors une nouvelle clé."
+    },
+    "passkeyErrors": {
+      "cancelled": "Clé d’accès non utilisée : réessaie quand tu veux.",
+      "duplicate": "Cet appareil a déjà une clé d’accès pour ton compte.",
+      "unsupported": "Cet appareil ne peut pas utiliser de clé d’accès : essaie depuis ton téléphone.",
+      "failed": "La clé d’accès n’a pas fonctionné : réessaie."
     }
   },
   "notFound": {
@@ -334,6 +353,7 @@
         "suspend": "Compte suspendu",
         "reactivate": "Compte réactivé",
         "approve": "Compte validé",
+        "passkeys_reset": "Accès réinitialisé (clés d’accès)",
         "password_link": "Lien de mot de passe envoyé"
       },
       "broadcast": {

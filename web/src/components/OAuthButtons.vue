@@ -4,6 +4,9 @@ import { useI18n } from 'vue-i18n'
 import { useServices } from '@/services'
 import type { OAuthProvider } from '@/services/AuthService'
 
+/** Séparateur « ou » au-dessus des boutons, sauf si la page en affiche déjà un (clé d'accès) */
+withDefaults(defineProps<{ separated?: boolean }>(), { separated: true })
+
 const services = useServices()
 
 const { t } = useI18n()
@@ -18,7 +21,7 @@ onMounted(async () => {
 
 <template>
   <div v-if="providers.length" class="oauth">
-    <p class="oauth__sep"><span>{{ t('auth.oauthSeparator') }}</span></p>
+    <p v-if="separated" class="oauth__sep"><span>{{ t('auth.oauthSeparator') }}</span></p>
     <!-- Liens classiques : la redirection OAuth est une navigation complète -->
     <a v-for="p in providers" :key="p" class="oauth__btn" :href="services.auth.oauthUrl(p)">{{ t('auth.oauthContinue', { provider: NAMES[p] }) }}</a>
   </div>

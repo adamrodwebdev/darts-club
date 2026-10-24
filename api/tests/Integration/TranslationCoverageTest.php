@@ -14,7 +14,7 @@ use Symfony\Component\Translation\TranslatorBagInterface;
 final class TranslationCoverageTest extends KernelTestCase
 {
     /** Classes d'exceptions internes : jamais montrées telles quelles à l'adhérent */
-    private const INTERNAL = ['LogicException', 'RuntimeException', 'UnsupportedUserException'];
+    private const INTERNAL = ['LogicException', 'RuntimeException', 'UnsupportedUserException', 'InvalidPasskey'];
 
     /** Domaines à clés (« verify.subject »…) : les deux langues sont rédigées */
     private const KEYED_DOMAINS = ['emails', 'notifications', 'enums', 'exports'];

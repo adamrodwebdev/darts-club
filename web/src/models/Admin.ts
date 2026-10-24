@@ -19,6 +19,8 @@ export interface AdminMember {
   /** Validé par le bureau (espace membres ouvert) */
   approved: boolean
   twoFactorEnabled: boolean
+  /** Nombre de clés d'accès (réinitialisables par l'administrateur) */
+  passkeys: number
   suspended: boolean
   suspensionReason: string | null
   membership: string | null
@@ -38,10 +40,20 @@ export function parseAdminMember(value: unknown): AdminMember {
     verified: bool(d.verified),
     approved: d.approved === undefined ? true : bool(d.approved),
     twoFactorEnabled: bool(d.twoFactorEnabled),
+    passkeys: d.passkeys === undefined ? 0 : num(d.passkeys),
     suspended: bool(d.suspended),
     suspensionReason: optStr(d.suspensionReason),
     membership: optStr(d.membership),
   }
+}
+
+/**
+ * Protection manquante d'un membre du bureau : code TOTP pour l'administrateur, clé d'accès (ou
+ * code, en attendant) pour les autres fonctions.
+ */
+export function missingProtection(member: AdminMember): 'twoFactor' | 'passkey' | null {
+  if (member.admin) return member.twoFactorEnabled ? null : 'twoFactor'
+  return member.roles.length && !member.passkeys && !member.twoFactorEnabled ? 'passkey' : null
 }
 
 export interface BroadcastRecord {

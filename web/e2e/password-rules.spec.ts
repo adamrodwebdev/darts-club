@@ -24,7 +24,7 @@ async function logInTo(page: Page, path: string, profile: object): Promise<void>
   await page.goto(`/connexion?redirect=${path}`)
   await page.getByLabel('Email').fill(profile === admin ? admin.email : 'president@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 }
 
 test('the sign-up form ticks the password rules as they are met, and shows the password on demand', async ({ page }) => {

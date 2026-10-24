@@ -1,7 +1,7 @@
 import { isLocale, type Locale } from '@/i18n/locales'
 import { THEME_PREFERENCES, type ThemePreference } from '@/preferences/ThemeController'
 import { parseBadges, type Badge } from './Badge'
-import { bool, obj, optStr, str, strList } from './guards'
+import { bool, obj, optBool, optStr, str, strList } from './guards'
 
 /** Langue et thème enregistrés sur le compte */
 export interface DisplayPreferences {
@@ -30,8 +30,13 @@ export interface ProfileData {
   roles: readonly string[]
   hasPassword: boolean
   twoFactorEnabled: boolean
-  /** Membre du bureau sans 2FA : fonctions du club bloquées */
+  /** Administrateur sans code TOTP : fonctions du club bloquées */
   twoFactorSetupRequired: boolean
+  /** Bureau hors administrateur : la clé d'accès remplace le code à 6 chiffres */
+  passkeyRequired: boolean
+  /** Bureau sans clé ni code : fonctions du club bloquées jusqu'à la création d'une clé */
+  passkeySetupRequired: boolean
+  hasPasskey: boolean
   /** Validé par le bureau : espace membres ouvert (sinon, son compte seulement) */
   approved: boolean
   badges: readonly Badge[]
@@ -48,6 +53,9 @@ export class Profile {
   declare readonly hasPassword: boolean
   declare readonly twoFactorEnabled: boolean
   declare readonly twoFactorSetupRequired: boolean
+  declare readonly passkeyRequired: boolean
+  declare readonly passkeySetupRequired: boolean
+  declare readonly hasPasskey: boolean
   declare readonly approved: boolean
   declare readonly badges: readonly Badge[]
   declare readonly preferences: DisplayPreferences | null
@@ -68,8 +76,11 @@ export class Profile {
       hasPassword: bool(d.hasPassword),
       twoFactorEnabled: bool(d.twoFactorEnabled),
       twoFactorSetupRequired: bool(d.twoFactorSetupRequired),
-      // Absent (API d'avant la validation des membres) : compte validé
-      approved: d.approved === undefined ? true : bool(d.approved),
+      // Champs absents d'une API plus ancienne : pas de clé d'accès, compte validé
+      passkeyRequired: optBool(d.passkeyRequired, false),
+      passkeySetupRequired: optBool(d.passkeySetupRequired, false),
+      hasPasskey: optBool(d.hasPasskey, false),
+      approved: optBool(d.approved, true),
       badges: parseBadges(d.badges),
       preferences: parsePreferences(d.preferences),
     })

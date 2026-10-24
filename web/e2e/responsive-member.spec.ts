@@ -17,7 +17,7 @@ for (const width of [320, 360, 390, 768, 1024, 1440]) {
     await page.goto('/connexion?redirect=/evenements')
     await page.getByLabel('Email').fill('alice@example.com')
     await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-    await page.getByRole('button', { name: 'Se connecter' }).click()
+    await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Événements')
 
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)

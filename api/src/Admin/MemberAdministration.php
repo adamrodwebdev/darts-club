@@ -69,6 +69,22 @@ final class MemberAdministration
         $this->em->flush();
     }
 
+    /**
+     * Appareil perdu : l'administrateur retire les clés d'accès du membre et ferme ses sessions. À sa
+     * prochaine connexion avec son mot de passe, il crée une nouvelle clé ; un email le prévient.
+     */
+    public function resetPasskeys(User $actor, User $member): void
+    {
+        if (!$actor->hasRole(Role::Admin)) {
+            throw new AdministrationException('Seul l’administrateur réinitialise l’accès d’un membre.');
+        }
+
+        $member->removePasskeys();
+        $member->revokeSessions();
+        $this->audit->record($actor, new AuditEntry('member.passkeys_reset', $member->displayName()->value));
+        $this->em->flush();
+    }
+
     public function suspend(User $actor, User $member, string $reason): void
     {
         if ($member->getId()->equals($actor->getId())) {

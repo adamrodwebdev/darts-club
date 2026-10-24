@@ -7,7 +7,7 @@ import BaseField from '@/components/BaseField.vue'
 import MemberBadges from '@/components/MemberBadges.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { BOARD_ROLE_OPTIONS, type AdminMember } from '@/models/Admin'
+import { BOARD_ROLE_OPTIONS, missingProtection, type AdminMember } from '@/models/Admin'
 import { useServices } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 
@@ -38,6 +38,8 @@ const editing = ref<AdminMember | null>(null)
 const draftRoles = ref<string[]>([])
 const suspending = ref<AdminMember | null>(null)
 const reason = ref('')
+/** Appareil perdu : réinitialisation des clés d'accès, par l'administrateur seulement */
+const resetting = ref<AdminMember | null>(null)
 /** Mot de passe oublié : lien envoyé par l'administrateur */
 const linking = ref<AdminMember | null>(null)
 
@@ -98,6 +100,20 @@ async function approve(member: AdminMember): Promise<void> {
   }
 }
 
+async function confirmReset(): Promise<void> {
+  const member = resetting.value
+  if (!member) return
+  const ok = await action.run(async () => {
+    await services.admin.resetPasskeys(member.id)
+    return true
+  })
+  if (ok) {
+    info.value = t('admin.members.resetDone', { name: member.displayName })
+    resetting.value = null
+    await refresh()
+  }
+}
+
 async function sendPasswordLink(): Promise<void> {
   const member = linking.value
   if (!member) return
@@ -127,7 +143,7 @@ async function reactivate(member: AdminMember): Promise<void> {
   <div class="stack">
     <BaseField v-model="search" :label="t('admin.members.search')" />
     <p v-if="info" class="notice notice--success" role="status">{{ info }}</p>
-    <p v-if="action.error.value && !editing && !suspending && !linking" class="notice notice--error" role="alert">{{ action.error.value }}</p>
+    <p v-if="action.error.value && !editing && !suspending && !resetting && !linking" class="notice notice--error" role="alert">{{ action.error.value }}</p>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <ul class="members">
@@ -140,7 +156,9 @@ async function reactivate(member: AdminMember): Promise<void> {
             <span v-if="!m.verified" class="tag">{{ t('admin.members.unverified') }}</span>
             <span v-else-if="!m.approved" class="tag tag--warn">{{ t('admin.members.pending') }}</span>
             <span v-if="m.admin" class="tag">{{ t('admin.members.admin') }}</span>
-            <span v-if="m.roles.length && !m.twoFactorEnabled" class="tag tag--warn">{{ t('admin.members.twoFactorMissing') }}</span>
+            <span v-if="missingProtection(m) === 'twoFactor'" class="tag tag--warn">{{ t('admin.members.twoFactorMissing') }}</span>
+            <span v-else-if="missingProtection(m) === 'passkey'" class="tag tag--warn">{{ t('admin.members.passkeyMissing') }}</span>
+            <span v-if="m.passkeys" class="tag">{{ t('admin.members.passkeys', m.passkeys) }}</span>
             <span class="tag">{{ t('admin.members.membershipTag', { status: membershipLabel(m.membership) }) }}</span>
             <span v-if="m.suspended" class="tag tag--warn">{{ t('admin.members.suspendedTag', { reason: m.suspensionReason }) }}</span>
           </span>
@@ -148,6 +166,7 @@ async function reactivate(member: AdminMember): Promise<void> {
         <div class="member__actions">
           <BaseButton v-if="m.verified && !m.approved" :pending="action.pending.value" @click="approve(m)">{{ t('admin.members.approve') }}</BaseButton>
           <BaseButton variant="ghost" :disabled="!m.verified" @click="editRoles(m)">{{ t('admin.members.roles') }}</BaseButton>
+          <BaseButton v-if="auth.user?.isAdmin && m.passkeys" variant="ghost" @click="resetting = m">{{ t('admin.members.resetAccess') }}</BaseButton>
           <BaseButton v-if="auth.user?.isAdmin && !m.suspended" variant="ghost" @click="linking = m">{{ t('admin.members.passwordLink') }}</BaseButton>
           <BaseButton v-if="m.suspended" variant="ghost" :pending="action.pending.value" @click="reactivate(m)">{{ t('admin.members.reactivate') }}</BaseButton>
           <BaseButton v-else variant="danger" @click="suspending = m">{{ t('admin.members.suspend') }}</BaseButton>
@@ -168,6 +187,18 @@ async function reactivate(member: AdminMember): Promise<void> {
         <div class="buttons">
           <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
           <BaseButton type="submit" :pending="action.pending.value">{{ t('common.save') }}</BaseButton>
+        </div>
+      </form>
+    </BaseDialog>
+
+    <BaseDialog v-if="resetting" :title="t('admin.members.resetTitle', { name: resetting.displayName })" @close="resetting = null">
+      <form class="stack" @submit.prevent="confirmReset">
+        <p class="muted dialog-text">{{ t('admin.members.resetKeys', resetting.passkeys) }} {{ t('admin.members.resetNext', { name: resetting.displayName }) }}</p>
+        <p class="muted dialog-text">{{ t('admin.members.resetNotice', { name: resetting.displayName }) }}</p>
+        <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
+        <div class="buttons">
+          <BaseButton variant="ghost" @click="resetting = null">{{ t('common.cancel') }}</BaseButton>
+          <BaseButton type="submit" variant="danger" :pending="action.pending.value">{{ t('admin.members.reset') }}</BaseButton>
         </div>
       </form>
     </BaseDialog>

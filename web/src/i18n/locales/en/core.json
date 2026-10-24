@@ -36,6 +36,7 @@
     "confirmEmail": "Confirm my address",
     "forgotPassword": "Forgotten password",
     "resetPassword": "New password",
+    "passkeySetup": "Passkey",
     "eventPoster": "QR poster",
     "eventAccounts": "Evening accounts",
     "eventDocuments": "Evening paperwork",
@@ -43,8 +44,10 @@
     "associationProfile": "Association details"
   },
   "app": {
-    "twoFactorBanner": "Board member: {link} to access the club tools.",
-    "twoFactorLink": "enable two-factor authentication"
+    "twoFactorBanner": "Administrator: {link} to access the club tools.",
+    "twoFactorLink": "enable two-factor authentication",
+    "passkeyBanner": "Board member: {link} to access the club tools.",
+    "passkeyLink": "create your passkey"
   },
   "nav": {
     "skip": "Skip to content",
@@ -242,7 +245,9 @@
       "noAccount": "No account yet?",
       "join": "Join the club",
       "forgot": "Forgot your password?",
-      "resetSuccess": "Password changed: log in with the new one."
+      "resetSuccess": "Password changed: log in with the new one.",
+      "passkey": "Log in with a passkey",
+      "passkeyHint": "Fingerprint, face or phone PIN: no password, no code to type."
     },
     "register": {
       "title": "Join the club",
@@ -273,6 +278,20 @@
       "password": "New password",
       "submit": "Save",
       "newLink": "Link expired? Ask for a new one"
+    },
+    "passkeyStep": {
+      "eyebrow": "Board area",
+      "title": "Confirm it’s really you",
+      "text": "Your phone will ask for your fingerprint, your face or its unlock code.",
+      "use": "Use my passkey",
+      "lostTitle": "Lost your device?",
+      "lostText": "The administrator can reset your access: you will then create a new passkey."
+    },
+    "passkeyErrors": {
+      "cancelled": "Passkey not used: try again whenever you like.",
+      "duplicate": "This device already has a passkey for your account.",
+      "unsupported": "This device can’t use passkeys: try from your phone.",
+      "failed": "The passkey didn’t work: please try again."
     }
   },
   "notFound": {
@@ -334,6 +353,7 @@
         "suspend": "Account suspended",
         "reactivate": "Account reactivated",
         "approve": "Account approved",
+        "passkeys_reset": "Access reset (passkeys)",
         "password_link": "Password link sent"
       },
       "broadcast": {

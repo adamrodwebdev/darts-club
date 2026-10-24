@@ -36,6 +36,11 @@ export function bool(value: unknown, what = 'booléen'): boolean {
   return value
 }
 
+/** Booléen ajouté par une version plus récente de l'API : valeur par défaut s'il est absent */
+export function optBool(value: unknown, fallback: boolean, what = 'booléen'): boolean {
+  return value === undefined ? fallback : bool(value, what)
+}
+
 export function list<T>(value: unknown, parse: (item: unknown) => T, what = 'liste'): T[] {
   if (!Array.isArray(value)) throw new InvalidResponseError(what)
   return value.map(parse)
