@@ -27,12 +27,36 @@ final class MailboxAccess
         ));
     }
 
+    /**
+     * Fil direct : ses deux participants. Boîte du bureau : l'adhérent qui a écrit et les titulaires
+     * actuels du rôle ; un ancien titulaire qui y a lu ou répondu n'y a plus accès.
+     */
     public function canAccess(User $user, Conversation $conversation): bool
     {
         $mailbox = $conversation->getMailbox();
+        if (null === $mailbox) {
+            return $conversation->isParticipant($user);
+        }
 
-        return $conversation->isParticipant($user)
-            || (null !== $mailbox && \in_array($mailbox, $this->mailboxesManagedBy($user), true));
+        return $conversation->isOpenedBy($user) || \in_array($mailbox, $this->mailboxesManagedBy($user), true);
+    }
+
+    /**
+     * Qui lit un fil : ses participants (fil direct), ou l'adhérent qui a écrit et les titulaires
+     * actuels du rôle (boîte du bureau).
+     *
+     * @return list<User>
+     */
+    public function readersOf(Conversation $conversation): array
+    {
+        $mailbox = $conversation->getMailbox();
+        if (null === $mailbox) {
+            return $conversation->participantUsers();
+        }
+
+        $requester = $conversation->requester();
+
+        return [...(null !== $requester ? [$requester] : []), ...$this->holdersOf($mailbox)];
     }
 
     /**

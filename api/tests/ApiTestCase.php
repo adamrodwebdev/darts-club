@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\Entity\AuditLog;
 use App\Entity\User;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\NewAccount;
@@ -143,6 +144,14 @@ abstract class ApiTestCase extends WebTestCase
         self::assertIsArray($data);
 
         return $data;
+    }
+
+    /** @return list<array<string, mixed>> journal d'audit, du plus ancien au plus récent */
+    protected function auditTrail(): array
+    {
+        $logs = $this->entityManager()->getRepository(AuditLog::class)->findBy([], ['id' => 'ASC']);
+
+        return array_map(static fn (AuditLog $log): array => $log->toArray(), $logs);
     }
 
     protected function entityManager(): EntityManagerInterface

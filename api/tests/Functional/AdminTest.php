@@ -39,6 +39,41 @@ final class AdminTest extends ApiTestCase
         self::assertResponseStatusCodeSame(422);
     }
 
+    public function testOnlyTheAdministratorTouchesThePresidency(): void
+    {
+        $alice = $this->createUser('alice@example.com');
+        $other = $this->createUser('other@example.com');
+        $other->grantRole(Role::President);
+        $this->entityManager()->flush();
+        $this->loginAsPresident();
+
+        // Un compte de président volé ne nomme pas de complice et n'écarte pas l'autre président
+        $this->put("/api/admin/members/{$alice->getId()->toRfc4122()}/roles", ['roles' => ['president']]);
+        self::assertResponseStatusCodeSame(422);
+        $this->put("/api/admin/members/{$other->getId()->toRfc4122()}/roles", ['roles' => ['secretaire']]);
+        self::assertResponseStatusCodeSame(422);
+        $this->postJson("/api/admin/members/{$other->getId()->toRfc4122()}/suspend", ['reason' => 'Coup de force']);
+        self::assertResponseStatusCodeSame(422);
+
+        // Ses propres rôles du bureau restent à sa main, la présidence en plus
+        $this->put("/api/admin/members/{$this->president->getId()->toRfc4122()}/roles", ['roles' => ['president', 'secretaire']]);
+        self::assertResponseStatusCodeSame(204);
+    }
+
+    public function testTheAdministratorAppointsAndSuspendsPresidents(): void
+    {
+        $alice = $this->createUser('alice@example.com');
+        $admin = $this->createUser('admin@example.com');
+        $admin->grantRole(Role::Admin);
+        $this->entityManager()->flush();
+        $this->loginWithTwoFactor('admin@example.com', $this->enableTwoFactor($admin));
+
+        $this->put("/api/admin/members/{$alice->getId()->toRfc4122()}/roles", ['roles' => ['president']]);
+        self::assertResponseStatusCodeSame(204);
+        $this->postJson("/api/admin/members/{$alice->getId()->toRfc4122()}/suspend", ['reason' => 'Mandat contesté']);
+        self::assertResponseStatusCodeSame(204);
+    }
+
     public function testSuspendedMemberIsLoggedOutAndHidden(): void
     {
         $alice = $this->createUser('alice@example.com');

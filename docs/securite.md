@@ -41,6 +41,9 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 | Faible | Connexion plus rapide pour une adresse inconnue : le chronomètre disait quels comptes existent | Hachage volontaire quand le mot de passe n'a pas été vérifié | `LoginTimingEqualizerTest` |
 | Faible | Routes JSON acceptant aussi XML et formulaires | JSON seulement (415 sinon) | `AbuseLimitsTest` |
 | Faible | Chaque requête anonyme vers une route protégée créait une session dans Redis | Session laissée vide : ni cookie, ni écriture | `AbuseLimitsTest` |
+| Moyenne | Un président pouvait nommer un autre président, retirer la présidence d'un autre, le suspendre ou le réactiver : un compte volé suffisait à écarter le bureau élu | Présidence réservée à l'administrateur (nommer, retirer, modifier les rôles, suspendre, réactiver) ; un président garde la main sur ses propres rôles, sauf la présidence | `AdminTest` |
+| Moyenne | Un ancien titulaire d'une boîte du bureau (trésorier remplacé…) gardait l'accès et les notifications des fils qu'il avait lus ou auxquels il avait répondu | Accès par le rôle actuel ; l'adhérent qui a écrit est le seul autre lecteur (fils existants : auteur du premier message) | `MessagingTest` |
+| Faible | Journal incomplet : paiements, annulations (sans leur auteur), montants dus, ouvertures de saison, exports des cotisations, annulations d'événement et modération n'y figuraient pas | Tous inscrits au journal, avec leur auteur et leurs détails ; noms des détails traduits | `TreasuryTest`, `ClubEventTest` |
 
 ## Contrôles vérifiés
 

@@ -311,6 +311,29 @@
         "publish": "Annonce publiée",
         "edit": "Annonce modifiée",
         "delete": "Annonce supprimée"
+      },
+      "payment": {
+        "record": "Paiement enregistré",
+        "cancel": "Paiement annulé"
+      },
+      "membership": {
+        "open": "Cotisation ouverte",
+        "amount": "Montant dû modifié"
+      },
+      "season": {
+        "open": "Saison ouverte"
+      },
+      "members": {
+        "export": "Cotisations exportées"
+      },
+      "event": {
+        "cancel": "Événement annulé"
+      },
+      "photo": {
+        "delete": "Photo retirée (modération)"
+      },
+      "post": {
+        "delete": "Message retiré (modération)"
       }
     }
   }

@@ -63,7 +63,18 @@
     "audit": {
       "intro": "Toutes les actions de la présidence et de l’administration sont enregistrées ici, sans possibilité de modification.",
       "by": "par {actor}",
-      "detail": "{key} : {value}"
+      "detail": "{key} : {value}",
+      "keys": {
+        "season": "Saison",
+        "amount": "Montant",
+        "method": "Moyen",
+        "reason": "Motif",
+        "before": "Avant",
+        "after": "Après",
+        "created": "Créées",
+        "author": "Auteur",
+        "recipients": "Destinataires"
+      }
     }
   }
 }

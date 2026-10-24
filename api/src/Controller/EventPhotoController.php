@@ -52,9 +52,9 @@ final class EventPhotoController extends AbstractController
 
     #[Route('/api/event-photos/{id}', name: 'events_photos_delete', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
     #[IsGranted(ClubEventVoter::DELETE_CONTENT, subject: 'photo')]
-    public function delete(EventPhoto $photo): Response
+    public function delete(EventPhoto $photo, #[CurrentUser] User $user): Response
     {
-        $this->photos->delete($photo);
+        $this->photos->delete($photo, $user);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

@@ -13,6 +13,7 @@ use App\Membership\Money;
 use App\Membership\PaymentDetails;
 use App\Membership\PaymentMethod;
 use App\Membership\Season;
+use App\Membership\SeasonFee;
 use App\Membership\Treasury;
 use App\Membership\TreasuryView;
 use App\Repository\MembershipRepository;
@@ -67,15 +68,15 @@ final class TreasuryController extends AbstractController
     }
 
     #[Route('/seasons/{season}/open', name: 'open_season', requirements: ['season' => '\d{4}-\d{4}'], methods: ['POST'])]
-    public function openSeason(string $season, Request $request): JsonResponse
+    public function openSeason(string $season, Request $request, #[CurrentUser] User $treasurer): JsonResponse
     {
-        $created = $this->treasury->openSeason($this->season($season), self::money($request->toArray()['amountDue'] ?? null));
+        $created = $this->treasury->openSeason(new SeasonFee($this->season($season), self::money($request->toArray()['amountDue'] ?? null)), $treasurer);
 
         return $this->json(['created' => $created], Response::HTTP_CREATED);
     }
 
     #[Route('/memberships', name: 'open_membership', methods: ['POST'])]
-    public function openMembership(Request $request, UserRepository $users): JsonResponse
+    public function openMembership(Request $request, UserRepository $users, #[CurrentUser] User $treasurer): JsonResponse
     {
         $data = $request->toArray();
         $user = \is_string($data['userId'] ?? null) ? $users->find($data['userId']) : null;
@@ -84,7 +85,8 @@ final class TreasuryController extends AbstractController
         }
 
         try {
-            $membership = $this->treasury->openFor($user, $this->season(\is_string($data['season'] ?? null) ? $data['season'] : null), self::money($data['amountDue'] ?? null));
+            $fee = new SeasonFee($this->season(\is_string($data['season'] ?? null) ? $data['season'] : null), self::money($data['amountDue'] ?? null));
+            $membership = $this->treasury->openFor($user, $fee, $treasurer);
         } catch (\InvalidArgumentException|\DomainException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
@@ -93,9 +95,9 @@ final class TreasuryController extends AbstractController
     }
 
     #[Route('/memberships/{id}', name: 'change_due', requirements: ['id' => self::UUID], methods: ['PATCH'])]
-    public function changeAmountDue(Membership $membership, Request $request): JsonResponse
+    public function changeAmountDue(Membership $membership, Request $request, #[CurrentUser] User $treasurer): JsonResponse
     {
-        $this->treasury->changeAmountDue($membership, self::money($request->toArray()['amountDue'] ?? null));
+        $this->treasury->changeAmountDue($membership, self::money($request->toArray()['amountDue'] ?? null), $treasurer);
 
         return $this->json(TreasuryView::membership($membership, true, $this->clock->now()));
     }
@@ -122,12 +124,12 @@ final class TreasuryController extends AbstractController
     }
 
     #[Route('/payments/{id}/cancel', name: 'cancel_payment', requirements: ['id' => self::UUID], methods: ['POST'])]
-    public function cancelPayment(Payment $payment, Request $request): JsonResponse
+    public function cancelPayment(Payment $payment, Request $request, #[CurrentUser] User $treasurer): JsonResponse
     {
         $reason = $request->toArray()['reason'] ?? '';
 
         try {
-            $this->treasury->cancelPayment($payment, \is_string($reason) ? $reason : '');
+            $this->treasury->cancelPayment($payment, \is_string($reason) ? $reason : '', $treasurer);
         } catch (\InvalidArgumentException|\LogicException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }
@@ -145,6 +147,7 @@ final class TreasuryController extends AbstractController
     public function export(MembershipCsvExporter $exporter, #[CurrentUser] User $user, #[MapQueryParameter] ?string $season = null): Response
     {
         $season = $this->season($season);
+        $this->treasury->recordExport($season, $user);
 
         return new Response($exporter->export($season, $user->language()->value), headers: [
             'Content-Type' => 'text/csv; charset=UTF-8',

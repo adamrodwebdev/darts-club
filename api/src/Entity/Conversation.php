@@ -20,6 +20,7 @@ use Symfony\Component\Uid\Uuid;
  * boîte du bureau (accessible à tout titulaire du rôle correspondant).
  */
 #[ORM\Entity(repositoryClass: ConversationRepository::class)]
+#[ORM\Index(name: 'idx_conversation_requester', columns: ['requester_id'])]
 class Conversation implements RecordsDomainEvents
 {
     use DomainEventsTrait;
@@ -30,6 +31,14 @@ class Conversation implements RecordsDomainEvents
 
     #[ORM\Column(length: 20, nullable: true, enumType: Mailbox::class)]
     private ?Mailbox $mailbox = null;
+
+    /**
+     * Fil d'une boîte du bureau : l'adhérent qui a écrit. Lui et les titulaires actuels du rôle y ont
+     * accès, pas les anciens : avoir lu ou répondu ne donne aucun droit une fois le rôle quitté.
+     */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?User $requester = null;
 
     #[ORM\Column(length: 120, nullable: true)]
     private ?string $subject = null;
@@ -69,9 +78,21 @@ class Conversation implements RecordsDomainEvents
         $conversation = new self($now);
         $conversation->mailbox = $topic->mailbox;
         $conversation->subject = $topic->subject;
+        $conversation->requester = $member;
         $conversation->join($member);
 
         return $conversation;
+    }
+
+    /** Fil d'une boîte du bureau : l'adhérent qui l'a ouvert (null pour un fil direct, ou compte supprimé) */
+    public function requester(): ?User
+    {
+        return $this->requester;
+    }
+
+    public function isOpenedBy(User $user): bool
+    {
+        return null !== $this->requester && $this->requester->getId()->equals($user->getId());
     }
 
     /** Publie un message ; renvoie le message créé, à persister (fabrique). */

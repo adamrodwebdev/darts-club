@@ -311,6 +311,29 @@
         "publish": "Announcement published",
         "edit": "Announcement edited",
         "delete": "Announcement deleted"
+      },
+      "payment": {
+        "record": "Payment recorded",
+        "cancel": "Payment cancelled"
+      },
+      "membership": {
+        "open": "Membership opened",
+        "amount": "Amount due changed"
+      },
+      "season": {
+        "open": "Season opened"
+      },
+      "members": {
+        "export": "Memberships exported"
+      },
+      "event": {
+        "cancel": "Event cancelled"
+      },
+      "photo": {
+        "delete": "Photo removed (moderation)"
+      },
+      "post": {
+        "delete": "Post removed (moderation)"
       }
     }
   }

@@ -42,9 +42,9 @@ final class EventPostController extends AbstractController
 
     #[Route('/api/event-posts/{id}', name: 'events_posts_delete', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
     #[IsGranted(ClubEventVoter::DELETE_CONTENT, subject: 'post')]
-    public function delete(EventPost $post): Response
+    public function delete(EventPost $post, #[CurrentUser] User $user): Response
     {
-        $this->posts->delete($post);
+        $this->posts->delete($post, $user);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
