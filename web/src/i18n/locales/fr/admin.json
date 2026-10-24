@@ -77,8 +77,15 @@
         "created": "Créées",
         "author": "Auteur",
         "recipients": "Destinataires",
-        "name": "Nom"
-      }
+        "name": "Nom",
+        "item": "Article",
+        "entry": "Ligne",
+        "receipt": "Justificatif",
+        "temporary_bar": "Buvette temporaire",
+        "tax_exempt": "Soirée exonérée"
+      },
+      "yes": "oui",
+      "no": "non"
     }
   }
 }

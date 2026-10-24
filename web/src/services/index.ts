@@ -3,6 +3,7 @@ import { ApiClient } from '@/api/ApiClient'
 import { systemClock, type Clock } from '@/time/Clock'
 import { AdminService } from './AdminService'
 import { AuthService } from './AuthService'
+import { EventAccountsService } from './EventAccountsService'
 import { EventService } from './EventService'
 import { MessagingService } from './MessagingService'
 import { NotificationService } from './NotificationService'
@@ -35,6 +36,7 @@ export function createServices({ api = new ApiClient(), clock = systemClock }: S
     treasury: new TreasuryService(api),
     admin: new AdminService(api),
     events: new EventService(api),
+    eventAccounts: new EventAccountsService(api),
     publicEvents: new PublicEventService(api),
   }
 }

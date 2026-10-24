@@ -22,9 +22,15 @@ function detailName(key: string): string {
   return te(`admin.audit.keys.${key}`) ? t(`admin.audit.keys.${key}`) : key
 }
 
+/** Valeur d'un détail : oui / non pour une case cochée, telle quelle sinon */
+function detailValue(value: unknown): string {
+  if (typeof value === 'boolean') return value ? t('admin.audit.yes') : t('admin.audit.no')
+  return String(value ?? '—')
+}
+
 function details(entry: AuditEntry): string {
   return Object.entries(entry.details)
-    .map(([key, value]) => t('admin.audit.detail', { key: detailName(key), value: String(value ?? '—') }))
+    .map(([key, value]) => t('admin.audit.detail', { key: detailName(key), value: detailValue(value) }))
     .join(' · ')
 }
 </script>

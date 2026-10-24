@@ -36,7 +36,8 @@
     "confirmEmail": "Confirm my address",
     "forgotPassword": "Forgotten password",
     "resetPassword": "New password",
-    "eventPoster": "QR poster"
+    "eventPoster": "QR poster",
+    "eventAccounts": "Evening accounts"
   },
   "app": {
     "twoFactorBanner": "Board member: {link} to access the club tools.",
@@ -364,6 +365,19 @@
       },
       "guest": {
         "remove": "Guest removed"
+      },
+      "accounts": {
+        "item_add": "Item added to the accounts",
+        "item_edit": "Accounts item edited",
+        "item_remove": "Item removed from the accounts",
+        "entry_add": "Line added to the accounts",
+        "entry_edit": "Accounts line edited",
+        "entry_remove": "Line removed from the accounts",
+        "flags": "Accounts counters changed",
+        "receipt_add": "Receipt added",
+        "receipt_remove": "Receipt removed",
+        "close": "Accounts closed",
+        "reopen": "Accounts reopened"
       }
     }
   }

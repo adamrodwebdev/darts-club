@@ -15,6 +15,8 @@ declare module 'vue-router' {
     requiresTreasurer?: boolean
     requiresPresident?: boolean
     requiresOrganizer?: boolean
+    /** Membres du bureau (bilan des soirées) */
+    requiresBoard?: boolean
     guestOnly?: boolean
     /** Ouverte à un compte en attente de validation par le bureau (son profil, sa sécurité) */
     pendingAllowed?: boolean
@@ -126,6 +128,13 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'event', requiresAuth: true },
   },
   {
+    path: '/evenements/:id([0-9a-f-]{36})/bilan',
+    name: 'event-accounts',
+    component: () => import('../views/events/EventAccountsView.vue'),
+    props: true,
+    meta: { titleKey: 'eventAccounts', requiresAuth: true, requiresBoard: true },
+  },
+  {
     path: '/evenements/:id([0-9a-f-]{36})/modifier',
     name: 'event-edit',
     component: () => import('../views/events/EventFormView.vue'),
@@ -233,7 +242,8 @@ export function createAppRouter(services: Services): Router {
     if (
       (to.meta.requiresTreasurer && !auth.user?.canManageTreasury) ||
       (to.meta.requiresPresident && !auth.user?.canAdminister) ||
-      (to.meta.requiresOrganizer && !auth.user?.canOrganizeEvents)
+      (to.meta.requiresOrganizer && !auth.user?.canOrganizeEvents) ||
+      (to.meta.requiresBoard && !auth.user?.isBoardMember)
     ) {
       return { name: 'account' }
     }
