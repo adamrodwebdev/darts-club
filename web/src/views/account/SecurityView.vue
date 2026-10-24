@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import PasskeySettings from '@/components/PasskeySettings.vue'
 import TwoFactorSettings from '@/components/TwoFactorSettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useServices } from '@/services'
@@ -44,6 +45,8 @@ async function deleteAccount(): Promise<void> {
 
 <template>
   <div class="stack">
+    <PasskeySettings />
+
     <section v-if="auth.user?.hasPassword" class="card" aria-labelledby="pwd-title">
       <h2 id="pwd-title">{{ t('common.password') }}</h2>
       <form class="stack" novalidate @submit.prevent="changePassword">
@@ -70,7 +73,8 @@ async function deleteAccount(): Promise<void> {
       </form>
     </section>
 
-    <TwoFactorSettings />
+    <!-- Bureau avec une clé d'accès : elle remplace le code, plus rien à régler ici -->
+    <TwoFactorSettings v-if="!(auth.user?.passkeyRequired && auth.user.hasPasskey)" />
 
     <section class="card" aria-labelledby="data-title">
       <h2 id="data-title">{{ t('account.security.dataTitle') }}</h2>

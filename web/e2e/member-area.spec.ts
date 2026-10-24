@@ -34,7 +34,7 @@ test('member logs in and lands on the requested page', async ({ page }) => {
 
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await expect(page).toHaveURL(/\/messages$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Messages')
@@ -64,7 +64,7 @@ test('two-factor login asks for a code after the password', async ({ page }) => 
 
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await page.getByLabel('Code de vérification').fill('123456')
   await page.getByRole('button', { name: 'Vérifier' }).click()
@@ -96,7 +96,7 @@ test('treasurer records a payment from the treasury screen', async ({ page }) =>
   await page.goto('/connexion?redirect=/tresorerie')
   await page.getByLabel('Email').fill('treasurer@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Trésorerie')
   await page.getByRole('button', { name: 'Encaisser' }).click()
@@ -124,7 +124,7 @@ test('president broadcasts a labelled message to all members', async ({ page }) 
   await page.goto('/connexion?redirect=/admin/diffusion')
   await page.getByLabel('Email').fill('president@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await page.getByText('Annulation', { exact: true }).click()
   await page.getByLabel('Titre').fill('Tournoi annulé')
@@ -164,7 +164,7 @@ test('an organizer publishes an event with its poster', async ({ page }) => {
   await page.goto('/evenements/nouveau')
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nouvel événement')
 
   await page.getByLabel('Titre').fill('Soirée cricket')
@@ -211,7 +211,7 @@ test('only the administrator sees the announcement audience', async ({ page }) =
   await page.goto(`/evenements/${id}`)
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   const panel = page.getByRole('region', { name: 'Audience de l’annonce' })
   await expect(panel.getByText('Personnes uniques')).toBeVisible()
@@ -251,7 +251,7 @@ test('an organizer removes a fake guest after confirming', async ({ page }) => {
   await page.goto(`/evenements/${id}`)
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await page.getByText('Invités sans compte (1)').click()
   await page.getByRole('button', { name: 'Retirer' }).click()
@@ -275,7 +275,7 @@ test('an account waiting for approval stays on its own account', async ({ page }
   await page.goto('/connexion?redirect=/messages')
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   // Espace membres fermé : retour à son compte, qui explique l'attente
   await expect(page).toHaveURL(/\/compte$/)
@@ -306,7 +306,7 @@ test('the presidency approves a new member', async ({ page }) => {
   await page.goto('/admin')
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await expect(page.getByText('En attente de validation')).toBeVisible()
   await page.getByRole('button', { name: 'Valider' }).click()
@@ -340,7 +340,7 @@ test('the president does not get the audience panel', async ({ page }) => {
   await page.goto(`/evenements/${id}`)
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
   await expect(page.getByRole('region', { name: 'Audience de l’annonce' })).toHaveCount(0)
   expect(audienceCalls).toEqual([])

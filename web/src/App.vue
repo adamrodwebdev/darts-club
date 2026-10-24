@@ -51,6 +51,18 @@ watch(
       <RouterLink to="/compte/securite">{{ t('app.twoFactorLink') }}</RouterLink>
     </template>
   </i18n-t>
+  <i18n-t
+    v-else-if="auth.user?.passkeySetupRequired && route.name !== 'passkey-setup'"
+    keypath="app.passkeyBanner"
+    tag="p"
+    class="tfa-banner"
+    role="alert"
+    scope="global"
+  >
+    <template #link>
+      <RouterLink :to="{ name: 'passkey-setup' }">{{ t('app.passkeyLink') }}</RouterLink>
+    </template>
+  </i18n-t>
   <main id="main" tabindex="-1">
     <!-- Fondu entre les pages (désactivé avec les animations, voir main.css) -->
     <RouterView v-slot="{ Component, route: current }">

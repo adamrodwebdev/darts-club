@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { ApiError } from '@/api/ApiError'
 import type { Profile } from '@/models/Profile'
 import { useServices } from '@/services'
-import type { LoginResult, Registration } from '@/services/AuthService'
+import type { LoginResult, LoginStep, Registration } from '@/services/AuthService'
 
 export const useAuthStore = defineStore('auth', () => {
   const services = useServices()
@@ -27,14 +27,34 @@ export const useAuthStore = defineStore('auth', () => {
     return initialization
   }
 
-  async function login(email: string, password: string): Promise<LoginResult['status']> {
-    const result = await services.auth.login(email, password)
-    if (result.status === 'authenticated') user.value = result.profile
-    return result.status
+  async function login(email: string, password: string): Promise<LoginStep> {
+    return open(await services.auth.login(email, password))
+  }
+
+  /** Connexion par clé d'accès, sans mot de passe */
+  async function loginWithPasskey(): Promise<LoginStep> {
+    return open(await services.passkeys.login())
   }
 
   async function verifyTwoFactor(code: string): Promise<void> {
     user.value = await services.auth.verifyTwoFactor(code)
+  }
+
+  /** Deuxième étape du bureau : la clé d'accès au lieu du code */
+  async function confirmWithPasskey(): Promise<void> {
+    user.value = await services.passkeys.confirmTwoFactor()
+  }
+
+  /** Session ouverte, ou deuxième étape attendue */
+  function open(result: LoginResult): LoginStep {
+    if (result.status === 'two-factor') return result.method
+    user.value = result.profile
+    return 'authenticated'
+  }
+
+  /** Profil relu après un changement de sécurité (clé ajoutée, code activé…) */
+  async function refresh(): Promise<void> {
+    user.value = await services.auth.me()
   }
 
   async function logout(): Promise<void> {
@@ -58,5 +78,19 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, isAuthenticated, isMember, init, login, verifyTwoFactor, logout, register, setUser, forget }
+  return {
+    user,
+    isAuthenticated,
+    isMember,
+    init,
+    login,
+    loginWithPasskey,
+    verifyTwoFactor,
+    confirmWithPasskey,
+    refresh,
+    logout,
+    register,
+    setUser,
+    forget,
+  }
 })

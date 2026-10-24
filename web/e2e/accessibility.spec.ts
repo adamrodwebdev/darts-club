@@ -1,20 +1,5 @@
-import AxeBuilder from '@axe-core/playwright'
-import { test, expect, type Page } from '@playwright/test'
-
-/** Audit WCAG 2.2 niveau AA (axe-core) des pages principales. */
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']
-
-const THEMES = ['light', 'dark'] as const
-
-async function audit(page: Page): Promise<void> {
-  // Laisse les animations d'apparition se terminer (dont le fondu d'arrivée de la page : en
-  // plein fondu, un texte moins opaque n'a pas encore son contraste)
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== 'running'))
-  const results = await new AxeBuilder({ page }).withTags(WCAG).analyze()
-  const summary = results.violations.map((v) => `${v.id} (${v.impact}) : ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)
-  expect(summary).toEqual([])
-}
+import { test, expect } from '@playwright/test'
+import { audit, THEMES } from './a11y'
 
 // Contrastes vérifiés dans les deux thèmes (thème du système émulé)
 for (const theme of THEMES) {
@@ -106,7 +91,7 @@ for (const { locale, login, pages } of memberPages) {
         await page.goto(`/connexion?redirect=${path}`)
         await page.getByLabel(emailLabel).fill('alice@example.com')
         await page.getByLabel(passwordLabel).fill('Tr1ple-20-Bullseye!')
-        await page.getByRole('button', { name: submit }).click()
+        await page.getByRole('button', { name: submit, exact: true }).click()
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading)
         await audit(page)
       })

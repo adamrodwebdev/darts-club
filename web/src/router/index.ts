@@ -62,6 +62,12 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'resetPassword', guestOnly: true },
   },
   {
+    path: '/compte/cle-d-acces',
+    name: 'passkey-setup',
+    component: () => import('../views/account/PasskeySetupView.vue'),
+    meta: { titleKey: 'passkeySetup', requiresAuth: true },
+  },
+  {
     path: '/compte',
     component: () => import('../views/account/AccountLayout.vue'),
     meta: { requiresAuth: true },
