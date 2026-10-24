@@ -347,7 +347,8 @@
         "roles": "Rôles modifiés",
         "suspend": "Compte suspendu",
         "reactivate": "Compte réactivé",
-        "approve": "Compte validé"
+        "approve": "Compte validé",
+        "passkeys_reset": "Accès réinitialisé (clés d’accès)"
       },
       "broadcast": {
         "send": "Message diffusé"

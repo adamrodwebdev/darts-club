@@ -347,7 +347,8 @@
         "roles": "Roles changed",
         "suspend": "Account suspended",
         "reactivate": "Account reactivated",
-        "approve": "Account approved"
+        "approve": "Account approved",
+        "passkeys_reset": "Access reset (passkeys)"
       },
       "broadcast": {
         "send": "Message broadcast"
