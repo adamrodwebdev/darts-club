@@ -37,7 +37,10 @@
     "forgotPassword": "Forgotten password",
     "resetPassword": "New password",
     "eventPoster": "QR poster",
-    "eventAccounts": "Evening accounts"
+    "eventAccounts": "Evening accounts",
+    "eventDocuments": "Evening paperwork",
+    "eventDocument": "Evening document",
+    "associationProfile": "Association details"
   },
   "app": {
     "twoFactorBanner": "Board member: {link} to access the club tools.",
@@ -378,6 +381,14 @@
         "receipt_remove": "Receipt removed",
         "close": "Accounts closed",
         "reopen": "Accounts reopened"
+      },
+      "procedure": {
+        "save": "Paperwork document saved",
+        "status": "Paperwork progress changed"
+      },
+      "association": {
+        "update": "Association details edited",
+        "insurance": "Insurance certificate filed"
       }
     }
   }

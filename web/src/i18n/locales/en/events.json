@@ -38,8 +38,8 @@
       "dismiss": "Back",
       "summaryDialog": "Event summary",
       "summaryLabel": "Summary (results, highlights…)",
-      "accounts": "Evening accounts",
-      "accountsText": "Purchases, bar sales, other costs and income, receipts."
+      "board": "Board",
+      "boardText": "Evening accounts and paperwork: bar, venue, SACEM, tickets…"
     },
     "form": {
       "editTitle": "Edit the event",
@@ -256,6 +256,208 @@
       "typePdf": "PDF",
       "typeImage": "Photo",
       "back": "← {title}"
+    },
+    "documents": {
+      "title": "Paperwork",
+      "intro": "Pre-filled from the association details and this evening: review, print or send them.",
+      "readOnly": "Read only: the secretary and the presidency prepare the paperwork.",
+      "listLabel": "Paperwork for the evening",
+      "backToEvent": "← {title}",
+      "back": "← Paperwork · {title}",
+      "before": "by {date}",
+      "late": "Recommended date passed",
+      "actions": {
+        "prepare": "Prepare",
+        "open": "Open",
+        "add": "Add",
+        "view": "View"
+      },
+      "actionLabel": "{action}: {name}",
+      "names": {
+        "buvette": "Temporary bar",
+        "salle": "Venue",
+        "domaine-public": "Use of public space",
+        "sacem": "SACEM (music rights)",
+        "budget": "Evening budget",
+        "billets": "Entry tickets",
+        "assurance": "Liability insurance",
+        "fermeture-tardive": "Late closing"
+      },
+      "summaries": {
+        "buvette": "Mayor’s authorisation · 5 a year",
+        "salle": "Request to the town or the owner",
+        "domaine-public": "Terrace, street or square · town hall",
+        "sacem": "Online declaration · 20% off 15 days ahead",
+        "budget": "Planned and actual, from the accounts",
+        "billets": "Numbered, with stubs and required wording",
+        "assurance": "Certificate from the insurer",
+        "fermeture-tardive": "Exemption from the closing time"
+      },
+      "statuses": {
+        "a-faire": "To do",
+        "prete": "Ready",
+        "envoyee": "Sent",
+        "recue": "Received",
+        "pas-necessaire": "Not for this evening"
+      },
+      "statusOn": {
+        "envoyee": "Sent on {date}",
+        "recue": "Received on {date}"
+      },
+      "status": "Progress",
+      "statusChoices": "Change the progress",
+      "profile": {
+        "title": "Association details",
+        "complete": "Complete",
+        "incomplete": "To complete: {items}",
+        "missing": {
+          "rna": "RNA number",
+          "seat": "registered address",
+          "president": "president’s name",
+          "insurer": "insurer"
+        },
+        "text": "RNA number, address, board, insurer: used in every document. Private, never shown on the site.",
+        "edit": "Edit the details",
+        "view": "View the details",
+        "noCertificate": "No insurance certificate filed.",
+        "certificateCovers": "Insurance certificate valid until {date}: it covers this evening.",
+        "certificateTooShort": "Insurance certificate valid until {date}: it does not cover this evening."
+      },
+      "others": {
+        "title": "Issued by others",
+        "text": "The association asks, they decide: the town hall (bar, venue, public space), SACEM, the insurer, the sub-prefecture. The site prepares the request and keeps track of it here."
+      },
+      "recipient": "Recipient: {name}",
+      "sendBefore": "to send by {date}",
+      "updatedBy": "Saved on {date} by {name}",
+      "missing": "Association details incomplete ({items}): what is missing shows in square brackets.",
+      "completeProfile": "Complete the details",
+      "frenchOnly": "Document written in French: it goes to a French authority.",
+      "fieldsTitle": "To fill in",
+      "fieldsIntro": "Untouched fields follow the evening and the association details; only your changes are kept.",
+      "noFields": "Nothing to fill in: this document fills itself from the evening accounts.",
+      "save": "Save",
+      "saved": "Saved.",
+      "unsaved": "Unsaved changes.",
+      "print": "Print or PDF",
+      "printTickets": "Print the tickets",
+      "previewHint": "A4 preview · you can also edit the text directly on the sheet.",
+      "previewReadOnly": "A4 preview",
+      "previewFailed": "Preview unavailable: check your connection, then try again.",
+      "paper": "Document to print",
+      "restore": "Restore",
+      "restoreLabel": "Restore the original text: {name}",
+      "removed": "Passage removed from the document",
+      "blocks": {
+        "expediteur": "Sender",
+        "destinataire": "Recipient",
+        "lieu-date": "Place and date",
+        "objet": "Subject",
+        "paragraphe": "Paragraph",
+        "signature": "Signature",
+        "titre": "Title",
+        "ligne": "Line",
+        "note": "Reminder"
+      },
+      "blockNumbered": "{name} {rank}",
+      "notes": "Good to know",
+      "links": "Official forms and services",
+      "newTab": "(new tab)",
+      "leave": "Leave without saving your changes?",
+      "related": {
+        "accounts": "Open the evening accounts",
+        "profile": "Certificate in the association details"
+      },
+      "fields": {
+        "commune": "Town of the evening",
+        "when": "Date and times",
+        "place": "Venue",
+        "group3": "Group 3 drinks (wine, beer, cider… 18% max)",
+        "signer": "Signed by",
+        "owner": "Recipient (town or owner)",
+        "venue": "Requested venue",
+        "purpose": "For (name of the evening)",
+        "attendance": "Expected attendance",
+        "spot": "Location",
+        "surface": "Area (optional)",
+        "installation": "Set-up",
+        "kind": "Kind of evening",
+        "entry": "Entry price",
+        "programme": "Works played (titles and authors)",
+        "count": "Number of tickets",
+        "first": "First number",
+        "price": "Price (empty: free)",
+        "category": "Category",
+        "insurer": "Insurer (name and address)",
+        "policy": "Policy number",
+        "activities": "Activities",
+        "addressee": "Salutation",
+        "recipient": "Recipient",
+        "until": "Requested closing time"
+      },
+      "fieldHints": {
+        "until": "Bar opening hours are set by prefectoral order: write the requested time (e.g. 3 h).",
+        "count": "500 tickets at most per print.",
+        "attendance": "Number of people; leave empty if you do not know."
+      },
+      "choices": {
+        "signer": {
+          "presidence": "The presidency",
+          "secretariat": "The secretary"
+        },
+        "kind": {
+          "musique-enregistree": "Recorded music",
+          "concert": "Concert",
+          "bal": "Dance"
+        }
+      },
+      "tickets": {
+        "summary": "{count} tickets, no. {first} to {last} · {pages} A4 pages",
+        "number": "N° {number}",
+        "meta": "{category} · {price}"
+      },
+      "association": {
+        "title": "Association details",
+        "intro": "Used in the evening documents. Kept by the secretary and the presidency.",
+        "readOnly": "Read only: the secretary and the presidency keep these details.",
+        "private": "Private: never shown on the site, where only “Bellevesvre” appears.",
+        "groups": {
+          "identity": "Association",
+          "board": "Board",
+          "insurance": "Liability insurance"
+        },
+        "hints": {
+          "board": "First and last name: site nicknames do not suit an official letter.",
+          "rnaNumber": "“W” followed by 9 digits (national register of associations).",
+          "siret": "14 digits, if the association has one."
+        },
+        "fields": {
+          "officialName": "Official name",
+          "rnaNumber": "RNA number",
+          "siret": "SIRET number",
+          "seatAddress": "Registered address",
+          "presidentName": "President",
+          "secretaryName": "Secretary",
+          "treasurerName": "Treasurer",
+          "insurerName": "Insurer",
+          "insurancePolicy": "Policy number"
+        },
+        "save": "Save the details",
+        "saved": "Details saved.",
+        "updated": "Edited on {date} by {name}",
+        "certificate": {
+          "title": "Insurer’s certificate",
+          "none": "No certificate filed.",
+          "valid": "Valid until {date}",
+          "expired": "Expired since {date}",
+          "download": "Download the certificate (PDF)",
+          "file": "Certificate (PDF, 10 MB at most)",
+          "validUntil": "Valid until",
+          "replace": "Replace the certificate",
+          "add": "File the certificate",
+          "sent": "Certificate filed."
+        }
+      }
     }
   },
   "publicEvent": {

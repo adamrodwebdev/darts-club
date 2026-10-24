@@ -82,7 +82,10 @@
         "entry": "Line",
         "receipt": "Receipt",
         "temporary_bar": "Temporary bar",
-        "tax_exempt": "Tax-exempt evening"
+        "tax_exempt": "Tax-exempt evening",
+        "document": "Paperwork",
+        "status": "Progress",
+        "valid_until": "Valid until"
       },
       "yes": "yes",
       "no": "no"

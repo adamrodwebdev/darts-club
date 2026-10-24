@@ -40,6 +40,11 @@
   --poster-night-muted: #b4b4bd;
   --poster-accent: #d62839;
   --poster-gold: #e3b341;
+  /* Documents des soirées (courriers, fiches, billets) : papier blanc dans les deux thèmes du site */
+  --paper: #ffffff;
+  --paper-ink: #15151a;
+  --paper-ink-muted: #55555f;
+  --paper-rule: #8e8e99;
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;

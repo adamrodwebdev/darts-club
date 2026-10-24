@@ -2,8 +2,10 @@ import { inject, type InjectionKey } from 'vue'
 import { ApiClient } from '@/api/ApiClient'
 import { systemClock, type Clock } from '@/time/Clock'
 import { AdminService } from './AdminService'
+import { AssociationProfileService } from './AssociationProfileService'
 import { AuthService } from './AuthService'
 import { EventAccountsService } from './EventAccountsService'
+import { EventDocumentsService } from './EventDocumentsService'
 import { EventService } from './EventService'
 import { MessagingService } from './MessagingService'
 import { NotificationService } from './NotificationService'
@@ -37,6 +39,8 @@ export function createServices({ api = new ApiClient(), clock = systemClock }: S
     admin: new AdminService(api),
     events: new EventService(api),
     eventAccounts: new EventAccountsService(api),
+    eventDocuments: new EventDocumentsService(api),
+    associationProfile: new AssociationProfileService(api),
     publicEvents: new PublicEventService(api),
   }
 }

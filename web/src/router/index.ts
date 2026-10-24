@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw, START_LOCATION } from 'vue-router'
 import type { MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
+import { DOCUMENT_TYPES } from '@/models/EventDocuments'
 import type { Services } from '@/services'
 import { useAuthStore } from '@/stores/auth'
 import { usePreferencesStore } from '@/stores/preferences'
@@ -15,7 +16,7 @@ declare module 'vue-router' {
     requiresTreasurer?: boolean
     requiresPresident?: boolean
     requiresOrganizer?: boolean
-    /** Membres du bureau (bilan des soirées) */
+    /** Membres du bureau (bilan et démarches des soirées, fiche de l'association) */
     requiresBoard?: boolean
     guestOnly?: boolean
     /** Ouverte à un compte en attente de validation par le bureau (son profil, sa sécurité) */
@@ -133,6 +134,26 @@ const ROUTES: RouteRecordRaw[] = [
     component: () => import('../views/events/EventAccountsView.vue'),
     props: true,
     meta: { titleKey: 'eventAccounts', requiresAuth: true, requiresBoard: true },
+  },
+  {
+    path: '/evenements/:id([0-9a-f-]{36})/demarches',
+    name: 'event-documents',
+    component: () => import('../views/events/EventDocumentsView.vue'),
+    props: true,
+    meta: { titleKey: 'eventDocuments', requiresAuth: true, requiresBoard: true },
+  },
+  {
+    path: `/evenements/:id([0-9a-f-]{36})/demarches/:type(${DOCUMENT_TYPES.join('|')})`,
+    name: 'event-document',
+    component: () => import('../views/events/EventDocumentView.vue'),
+    props: true,
+    meta: { titleKey: 'eventDocument', requiresAuth: true, requiresBoard: true },
+  },
+  {
+    path: '/association',
+    name: 'association-profile',
+    component: () => import('../views/association/AssociationProfileView.vue'),
+    meta: { titleKey: 'associationProfile', requiresAuth: true, requiresBoard: true },
   },
   {
     path: '/evenements/:id([0-9a-f-]{36})/modifier',

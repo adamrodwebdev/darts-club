@@ -8,6 +8,7 @@ import type { QrPosterContent } from '@/components/events/QrPosterContent'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import type { EventSummary } from '@/models/ClubEvent'
+import { printOnly } from '@/print/printOnly'
 import { useServices } from '@/services'
 
 const services = useServices()
@@ -73,10 +74,7 @@ const content = computed<QrPosterContent>(() => {
 
 /** Seule l'affiche part à l'impression, au format choisi (styles d'impression de QrPoster) */
 function print(): void {
-  const root = document.documentElement
-  root.dataset.print = 'qr-poster'
-  window.addEventListener('afterprint', () => root.removeAttribute('data-print'), { once: true })
-  window.print()
+  printOnly('qr-poster')
 }
 </script>
 

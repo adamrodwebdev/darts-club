@@ -82,7 +82,10 @@
         "entry": "Ligne",
         "receipt": "Justificatif",
         "temporary_bar": "Buvette temporaire",
-        "tax_exempt": "Soirée exonérée"
+        "tax_exempt": "Soirée exonérée",
+        "document": "Démarche",
+        "status": "Avancement",
+        "valid_until": "Valable jusqu’au"
       },
       "yes": "oui",
       "no": "non"

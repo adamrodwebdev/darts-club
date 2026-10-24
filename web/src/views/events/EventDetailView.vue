@@ -223,12 +223,15 @@ async function saveSummary(): Promise<void> {
         </form>
       </section>
 
-      <section v-if="auth.user?.isBoardMember" class="card board" aria-labelledby="accounts-title">
+      <section v-if="auth.user?.isBoardMember" class="card board" aria-labelledby="board-title">
         <div>
-          <h2 id="accounts-title">{{ t('events.detail.accounts') }}</h2>
-          <p class="muted">{{ t('events.detail.accountsText') }}</p>
+          <h2 id="board-title">{{ t('events.detail.board') }}</h2>
+          <p class="muted">{{ t('events.detail.boardText') }}</p>
         </div>
-        <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.accounts.title') }}</RouterLink>
+        <div class="board__links">
+          <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.accounts.title') }}</RouterLink>
+          <RouterLink :to="{ name: 'event-documents', params: { id: event.id } }" class="link-button">{{ t('events.documents.title') }}</RouterLink>
+        </div>
       </section>
 
       <section v-if="detail.canManage" class="card stack" aria-labelledby="manage-title">
@@ -392,7 +395,7 @@ async function saveSummary(): Promise<void> {
   gap: 0.75rem;
 }
 
-/* Bureau : accès au bilan de la soirée */
+/* Bureau : bilan et démarches de la soirée */
 .board {
   display: flex;
   flex-wrap: wrap;
@@ -407,6 +410,12 @@ async function saveSummary(): Promise<void> {
 
 .board p {
   margin: 0;
+}
+
+.board__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .link-button {

@@ -20,6 +20,13 @@ function cached<T extends Intl.DateTimeFormat | Intl.NumberFormat | Intl.Relativ
 /** Fuseau du club : les horaires d'événements sont affichés à l'heure de Paris. */
 export const CLUB_TIME_ZONE = 'Europe/Paris'
 
+/** Jour « 2026-10-30 » d'un instant, à l'heure du club (comparable aux jours donnés par l'API) */
+export function clubDay(date: Date): string {
+  const options = { timeZone: CLUB_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' } as const
+  // en-CA écrit les dates à la manière ISO (AAAA-MM-JJ), quelle que soit la langue de l'écran
+  return cached('day', options, () => new Intl.DateTimeFormat('en-CA', options)).format(date)
+}
+
 export function formatDate(date: Date, options: Intl.DateTimeFormatOptions = { dateStyle: 'long' }): string {
   return cached('date', options, (locale) => new Intl.DateTimeFormat(locale, options)).format(date)
 }
