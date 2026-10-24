@@ -81,7 +81,7 @@ jobs:
       - run: npm run build-only
       - name: Budget de performance (JS/CSS gzip)
         run: npm run budget
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web-dist
           path: web/dist
@@ -103,7 +103,7 @@ jobs:
       - run: npx playwright install --with-deps
       - run: npm run build-only
       - run: npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -171,7 +171,7 @@ jobs:
         if: always()
         run: node web/lighthouse/summary.mjs
       # Échec : tous les passages (seul le médian est publié), pour lire celui qui a échoué
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: lighthouse-runs
