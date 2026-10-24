@@ -5,6 +5,7 @@ namespace App\ClubEvent;
 use App\Admin\AuditEntry;
 use App\Admin\AuditTrail;
 use App\Entity\ClubEvent;
+use App\Entity\GuestResponse;
 use App\Entity\User;
 use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,15 @@ final class ClubEvents
     {
         $event->cancel($reason);
         $this->audit->record($organizer, new AuditEntry('event.cancel', $event->getTitle(), ['reason' => (string) $event->getCancelReason()]));
+        $this->em->flush();
+    }
+
+    /** Invité retiré par un organisateur (fausse réponse, places prises par un robot) : inscrit au journal */
+    public function removeGuest(GuestResponse $guest, User $organizer): void
+    {
+        $event = $guest->getEvent();
+        $event->removeGuestResponse($guest, $this->now());
+        $this->audit->record($organizer, new AuditEntry('guest.remove', $event->getTitle(), ['name' => $guest->name()]));
         $this->em->flush();
     }
 

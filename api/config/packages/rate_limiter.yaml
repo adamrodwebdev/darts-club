@@ -65,6 +65,11 @@ framework:
             policy: sliding_window
             limit: 30
             interval: '15 minutes'
+        # Confirmations de réponses sans compte, par événement : un robot ne remplit pas toutes les places
+        guest_confirm_event:
+            policy: sliding_window
+            limit: 30
+            interval: '1 day'
         # Mesure d'audience : au-delà, les vues sont ignorées sans erreur
         event_view:
             policy: sliding_window
@@ -74,3 +79,12 @@ framework:
             policy: sliding_window
             limit: 60
             interval: '1 hour'
+
+when@test:
+    framework:
+        rate_limiter:
+            # Plafond observable dans les tests (même règle, seuil réduit)
+            guest_confirm_event:
+                policy: sliding_window
+                limit: 3
+                interval: '1 day'

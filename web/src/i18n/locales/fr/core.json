@@ -334,6 +334,9 @@
       },
       "post": {
         "delete": "Message retiré (modération)"
+      },
+      "guest": {
+        "remove": "Invité retiré"
       }
     }
   }

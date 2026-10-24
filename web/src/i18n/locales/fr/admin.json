@@ -73,7 +73,8 @@
         "after": "Après",
         "created": "Créées",
         "author": "Auteur",
-        "recipients": "Destinataires"
+        "recipients": "Destinataires",
+        "name": "Nom"
       }
     }
   }

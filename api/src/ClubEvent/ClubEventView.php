@@ -83,7 +83,7 @@ final class ClubEventView
                 ? array_map(fn (Registration $r): array => $this->members->member($r->getUser()) + ['answer' => $r->answer()->value], $event->registrations())
                 : null,
             'guests' => $canManage
-                ? array_map(static fn (GuestResponse $g): array => ['name' => $g->name(), 'email' => $g->email(), 'answer' => $g->answer()?->value, 'at' => $g->createdAt()->format(\DATE_ATOM)], $event->confirmedGuests())
+                ? array_map(static fn (GuestResponse $g): array => ['id' => $g->getId()->toRfc4122(), 'name' => $g->name(), 'email' => $g->email(), 'answer' => $g->answer()?->value, 'at' => $g->createdAt()->format(\DATE_ATOM)], $event->confirmedGuests())
                 : null,
         ];
     }

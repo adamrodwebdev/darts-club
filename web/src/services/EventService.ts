@@ -111,6 +111,11 @@ export class EventService {
     await this.api.delete(`/api/event-posts/${encodeURIComponent(postId)}`)
   }
 
+  /** Retire un invité sans compte (organisateurs) */
+  async removeGuest(id: string, guestId: string): Promise<void> {
+    await this.api.delete(`/api/events/${encodeURIComponent(id)}/guests/${encodeURIComponent(guestId)}`)
+  }
+
   /** Nouveau lien d'abonnement (l'ancien est révoqué). */
   async createCalendarFeed(): Promise<{ url: string; webcal: string }> {
     const d = obj(await this.api.post('/api/me/calendar-feed'))

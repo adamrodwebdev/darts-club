@@ -48,6 +48,8 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 | Moyenne | Activer la 2FA laissait ouvertes les autres sessions, dont celle d'un intrus qui aurait eu le mot de passe | Les autres sessions sont fermées à leur prochaine requête (génération de sessions) | `TwoFactorHardeningTest` |
 | Faible | Codes de secours de 40 bits en SHA-256 simple : retrouvables en quelques heures avec une copie de la base | 80 bits, empreinte HMAC à clé du serveur ; anciens codes acceptés jusqu'à leur usage | `TwoFactorHardeningTest` |
 | Faible | Aucune alerte quand un compte Google ou Discord était relié à un compte existant | Email au titulaire, dans sa langue | `TwoFactorHardeningTest` |
+| Moyenne | Réponses sans compte : des adresses jetables confirmées en série pouvaient prendre toutes les places d'un événement public, sans que les organisateurs puissent retirer un invité | 30 confirmations par jour et par événement ; bouton « Retirer » pour les organisateurs (inscrit au journal) | `ClubEventTest` |
+| Faible | Renvoyer le formulaire avec l'adresse d'un invité confirmé changeait aussitôt son nom affiché aux organisateurs | Le nouveau nom attend la confirmation par le lien envoyé à cette adresse | `ClubEventTest` |
 
 ## Contrôles vérifiés
 

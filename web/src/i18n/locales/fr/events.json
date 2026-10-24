@@ -115,7 +115,10 @@
     },
     "guests": {
       "title": "Invités sans compte ({count})",
-      "privacy": "Ces adresses ne servent qu’à cet événement ; elles sont effacées 30 jours après."
+      "privacy": "Ces adresses ne servent qu’à cet événement ; elles sont effacées 30 jours après.",
+      "remove": "Retirer",
+      "removeTitle": "Retirer {name} des invités ?",
+      "removeNotice": "Sa réponse est effacée et sa place libérée. L’opération est inscrite au journal."
     },
     "audience": {
       "title": "Audience de l’annonce",

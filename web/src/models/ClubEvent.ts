@@ -152,6 +152,7 @@ export interface Participant extends Member {
 
 /** Invité (sans compte) dont la réponse est confirmée, vu par les organisateurs */
 export interface Guest {
+  id: string
   name: string
   email: string
   answer: Attendance
@@ -203,7 +204,7 @@ export function parseEventDetail(value: unknown): EventDetail {
         ? null
         : list(d.guests, (g) => {
             const x = obj(g, 'invité')
-            return { name: str(x.name), email: str(x.email), answer: parseAttendance(x.answer) }
+            return { id: str(x.id), name: str(x.name), email: str(x.email), answer: parseAttendance(x.answer) }
           }),
   }
 }
