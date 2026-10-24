@@ -83,8 +83,15 @@
         "created": "Created",
         "author": "Author",
         "recipients": "Recipients",
-        "name": "Name"
-      }
+        "name": "Name",
+        "item": "Item",
+        "entry": "Line",
+        "receipt": "Receipt",
+        "temporary_bar": "Temporary bar",
+        "tax_exempt": "Tax-exempt evening"
+      },
+      "yes": "yes",
+      "no": "no"
     }
   }
 }

@@ -223,6 +223,14 @@ async function saveSummary(): Promise<void> {
         </form>
       </section>
 
+      <section v-if="auth.user?.isBoardMember" class="card board" aria-labelledby="accounts-title">
+        <div>
+          <h2 id="accounts-title">{{ t('events.detail.accounts') }}</h2>
+          <p class="muted">{{ t('events.detail.accountsText') }}</p>
+        </div>
+        <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.accounts.title') }}</RouterLink>
+      </section>
+
       <section v-if="detail.canManage" class="card stack" aria-labelledby="manage-title">
         <h2 id="manage-title">{{ t('events.detail.manage') }}</h2>
         <div class="actions">
@@ -382,6 +390,23 @@ async function saveSummary(): Promise<void> {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* Bureau : accès au bilan de la soirée */
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.board h2 {
+  margin: 0 0 0.25rem;
+}
+
+.board p {
+  margin: 0;
 }
 
 .link-button {

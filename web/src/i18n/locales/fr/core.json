@@ -36,7 +36,8 @@
     "confirmEmail": "Confirmer mon adresse",
     "forgotPassword": "Mot de passe oublié",
     "resetPassword": "Nouveau mot de passe",
-    "eventPoster": "Affiche QR"
+    "eventPoster": "Affiche QR",
+    "eventAccounts": "Bilan de la soirée"
   },
   "app": {
     "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
@@ -365,6 +366,19 @@
       },
       "guest": {
         "remove": "Invité retiré"
+      },
+      "accounts": {
+        "item_add": "Article ajouté au bilan",
+        "item_edit": "Article du bilan modifié",
+        "item_remove": "Article retiré du bilan",
+        "entry_add": "Ligne ajoutée au bilan",
+        "entry_edit": "Ligne du bilan modifiée",
+        "entry_remove": "Ligne retirée du bilan",
+        "flags": "Compteurs du bilan modifiés",
+        "receipt_add": "Justificatif ajouté",
+        "receipt_remove": "Justificatif retiré",
+        "close": "Bilan clôturé",
+        "reopen": "Bilan rouvert"
       }
     }
   },
