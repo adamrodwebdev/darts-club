@@ -42,7 +42,8 @@ final class JsonTwoFactorHandlers implements AuthenticationSuccessHandlerInterfa
                 return $this->tooManyAttempts($request);
             }
 
-            return new JsonResponse(['twoFactorRequired' => true], Response::HTTP_ACCEPTED);
+            // « passkey » (bureau) ou « totp » : la page de connexion sait quoi demander
+            return new JsonResponse(['twoFactorRequired' => true, 'method' => $token->getCurrentTwoFactorProvider()], Response::HTTP_ACCEPTED);
         }
 
         $user = $token->getUser();

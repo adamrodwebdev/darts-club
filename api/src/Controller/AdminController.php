@@ -82,6 +82,7 @@ final class AdminController extends AbstractController
                 'verified' => $u->isVerified(),
                 'approved' => $u->isApproved(),
                 'twoFactorEnabled' => $u->hasTwoFactor(),
+                'passkeys' => \count($u->passkeys()),
                 'suspended' => $u->isSuspended(),
                 'suspensionReason' => $u->suspensionReason(),
                 'membership' => $statusByUser[$u->getId()->toRfc4122()] ?? null,
@@ -113,6 +114,15 @@ final class AdminController extends AbstractController
     public function approve(User $member, #[CurrentUser] User $actor, MemberAdministration $administration): Response
     {
         $administration->approve($actor, $member);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    /** Appareil perdu : clés d'accès retirées, sessions fermées (administrateur seulement) */
+    #[Route('/members/{id}/passkeys/reset', name: 'member_passkeys_reset', requirements: ['id' => self::UUID], methods: ['POST'])]
+    public function resetPasskeys(User $member, #[CurrentUser] User $actor, MemberAdministration $administration): Response
+    {
+        $administration->resetPasskeys($actor, $member);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

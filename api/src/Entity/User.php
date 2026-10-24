@@ -7,6 +7,8 @@ use App\Enum\Role;
 use App\Event\DomainEventsTrait;
 use App\Event\MemberApproved;
 use App\Event\MemberAwaitingApproval;
+use App\Event\PasskeyAdded;
+use App\Event\PasskeysReset;
 use App\Event\ProviderLinked;
 use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
@@ -18,6 +20,8 @@ use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
@@ -30,6 +34,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
+#[ORM\UniqueConstraint(name: 'uniq_user_passkey_handle', columns: ['passkey_handle'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface
 {
     use DomainEventsTrait;
@@ -127,11 +132,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $approvedAt = null;
 
+    /** Identifiant WebAuthn de l'adhérent (32 octets aléatoires, base64url) : jamais son email ni son id */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $passkeyHandle = null;
+
+    /** @var Collection<int, Passkey> */
+    #[ORM\OneToMany(targetEntity: Passkey::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $passkeys;
+
     private function __construct(EmailAddress $email, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->email = $email->value;
         $this->createdAt = $now;
+        $this->passkeys = new ArrayCollection();
     }
 
     /** Inscription classique : le compte reste inactif jusqu'à la vérification de l'email. */
@@ -460,10 +474,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return false;
     }
 
-    /** Politique du club : 2FA obligatoire pour le bureau. */
+    /**
+     * Politique du club : l'administrateur garde le code TOTP obligatoire ; le reste du bureau
+     * (président, trésorier, secrétaire) se connecte avec une clé d'accès (requiresPasskey).
+     */
     public function mustSetUpTwoFactor(): bool
     {
-        return $this->isBoardMember() && !$this->hasTwoFactor();
+        return $this->hasRole(Role::Admin) && !$this->hasTwoFactor();
+    }
+
+    /** Bureau hors administrateur : la clé d'accès remplace le code à 6 chiffres. */
+    public function requiresPasskey(): bool
+    {
+        return $this->isBoardMember() && !$this->hasRole(Role::Admin);
+    }
+
+    /**
+     * Fonctions du bureau bloquées : ni clé d'accès, ni code TOTP. Un membre du bureau qui a encore
+     * son code garde l'accès (le site l'invite à créer sa clé) ; aucun appareil n'est indispensable.
+     */
+    public function mustSetUpPasskey(): bool
+    {
+        return $this->requiresPasskey() && !$this->hasPasskey() && !$this->hasTwoFactor();
+    }
+
+    public function hasPasskey(): bool
+    {
+        return !$this->passkeys->isEmpty();
+    }
+
+    /** @return list<Passkey> */
+    public function passkeys(): array
+    {
+        return array_values($this->passkeys->toArray());
+    }
+
+    public function passkeyHandle(): ?string
+    {
+        return $this->passkeyHandle;
+    }
+
+    /** Identifiant WebAuthn tiré par l'appelant (TokenGenerator), une seule fois pour le compte. */
+    public function assignPasskeyHandle(string $handle): void
+    {
+        $this->passkeyHandle ??= $handle;
+    }
+
+    /**
+     * Nouvelle clé d'accès. Pour le bureau, elle remplace le code TOTP : son application n'est plus
+     * demandée (l'administrateur, lui, garde son code).
+     */
+    public function addPasskey(Passkey $passkey): void
+    {
+        $this->passkeys->add($passkey);
+        $this->recordThat(new PasskeyAdded($this->id));
+        if ($this->requiresPasskey() && $this->hasTwoFactor()) {
+            $this->disableTotp();
+        }
+    }
+
+    public function removePasskey(Passkey $passkey): void
+    {
+        $this->passkeys->removeElement($passkey);
+    }
+
+    /** Appareil perdu : toutes les clés retirées (réinitialisation par l'administrateur) */
+    public function removePasskeys(): void
+    {
+        if (!$this->passkeys->isEmpty()) {
+            $this->recordThat(new PasskeysReset($this->id));
+        }
+        $this->passkeys->clear();
     }
 
     public function hasTwoFactor(): bool
@@ -532,6 +613,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
             $data["\0".self::class."\0domainEvents"],
             $data["\0".self::class."\0totpSecret"],
             $data["\0".self::class."\0backupCodes"],
+            $data["\0".self::class."\0passkeys"],
         );
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 

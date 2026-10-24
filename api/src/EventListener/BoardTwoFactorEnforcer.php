@@ -43,9 +43,17 @@ final class BoardTwoFactorEnforcer
         }
 
         $user = $this->security->getUser();
-        if ($user instanceof User && $this->security->isGranted('IS_AUTHENTICATED_FULLY') && $user->mustSetUpTwoFactor()) {
+        if (!$user instanceof User || !$this->security->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return;
+        }
+        if ($user->mustSetUpTwoFactor()) {
             $event->setResponse(new JsonResponse(
                 ['error' => $this->messages->trans('Active la double authentification pour accéder aux fonctions du bureau.', $event->getRequest()), 'code' => 'two_factor_setup_required'],
+                Response::HTTP_FORBIDDEN,
+            ));
+        } elseif ($user->mustSetUpPasskey()) {
+            $event->setResponse(new JsonResponse(
+                ['error' => $this->messages->trans('Crée ta clé d’accès pour accéder aux fonctions du bureau.', $event->getRequest()), 'code' => 'passkey_setup_required'],
                 Response::HTTP_FORBIDDEN,
             ));
         }

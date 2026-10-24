@@ -4,3 +4,4 @@
 'Email du fournisseur invalide.': 'Invalid email from the provider.'
 'Email non vérifié par le fournisseur.': 'Email not verified by the provider.'
 'Identité OAuth invalide.': 'Invalid OAuth identity.'
+'Clé d''accès refusée ou inconnue de ce site.': 'Passkey refused or unknown to this site.'

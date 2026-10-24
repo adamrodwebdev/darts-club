@@ -16,6 +16,7 @@ framework:
             App\Message\SendProviderLinkedEmail: async
             App\Message\SendPasswordResetEmail: async
             App\Message\SendMemberApprovedEmail: async
+            App\Message\SendPasskeyNotice: async
             App\Message\Notify: async
             App\Message\DeliverNotification: async
 

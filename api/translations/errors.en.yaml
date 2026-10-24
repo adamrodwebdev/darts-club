@@ -89,3 +89,7 @@
 'Lien invalide ou expiré : demande un nouveau lien.': 'Invalid or expired link: ask for a new one.'
 'Lien invalide, expiré ou déjà utilisé : demande un nouveau lien.': 'Invalid, expired or already used link: ask for a new one.'
 'Le compte doit être vérifié avant d’être validé.': 'The account must be verified before it is approved.'
+'Crée ta clé d’accès pour accéder aux fonctions du bureau.': 'Create your passkey to use the board features.'
+'Reconnecte-toi pour modifier tes clés d’accès (sécurité).': 'Log in again to change your passkeys (security).'
+'Clé d’accès refusée : réessaie depuis cet appareil.': 'Passkey refused: try again from this device.'
+'Seul l’administrateur réinitialise l’accès d’un membre.': 'Only the administrator can reset a member''s access.'
