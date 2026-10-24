@@ -30,3 +30,7 @@
 'guest.change': '(pour changer d''avis, utilise le lien reçu lors de ta réponse, ou réponds à nouveau depuis cette page).'
 'guest.why': 'Tu reçois ce message car tu as répondu à cet événement sur le site de Skull Darts 71.'
 'guest.privacy': 'Tes nom et email servent uniquement à cet événement et sont effacés 30 jours après.'
+'provider_linked.subject': 'Connexion %provider% ajoutée à ton compte'
+'provider_linked.intro': 'Ton compte Skull Darts 71 accepte désormais la connexion avec %provider%.'
+'provider_linked.not_you': 'Si ce n''est pas toi, change ton mot de passe et préviens le bureau : quelqu''un a accès à ce compte %provider%.'
+'provider_linked.button': 'Sécurité de mon compte'

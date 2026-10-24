@@ -27,7 +27,7 @@ final class ImageProcessorTest extends TestCase
     public function testALargePhotoIsReducedToItsLargestVersion(): void
     {
         $path = (string) tempnam(sys_get_temp_dir(), 'jpg');
-        imagejpeg(imagecreatetruecolor(2000, 1500), $path);
+        imagejpeg(imagecreatetruecolor(1700, 850), $path);
 
         try {
             $photo = (new ImageProcessor())->photo($path);
@@ -35,6 +35,6 @@ final class ImageProcessorTest extends TestCase
             unlink($path);
         }
 
-        self::assertSame([ImageProcessor::PHOTO_MAX_SIDE, 1200], [$photo['width'], $photo['height']]);
+        self::assertSame([ImageProcessor::PHOTO_MAX_SIDE, 800], [$photo['width'], $photo['height']]);
     }
 }

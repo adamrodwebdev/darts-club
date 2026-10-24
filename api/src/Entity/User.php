@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Doctrine\EncryptedStringType;
 use App\Enum\Role;
 use App\Event\DomainEventsTrait;
+use App\Event\ProviderLinked;
 use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
 use App\Notification\NotificationPreferences;
@@ -17,7 +18,6 @@ use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
@@ -28,7 +28,7 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface, BackupCodeInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface
 {
     use DomainEventsTrait;
 
@@ -80,6 +80,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column]
     private bool $totpEnabled = false;
 
+    /** Dernier pas de temps TOTP accepté : un code déjà utilisé (ou plus ancien) ne sert plus */
+    #[ORM\Column(nullable: true)]
+    private ?int $totpLastTimestep = null;
+
+    /**
+     * Génération des sessions : chaque session note celle de sa connexion, et les sessions d'une
+     * génération passée sont fermées (activation de la 2FA, réinitialisation d'accès).
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $sessionGeneration = 0;
+
     /** Empreinte SHA-256 du jeton d'abonnement calendrier (le jeton n'est jamais stocké) */
     #[ORM\Column(length: 64, unique: true, nullable: true)]
     private ?string $calendarTokenHash = null;
@@ -92,7 +103,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     private ?string $suspensionReason = null;
 
     /**
-     * Empreintes SHA-256 des codes de secours non utilisés.
+     * Empreintes des codes de secours non utilisés (HMAC, clé du serveur ; SHA-256 seul pour les
+     * codes d'avant octobre 2026), calculées par App\Security\TwoFactor\BackupCodes.
      *
      * @var list<string>
      */
@@ -219,6 +231,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $this->verified = true;
     }
 
+    /** Compte existant relié à un fournisseur OAuth : l'adresse est prouvée, et le titulaire en est averti. */
+    public function linkProvider(string $provider): void
+    {
+        $this->verifyThroughProvider();
+        $this->recordThat(new ProviderLinked($this->id, $provider));
+    }
+
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
@@ -280,16 +299,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     /**
      * Étape 2 : l'adhérent a saisi un code valide.
      *
-     * @param list<string> $backupCodes codes en clair, seules leurs empreintes sont stockées
+     * @param list<string> $backupCodeHashes empreintes des codes de secours (BackupCodes), jamais les codes
      */
-    public function enableTotp(array $backupCodes): void
+    public function enableTotp(array $backupCodeHashes): void
     {
         if (null === $this->totpSecret) {
             throw new \LogicException('Aucune configuration TOTP en cours.');
         }
 
         $this->totpEnabled = true;
-        $this->backupCodes = array_map(self::hashBackupCode(...), $backupCodes);
+        $this->backupCodes = $backupCodeHashes;
+    }
+
+    /** Un code TOTP n'est accepté qu'une fois : son pas de temps doit suivre le dernier utilisé */
+    public function acceptsTotpTimestep(int $timestep): bool
+    {
+        return null === $this->totpLastTimestep || $timestep > $this->totpLastTimestep;
+    }
+
+    public function useTotpTimestep(int $timestep): void
+    {
+        if (!$this->acceptsTotpTimestep($timestep)) {
+            throw new \LogicException('Code TOTP déjà utilisé.');
+        }
+
+        $this->totpLastTimestep = $timestep;
+    }
+
+    /** Toutes les sessions ouvertes jusqu'ici sont fermées à leur prochaine requête. */
+    public function revokeSessions(): void
+    {
+        ++$this->sessionGeneration;
+    }
+
+    public function sessionGeneration(): int
+    {
+        return $this->sessionGeneration;
+    }
+
+    /** Session ouverte à cette génération (0 si inconnue) et fermée depuis par revokeSessions() */
+    public function isSessionRevoked(?int $generation): bool
+    {
+        return ($generation ?? 0) < $this->sessionGeneration;
     }
 
     public function disableTotp(): void
@@ -410,20 +461,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
             : null;
     }
 
-    public function isBackupCode(string $code): bool
+    public function hasBackupCode(string $hash): bool
     {
-        return \in_array(self::hashBackupCode($code), $this->backupCodes, true);
+        return \in_array($hash, $this->backupCodes, true);
     }
 
-    public function invalidateBackupCode(string $code): void
+    /** Code de secours utilisé : il ne servira plus */
+    public function useBackupCode(string $hash): void
     {
-        $hash = self::hashBackupCode($code);
         $this->backupCodes = array_values(array_filter($this->backupCodes, static fn (string $h): bool => $h !== $hash));
-    }
-
-    private static function hashBackupCode(string $code): string
-    {
-        return hash('sha256', strtolower(str_replace([' ', '-'], '', $code)));
     }
 
     public function notificationPreferences(): NotificationPreferences

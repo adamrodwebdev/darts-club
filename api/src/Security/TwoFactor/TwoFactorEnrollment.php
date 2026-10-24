@@ -3,7 +3,7 @@
 namespace App\Security\TwoFactor;
 
 use App\Entity\User;
-use App\Security\TokenGenerator;
+use App\Security\SessionRevocation;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
@@ -12,12 +12,11 @@ use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInte
 /** Activation / désactivation de la double authentification TOTP. */
 final class TwoFactorEnrollment
 {
-    private const BACKUP_CODE_COUNT = 10;
-
     public function __construct(
         private readonly TotpAuthenticatorInterface $totp,
         private readonly EntityManagerInterface $em,
-        private readonly TokenGenerator $tokens,
+        private readonly BackupCodes $backupCodes,
+        private readonly SessionRevocation $sessions,
     ) {
     }
 
@@ -38,7 +37,12 @@ final class TwoFactorEnrollment
         return ['secret' => $secret, 'uri' => $uri, 'qrCode' => $qrCode];
     }
 
-    /** @return list<string> codes de secours, affichés une seule fois */
+    /**
+     * Les autres sessions ouvertes sont fermées : si le mot de passe avait fui, la session d'un
+     * intrus ne survit pas à l'activation.
+     *
+     * @return list<string> codes de secours, affichés une seule fois
+     */
     public function confirm(User $user, string $code): array
     {
         if ($user->hasTwoFactor() || null === $user->getTotpAuthenticationConfiguration()) {
@@ -48,22 +52,17 @@ final class TwoFactorEnrollment
             throw new TwoFactorException('Code incorrect. Vérifie l’heure de ton téléphone.');
         }
 
-        $codes = [];
-        for ($i = 0; $i < self::BACKUP_CODE_COUNT; ++$i) {
-            $raw = strtolower($this->tokens->hex(5));
-            $codes[] = substr($raw, 0, 5).'-'.substr($raw, 5);
-        }
-
-        $user->enableTotp($codes);
+        $codes = $this->backupCodes->generate();
+        $user->enableTotp($this->backupCodes->hashes($codes));
         $this->em->flush();
+        $this->sessions->endOtherSessions($user);
 
         return $codes;
     }
 
     public function disable(User $user, string $code): void
     {
-        $normalized = self::normalize($code);
-        if (!$this->totp->checkCode($user, $normalized) && !$user->isBackupCode($code)) {
+        if (!$this->totp->checkCode($user, self::normalize($code)) && !$this->backupCodes->isBackupCode($user, $code)) {
             throw new TwoFactorException('Code incorrect.');
         }
 
