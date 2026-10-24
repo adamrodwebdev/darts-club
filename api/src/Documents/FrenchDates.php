@@ -3,6 +3,7 @@
 namespace App\Documents;
 
 use App\ClubEvent\ClubTime;
+use App\Translation\FrenchTypography;
 
 /** Dates des documents, en français et à l'heure de Paris (courriers aux administrations françaises). */
 final class FrenchDates

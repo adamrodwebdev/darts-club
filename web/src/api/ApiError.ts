@@ -35,8 +35,11 @@ export class ApiError extends Error {
     return this.status === 429
   }
 
-  /** Construit l'erreur à partir d'un corps JSON Symfony (problem details ou { error }). */
-  static fromBody(status: number, body: unknown): ApiError {
+  /**
+   * Construit l'erreur à partir d'un corps JSON Symfony (problem details ou { error }) ; `polish`
+   * met en forme les textes de l'API dans la langue demandée (typographie).
+   */
+  static fromBody(status: number, body: unknown, polish: (text: string) => string = (text) => text): ApiError {
     const data = typeof body === 'object' && body !== null ? (body as Record<string, unknown>) : {}
     const violations: Record<string, string> = {}
 
@@ -46,7 +49,7 @@ export class ApiError extends Error {
           const { propertyPath, title, message } = v as Record<string, unknown>
           const text = typeof message === 'string' ? message : title
           if (typeof propertyPath === 'string' && typeof text === 'string' && !(propertyPath in violations)) {
-            violations[propertyPath] = text
+            violations[propertyPath] = polish(text)
           }
         }
       }
@@ -56,7 +59,7 @@ export class ApiError extends Error {
 
     const code = typeof data.code === 'string' ? data.code : null
 
-    return new ApiError(status, message ?? ApiError.defaultMessage(status), { violations, code })
+    return new ApiError(status, message === undefined ? ApiError.defaultMessage(status) : polish(message), { violations, code })
   }
 
   private static defaultMessage(status: number): string {

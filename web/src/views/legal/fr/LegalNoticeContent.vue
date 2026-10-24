@@ -5,9 +5,9 @@
   <h2>Éditeur du site</h2>
   <p>
     Skull Darts 71, association régie par la loi du 1er juillet 1901.<br />
-    Siège : Bellevesvre (Saône-et-Loire)<br />
-    RNA : [numéro W…] · SIRET : [si applicable]<br />
-    Contact : [adresse email de contact]
+    Siège&nbsp;: Bellevesvre (Saône-et-Loire)<br />
+    RNA&nbsp;: [numéro W…] · SIRET&nbsp;: [si applicable]<br />
+    Contact&nbsp;: [adresse email de contact]
   </p>
 
   <h2>Directeur de la publication</h2>
@@ -21,8 +21,8 @@
 
   <h2>Propriété intellectuelle</h2>
   <p>
-    Les textes, les paroles de l’hymne « Triple Vingt » et le code du site appartiennent à l’association, sauf mention contraire.
+    Les textes, les paroles de l’hymne «&nbsp;Triple Vingt&nbsp;» et le code du site appartiennent à l’association, sauf mention contraire.
     L’enregistrement de l’hymne (musique et voix) a été généré avec l’outil Suno.
-    Le nom du groupe présenté dans « Groupe ami » appartient à ses membres.
+    Le nom du groupe présenté dans «&nbsp;Groupe ami&nbsp;» appartient à ses membres.
   </p>
 </template>

@@ -29,7 +29,8 @@ final class ClubEventTest extends ApiTestCase
         self::assertEmailCount(2);
         $email = self::getMailerMessage();
         self::assertNotNull($email);
-        self::assertEmailSubjectContains($email, '[Événement] Nouvel événement : Tournoi d\'automne');
+        // Typographie française : espace insécable avant les deux-points
+        self::assertEmailSubjectContains($email, "[Événement] Nouvel événement\u{00A0}: Tournoi d'automne");
         self::assertEmailTextBodyContains($email, 'Samedi 24 octobre à 14:00');
 
         $this->postJson('/api/events', self::payload(['endsAt' => '2026-10-24T13:00:00+02:00']));
@@ -102,7 +103,7 @@ final class ClubEventTest extends ApiTestCase
         self::assertEmailCount(3);
         $email = self::getMailerMessage();
         self::assertNotNull($email);
-        self::assertEmailSubjectContains($email, '[Annulation] Annulé : Tournoi d\'automne');
+        self::assertEmailSubjectContains($email, "[Annulation] Annulé\u{00A0}: Tournoi d'automne");
         self::assertEmailTextBodyContains($email, 'Salle indisponible');
     }
 
