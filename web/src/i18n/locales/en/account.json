@@ -32,7 +32,6 @@
     "security": {
       "currentPassword": "Current password",
       "newPassword": "New password",
-      "newPasswordHint": "At least 12 characters.",
       "passwordChanged": "Password changed. Your other devices have been logged out.",
       "dataTitle": "My data",
       "dataText": "Download a copy of all the data the club holds about you (JSON format).",

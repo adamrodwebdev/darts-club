@@ -9,8 +9,10 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { BOARD_ROLE_OPTIONS, type AdminMember } from '@/models/Admin'
 import { useServices } from '@/services'
+import { useAuthStore } from '@/stores/auth'
 
 const services = useServices()
+const auth = useAuthStore()
 
 const { t } = useI18n()
 
@@ -36,6 +38,8 @@ const editing = ref<AdminMember | null>(null)
 const draftRoles = ref<string[]>([])
 const suspending = ref<AdminMember | null>(null)
 const reason = ref('')
+/** Mot de passe oublié : lien envoyé par l'administrateur */
+const linking = ref<AdminMember | null>(null)
 
 async function refresh(): Promise<void> {
   const list = await load.run(() => services.admin.members(search.value))
@@ -94,6 +98,19 @@ async function approve(member: AdminMember): Promise<void> {
   }
 }
 
+async function sendPasswordLink(): Promise<void> {
+  const member = linking.value
+  if (!member) return
+  const ok = await action.run(async () => {
+    await services.admin.sendPasswordLink(member.id)
+    return true
+  })
+  if (ok) {
+    info.value = t('admin.members.passwordLinkSent', { email: member.email })
+    linking.value = null
+  }
+}
+
 async function reactivate(member: AdminMember): Promise<void> {
   const ok = await action.run(async () => {
     await services.admin.reactivate(member.id)
@@ -110,7 +127,7 @@ async function reactivate(member: AdminMember): Promise<void> {
   <div class="stack">
     <BaseField v-model="search" :label="t('admin.members.search')" />
     <p v-if="info" class="notice notice--success" role="status">{{ info }}</p>
-    <p v-if="action.error.value && !editing && !suspending" class="notice notice--error" role="alert">{{ action.error.value }}</p>
+    <p v-if="action.error.value && !editing && !suspending && !linking" class="notice notice--error" role="alert">{{ action.error.value }}</p>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>
 
     <ul class="members">
@@ -131,6 +148,7 @@ async function reactivate(member: AdminMember): Promise<void> {
         <div class="member__actions">
           <BaseButton v-if="m.verified && !m.approved" :pending="action.pending.value" @click="approve(m)">{{ t('admin.members.approve') }}</BaseButton>
           <BaseButton variant="ghost" :disabled="!m.verified" @click="editRoles(m)">{{ t('admin.members.roles') }}</BaseButton>
+          <BaseButton v-if="auth.user?.isAdmin && !m.suspended" variant="ghost" @click="linking = m">{{ t('admin.members.passwordLink') }}</BaseButton>
           <BaseButton v-if="m.suspended" variant="ghost" :pending="action.pending.value" @click="reactivate(m)">{{ t('admin.members.reactivate') }}</BaseButton>
           <BaseButton v-else variant="danger" @click="suspending = m">{{ t('admin.members.suspend') }}</BaseButton>
         </div>
@@ -150,6 +168,18 @@ async function reactivate(member: AdminMember): Promise<void> {
         <div class="buttons">
           <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
           <BaseButton type="submit" :pending="action.pending.value">{{ t('common.save') }}</BaseButton>
+        </div>
+      </form>
+    </BaseDialog>
+
+    <BaseDialog v-if="linking" :title="t('admin.members.passwordLinkTitle', { name: linking.displayName })" @close="linking = null">
+      <form class="stack" @submit.prevent="sendPasswordLink">
+        <p class="muted dialog-text">{{ t('admin.members.passwordLinkText', { name: linking.displayName, email: linking.email }) }}</p>
+        <p class="muted dialog-text">{{ t('admin.members.passwordLinkPrivate') }}</p>
+        <p v-if="action.error.value" class="notice notice--error" role="alert">{{ action.error.value }}</p>
+        <div class="buttons">
+          <BaseButton variant="ghost" @click="linking = null">{{ t('common.cancel') }}</BaseButton>
+          <BaseButton type="submit" :pending="action.pending.value">{{ t('admin.members.passwordLinkSend') }}</BaseButton>
         </div>
       </form>
     </BaseDialog>
@@ -243,6 +273,10 @@ async function reactivate(member: AdminMember): Promise<void> {
   width: 1.3rem;
   height: 1.3rem;
   accent-color: var(--color-accent);
+}
+
+.dialog-text {
+  margin: 0;
 }
 
 .buttons {

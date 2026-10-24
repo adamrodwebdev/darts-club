@@ -42,6 +42,11 @@ export class AdminService {
     await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/approve`)
   }
 
+  /** Mot de passe oublié : lien envoyé à l'adresse du membre, jamais montré (administrateur seulement) */
+  async sendPasswordLink(memberId: string): Promise<void> {
+    await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/password-link`)
+  }
+
   async suspend(memberId: string, reason: string): Promise<void> {
     await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/suspend`, { reason })
   }

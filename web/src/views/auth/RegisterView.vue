@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
+import PasswordRules from '@/components/PasswordRules.vue'
 import OAuthButtons from '@/components/OAuthButtons.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useAuthStore } from '@/stores/auth'
@@ -14,6 +15,7 @@ const { t } = useI18n()
 const email = ref('')
 const phone = ref('')
 const password = ref('')
+const rulesId = useId()
 const done = ref(false)
 const { pending, error, fieldErrors, run } = useAsyncAction()
 
@@ -51,9 +53,11 @@ async function submit(): Promise<void> {
           type="password"
           autocomplete="new-password"
           required
-          :hint="t('auth.register.passwordHint')"
           :error="fieldErrors.password"
-        />
+          :describedby="rulesId"
+        >
+          <PasswordRules :id="rulesId" :password="password" />
+        </BaseField>
 
         <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
 
