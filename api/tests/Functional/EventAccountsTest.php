@@ -2,7 +2,6 @@
 
 namespace App\Tests\Functional;
 
-use App\ClubEvent\EventDetails;
 use App\Entity\ClubEvent;
 use App\Enum\Role;
 use App\EventAccounts\PurgeOldReceipts;
@@ -13,10 +12,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 /** Bilan d'une soirée : saisie par la secrétaire et le trésorier, lecture par le bureau, justificatifs privés. */
 final class EventAccountsTest extends ApiTestCase
 {
-    /** @var array<string, string> secrets TOTP des membres du bureau */
-    private array $secrets = [];
-
-    private int $organizers = 0;
+    use BoardScenario;
 
     public function testTheSecretaryKeepsTheEveningAccountsAndTheTotalsAddUp(): void
     {
@@ -223,41 +219,6 @@ final class EventAccountsTest extends ApiTestCase
         $this->request('DELETE', '/api/event-accounts/receipts/'.$this->digString($this->json(), 'receipts', 0, 'id'));
     }
 
-    /** @param array<string, Role> $members */
-    private function board(array $members): void
-    {
-        $users = [];
-        foreach ($members as $email => $role) {
-            $users[$email] = $this->createUser($email);
-            $users[$email]->grantRole($role);
-        }
-        $this->entityManager()->flush();
-        foreach ($users as $email => $user) {
-            $this->secrets[$email] = $this->enableTwoFactor($user);
-        }
-    }
-
-    private function loginAs(string $email): void
-    {
-        $this->loginWithTwoFactor($email, $this->secrets[$email]);
-    }
-
-    private function evening(string $startsAt): ClubEvent
-    {
-        $organizer = $this->createUser('organizer'.++$this->organizers.'@example.com');
-        $start = new \DateTimeImmutable($startsAt.' Europe/Paris');
-        $event = ClubEvent::schedule(
-            $organizer,
-            new EventDetails('Soirée fléchettes', 'Initiation', 'Salle des fêtes, Bellevesvre', $start, $start->modify('+4 hours'), null, false, null),
-            $start->modify('-60 days'),
-        );
-        $event->releaseEvents();
-        $this->entityManager()->persist($event);
-        $this->entityManager()->flush();
-
-        return $event;
-    }
-
     private function accountsUri(ClubEvent $event): string
     {
         return "/api/events/{$event->getId()->toRfc4122()}/accounts";
@@ -285,12 +246,6 @@ final class EventAccountsTest extends ApiTestCase
         file_put_contents($path, $content);
 
         return $path;
-    }
-
-    /** @param array<string, mixed> $payload */
-    private function request(string $method, string $uri, array $payload = []): void
-    {
-        $this->client->request($method, $uri, server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ORIGIN' => self::FRONT_ORIGIN], content: json_encode($payload, \JSON_THROW_ON_ERROR));
     }
 
     /** @return list<string> */

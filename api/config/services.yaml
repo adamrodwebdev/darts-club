@@ -45,6 +45,10 @@ services:
     app.storage.receipts:
         class: App\Media\FilesystemFileStorage
         arguments: ['%kernel.project_dir%/var/storage/receipts']
+    # Attestation d'assurance de la fiche de l'association (PDF), servie au bureau seulement
+    app.storage.documents:
+        class: App\Media\FilesystemFileStorage
+        arguments: ['%kernel.project_dir%/var/storage/documents']
     App\Media\ImageStorage $avatarStorage: '@app.storage.avatars'
     App\Media\ImageStorage $eventPhotoStorage: '@app.storage.event_photos'
     App\Media\ImageStorage $eventPosterStorage: '@app.storage.event_posters'

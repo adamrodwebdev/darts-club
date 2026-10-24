@@ -37,7 +37,10 @@
     "forgotPassword": "Mot de passe oublié",
     "resetPassword": "Nouveau mot de passe",
     "eventPoster": "Affiche QR",
-    "eventAccounts": "Bilan de la soirée"
+    "eventAccounts": "Bilan de la soirée",
+    "eventDocuments": "Démarches de la soirée",
+    "eventDocument": "Document de la soirée",
+    "associationProfile": "Fiche de l’association"
   },
   "app": {
     "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
@@ -379,6 +382,14 @@
         "receipt_remove": "Justificatif retiré",
         "close": "Bilan clôturé",
         "reopen": "Bilan rouvert"
+      },
+      "procedure": {
+        "save": "Document de démarche enregistré",
+        "status": "Avancement d’une démarche changé"
+      },
+      "association": {
+        "update": "Fiche de l’association modifiée",
+        "insurance": "Attestation d’assurance rangée"
       }
     }
   },

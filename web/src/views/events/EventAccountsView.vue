@@ -15,6 +15,7 @@ import BaseDialog from '@/components/BaseDialog.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import type { AccountsEntry, BarItem, EntryKind, EventAccounts, Receipt } from '@/models/EventAccounts'
+import { printOnly } from '@/print/printOnly'
 import { useServices } from '@/services'
 import type { BarItemDraft, EntryDraft, ReceiptDraft } from '@/services/EventAccountsService'
 
@@ -96,10 +97,7 @@ async function reopen(): Promise<void> {
 
 /** Seul le bilan part à l'impression (sans en-tête ni boutons) */
 function print(): void {
-  const root = document.documentElement
-  root.dataset.print = 'accounts'
-  window.addEventListener('afterprint', () => root.removeAttribute('data-print'), { once: true })
-  window.print()
+  printOnly('accounts')
 }
 
 /** Totaux des autres lignes, tirés des totaux de l'API (total moins buvette, en centimes) */

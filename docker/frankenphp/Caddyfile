@@ -26,10 +26,10 @@
 	# API Symfony
 	handle /api/* {
 		# Taille des requêtes bornée avant PHP : 1 Mo, sauf les envois de fichiers
-		# (photos : 10 de 10 Mo ; affiche, avatar, justificatif d'un bilan : 10 Mo)
+		# (photos : 10 de 10 Mo ; affiche, avatar, justificatif d'un bilan, attestation d'assurance : 10 Mo)
 		@photos path_regexp ^/api/events/[^/]+/photos$
-		@file path_regexp ^/api/(events/[^/]+/(poster|accounts/receipts)|me/avatar)$
-		@small not path_regexp ^/api/(events/[^/]+/(photos|poster|accounts/receipts)|me/avatar)$
+		@file path_regexp ^/api/(events/[^/]+/(poster|accounts/receipts)|me/avatar|association-profile/insurance)$
+		@small not path_regexp ^/api/(events/[^/]+/(photos|poster|accounts/receipts)|me/avatar|association-profile/insurance)$
 		request_body @photos {
 			max_size 112MB
 		}
