@@ -38,7 +38,13 @@
       "resetNext": "At their next login with their password, {name} will create a new passkey before getting back to the board tools.",
       "resetNotice": "An email lets {name} know. The operation is recorded in the log.",
       "reset": "Reset",
-      "resetDone": "{name}’s access has been reset."
+      "resetDone": "{name}’s access has been reset.",
+      "passwordLink": "Send a password link",
+      "passwordLinkTitle": "Send {name} a password link?",
+      "passwordLinkText": "{name} receives at {email} a link valid for one hour to choose a new password.",
+      "passwordLinkPrivate": "You never see this link; their current password keeps working until the link is used.",
+      "passwordLinkSend": "Send",
+      "passwordLinkSent": "Link sent to {email}."
     },
     "broadcast": {
       "title": "New message",
@@ -86,8 +92,18 @@
         "created": "Created",
         "author": "Author",
         "recipients": "Recipients",
-        "name": "Name"
-      }
+        "name": "Name",
+        "item": "Item",
+        "entry": "Line",
+        "receipt": "Receipt",
+        "temporary_bar": "Temporary bar",
+        "tax_exempt": "Tax-exempt evening",
+        "document": "Paperwork",
+        "status": "Progress",
+        "valid_until": "Valid until"
+      },
+      "yes": "yes",
+      "no": "no"
     }
   }
 }

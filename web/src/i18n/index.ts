@@ -1,6 +1,7 @@
 import { createI18n } from 'vue-i18n'
 import type frCatalogue from './locales/fr/index'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from './locales'
+import { frenchTypography } from './typography'
 
 /** Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue par langue. */
 export type MessageSchema = typeof frCatalogue
@@ -20,6 +21,8 @@ export const i18n = createI18n<[MessageSchema], Locale, false>({
   locale: DEFAULT_LOCALE,
   fallbackLocale: DEFAULT_LOCALE,
   messages: {} as Record<Locale, MessageSchema>,
+  // Typographie française appliquée au texte traduit (espaces insécables) : catalogues inchangés
+  postTranslation: (translated) => (typeof translated === 'string' && currentLocale() === 'fr' ? frenchTypography(translated) : translated),
 })
 
 const loaders: Record<Locale, () => Promise<{ default: unknown }>> = {

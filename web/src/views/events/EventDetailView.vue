@@ -176,6 +176,7 @@ async function saveSummary(): Promise<void> {
         <div class="actions">
           <a :href="publicUrl" target="_blank" rel="noopener" class="share__url">{{ publicUrl }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
           <BaseButton variant="ghost" @click="copyPublicLink">{{ copied ? t('events.share.copied') : t('events.share.copy') }}</BaseButton>
+          <RouterLink v-if="detail.canManage" :to="{ name: 'event-poster', query: { soiree: event.id } }" class="link-button">{{ t('events.share.qrPoster') }}</RouterLink>
         </div>
         <p class="visually-hidden" role="status"><template v-if="copied">{{ t('events.share.copied') }}</template></p>
       </section>
@@ -220,6 +221,17 @@ async function saveSummary(): Promise<void> {
           <p v-if="post.error.value" class="notice notice--error" role="alert">{{ post.error.value }}</p>
           <BaseButton type="submit" :pending="post.pending.value" :disabled="!draftPost.trim()">{{ t('events.detail.publish') }}</BaseButton>
         </form>
+      </section>
+
+      <section v-if="auth.user?.isBoardMember" class="card board" aria-labelledby="board-title">
+        <div>
+          <h2 id="board-title">{{ t('events.detail.board') }}</h2>
+          <p class="muted">{{ t('events.detail.boardText') }}</p>
+        </div>
+        <div class="board__links">
+          <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.accounts.title') }}</RouterLink>
+          <RouterLink :to="{ name: 'event-documents', params: { id: event.id } }" class="link-button">{{ t('events.documents.title') }}</RouterLink>
+        </div>
       </section>
 
       <section v-if="detail.canManage" class="card stack" aria-labelledby="manage-title">
@@ -381,6 +393,29 @@ async function saveSummary(): Promise<void> {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+}
+
+/* Bureau : bilan et démarches de la soirée */
+.board {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.board h2 {
+  margin: 0 0 0.25rem;
+}
+
+.board p {
+  margin: 0;
+}
+
+.board__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .link-button {

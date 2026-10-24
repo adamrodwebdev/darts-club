@@ -3,6 +3,7 @@
 namespace App\Tests\Functional;
 
 use App\Entity\User;
+use App\Enum\Role;
 use App\Security\PurgeUnverifiedAccounts;
 use App\Security\PurgeUnverifiedAccountsHandler;
 use App\Tests\ApiTestCase;
@@ -64,6 +65,39 @@ final class PasswordResetTest extends ApiTestCase
         self::assertResponseStatusCodeSame(422);
         $this->resetPassword(str_replace('token=', 'token=x', $query), self::NEW_PASSWORD);
         self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testTheAdministratorSendsTheLinkToAMemberWhoForgotTheirPassword(): void
+    {
+        $member = $this->createUser('alice@example.com');
+        $president = $this->createUser('president@example.com');
+        $president->grantRole(Role::President);
+        $admin = $this->createUser('admin@example.com');
+        $admin->grantRole(Role::Admin);
+        $this->entityManager()->flush();
+        $presidentSecret = $this->enableTwoFactor($president);
+        $adminSecret = $this->enableTwoFactor($admin);
+        $uri = "/api/admin/members/{$member->getId()->toRfc4122()}/password-link";
+
+        // Réservé à l'administrateur
+        $this->loginWithTwoFactor('president@example.com', $presidentSecret);
+        $this->postJson($uri, []);
+        self::assertResponseStatusCodeSame(403);
+
+        $this->client->getCookieJar()->clear();
+        $this->loginWithTwoFactor('admin@example.com', $adminSecret);
+        $this->postJson($uri, []);
+        self::assertResponseStatusCodeSame(202);
+        self::assertSame(['member.password_link'], array_column($this->auditTrail(), 'action'));
+
+        // Le lien part à l'adresse de l'adhérent, qui choisit son mot de passe
+        self::assertEmailCount(1);
+        $email = self::getMailerMessage();
+        self::assertNotNull($email);
+        self::assertEmailAddressContains($email, 'To', 'alice@example.com');
+        self::assertEmailTextBodyContains($email, 'L\'administrateur du club t\'envoie ce lien');
+        $this->resetPassword($this->resetQuery(), self::NEW_PASSWORD);
+        self::assertResponseStatusCodeSame(204);
     }
 
     public function testAccountsNeverConfirmedAreDeletedAfterAWeek(): void

@@ -9,6 +9,7 @@ use App\Admin\BroadcastAudience;
 use App\Admin\BroadcastDraft;
 use App\Admin\BroadcastLabel;
 use App\Admin\MemberAdministration;
+use App\Admin\MemberPasswordLinks;
 use App\Admin\PresidentialBroadcast;
 use App\Announcement\AnnouncementText;
 use App\Entity\Announcement;
@@ -125,6 +126,16 @@ final class AdminController extends AbstractController
         $administration->resetPasskeys($actor, $member);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    /** Mot de passe oublié : l'adhérent reçoit le lien par email (administrateur seulement) */
+    #[Route('/members/{id}/password-link', name: 'member_password_link', requirements: ['id' => self::UUID], methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function sendPasswordLink(User $member, #[CurrentUser] User $actor, MemberPasswordLinks $links): Response
+    {
+        $links->send($actor, $member);
+
+        return new Response(status: Response::HTTP_ACCEPTED);
     }
 
     #[Route('/members/{id}/suspend', name: 'member_suspend', requirements: ['id' => self::UUID], methods: ['POST'])]

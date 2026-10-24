@@ -111,7 +111,8 @@ describe('PasskeyService', () => {
       const attempt = new PasskeyService(api, fakeBrowser({ error }).browser, () => true).login()
       await expect(attempt).rejects.toMatchObject({ name: 'PasskeyError', failure })
     }
-    expect(new PasskeyError('cancelled').message).toBe('Clé d’accès non utilisée : réessaie quand tu veux.')
+    // Typographie française : espace insécable avant les deux-points
+    expect(new PasskeyError('cancelled').message).toBe('Clé d’accès non utilisée : réessaie quand tu veux.')
   })
 
   it('neither loads the library nor calls the API without WebAuthn', async () => {

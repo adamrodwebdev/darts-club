@@ -41,6 +41,12 @@ final readonly class Money implements \Stringable
         return new self($this->cents + $other->cents);
     }
 
+    /** Prix unitaire × quantité */
+    public function times(int $quantity): self
+    {
+        return new self($this->cents * $quantity);
+    }
+
     /** Reste à payer, jamais négatif */
     public function remainingAfter(self $paid): self
     {

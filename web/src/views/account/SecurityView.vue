@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseField from '@/components/BaseField.vue'
 import PasskeySettings from '@/components/PasskeySettings.vue'
+import PasswordRules from '@/components/PasswordRules.vue'
 import TwoFactorSettings from '@/components/TwoFactorSettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useServices } from '@/services'
@@ -18,6 +19,7 @@ const { t } = useI18n()
 
 const currentPassword = ref('')
 const newPassword = ref('')
+const rulesId = useId()
 const changed = ref(false)
 const password = useAsyncAction()
 
@@ -64,9 +66,11 @@ async function deleteAccount(): Promise<void> {
           type="password"
           autocomplete="new-password"
           required
-          :hint="t('account.security.newPasswordHint')"
           :error="password.fieldErrors.value.newPassword"
-        />
+          :describedby="rulesId"
+        >
+          <PasswordRules :id="rulesId" :password="newPassword" />
+        </BaseField>
         <p v-if="password.error.value" class="notice notice--error" role="alert">{{ password.error.value }}</p>
         <p v-if="changed" class="notice notice--success" role="status">{{ t('account.security.passwordChanged') }}</p>
         <BaseButton type="submit" :pending="password.pending.value">{{ t('common.edit') }}</BaseButton>

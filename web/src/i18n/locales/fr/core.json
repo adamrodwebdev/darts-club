@@ -36,7 +36,12 @@
     "confirmEmail": "Confirmer mon adresse",
     "forgotPassword": "Mot de passe oublié",
     "resetPassword": "Nouveau mot de passe",
-    "passkeySetup": "Clé d’accès"
+    "passkeySetup": "Clé d’accès",
+    "eventPoster": "Affiche QR",
+    "eventAccounts": "Bilan de la soirée",
+    "eventDocuments": "Démarches de la soirée",
+    "eventDocument": "Document de la soirée",
+    "associationProfile": "Fiche de l’association"
   },
   "app": {
     "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
@@ -102,7 +107,8 @@
     "justNow": "à l’instant",
     "badges": "Badges",
     "overdue": "en retard",
-    "board": "Bureau"
+    "board": "Bureau",
+    "showPassword": "Afficher la saisie"
   },
   "errors": {
     "fields": "Vérifie les champs indiqués.",
@@ -249,7 +255,6 @@
       "checkInboxText": "Si l’adresse est valide, tu viens de recevoir un lien pour activer ton compte.",
       "phone": "Téléphone (facultatif)",
       "phoneHint": "Pour être joint par le bureau, jamais affiché aux autres adhérents.",
-      "passwordHint": "12 caractères minimum. Une phrase de passe est idéale.",
       "submit": "Créer mon compte",
       "alreadyMember": "Déjà membre ?",
       "login": "Se connecter"
@@ -348,7 +353,8 @@
         "suspend": "Compte suspendu",
         "reactivate": "Compte réactivé",
         "approve": "Compte validé",
-        "passkeys_reset": "Accès réinitialisé (clés d’accès)"
+        "passkeys_reset": "Accès réinitialisé (clés d’accès)",
+        "password_link": "Lien de mot de passe envoyé"
       },
       "broadcast": {
         "send": "Message diffusé"
@@ -383,7 +389,35 @@
       },
       "guest": {
         "remove": "Invité retiré"
+      },
+      "accounts": {
+        "item_add": "Article ajouté au bilan",
+        "item_edit": "Article du bilan modifié",
+        "item_remove": "Article retiré du bilan",
+        "entry_add": "Ligne ajoutée au bilan",
+        "entry_edit": "Ligne du bilan modifiée",
+        "entry_remove": "Ligne retirée du bilan",
+        "flags": "Compteurs du bilan modifiés",
+        "receipt_add": "Justificatif ajouté",
+        "receipt_remove": "Justificatif retiré",
+        "close": "Bilan clôturé",
+        "reopen": "Bilan rouvert"
+      },
+      "procedure": {
+        "save": "Document de démarche enregistré",
+        "status": "Avancement d’une démarche changé"
+      },
+      "association": {
+        "update": "Fiche de l’association modifiée",
+        "insurance": "Attestation d’assurance rangée"
       }
     }
+  },
+  "passwordRules": {
+    "length": "{n} caractères au moins",
+    "digit": "un chiffre",
+    "special": "un caractère spécial (! ? {'@'} # …)",
+    "met": "(respecté)",
+    "unmet": "(à respecter)"
   }
 }

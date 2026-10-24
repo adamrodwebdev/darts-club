@@ -38,7 +38,13 @@
       "resetNext": "À sa prochaine connexion avec son mot de passe, {name} créera une nouvelle clé avant de retrouver le bureau.",
       "resetNotice": "Un email prévient {name}. L’opération est inscrite au journal.",
       "reset": "Réinitialiser",
-      "resetDone": "Accès de {name} réinitialisé."
+      "resetDone": "Accès de {name} réinitialisé.",
+      "passwordLink": "Envoyer un lien de mot de passe",
+      "passwordLinkTitle": "Envoyer un lien de mot de passe à {name} ?",
+      "passwordLinkText": "{name} reçoit à {email} un lien valable une heure pour choisir un nouveau mot de passe.",
+      "passwordLinkPrivate": "Tu ne vois jamais ce lien ; son mot de passe actuel reste valable tant que le lien n’a pas servi.",
+      "passwordLinkSend": "Envoyer",
+      "passwordLinkSent": "Lien envoyé à {email}."
     },
     "broadcast": {
       "title": "Nouveau message",
@@ -86,8 +92,18 @@
         "created": "Créées",
         "author": "Auteur",
         "recipients": "Destinataires",
-        "name": "Nom"
-      }
+        "name": "Nom",
+        "item": "Article",
+        "entry": "Ligne",
+        "receipt": "Justificatif",
+        "temporary_bar": "Buvette temporaire",
+        "tax_exempt": "Soirée exonérée",
+        "document": "Démarche",
+        "status": "Avancement",
+        "valid_until": "Valable jusqu’au"
+      },
+      "yes": "oui",
+      "no": "non"
     }
   }
 }

@@ -3,17 +3,17 @@
   <p class="notice">Les champs entre crochets sont à compléter par le bureau de l’association.</p>
 
   <h2>Responsable du traitement</h2>
-  <p>Skull Darts 71, Bellevesvre (Saône-et-Loire), représentée par [président(e)]. Contact : [email].</p>
+  <p>Skull Darts 71, Bellevesvre (Saône-et-Loire), représentée par [président(e)]. Contact&nbsp;: [email].</p>
 
   <h2>Données collectées et finalités</h2>
   <ul>
-    <li><strong>Compte</strong> : email, pseudo, téléphone (facultatif), avatar (facultatif) — gestion des adhérents (exécution de l’adhésion).</li>
-    <li><strong>Cotisations</strong> : montants, dates et moyens de paiement — tenue de la comptabilité (obligation légale).</li>
-    <li><strong>Messagerie, événements, photos, posts</strong> : vie du club (intérêt légitime de l’association).</li>
-    <li><strong>Notifications push</strong> : abonnement technique du navigateur, uniquement si tu l’actives (consentement).</li>
+    <li><strong>Compte</strong>&nbsp;: email, pseudo, téléphone (facultatif), avatar (facultatif) — gestion des adhérents (exécution de l’adhésion).</li>
+    <li><strong>Cotisations</strong>&nbsp;: montants, dates et moyens de paiement — tenue de la comptabilité (obligation légale).</li>
+    <li><strong>Messagerie, événements, photos, posts</strong>&nbsp;: vie du club (intérêt légitime de l’association).</li>
+    <li><strong>Notifications push</strong>&nbsp;: abonnement technique du navigateur, uniquement si tu l’actives (consentement).</li>
     <li>
-      <strong>Réponses sans compte à un événement public</strong> : prénom ou pseudo, email et réponse (« Je viens » ou
-      « Pas sûr ») — confirmation de la réponse, rappel la veille, avis de changement ou d’annulation (consentement,
+      <strong>Réponses sans compte à un événement public</strong>&nbsp;: prénom ou pseudo, email et réponse («&nbsp;Je viens&nbsp;» ou
+      «&nbsp;Pas sûr&nbsp;») — confirmation de la réponse, rappel la veille, avis de changement ou d’annulation (consentement,
       donné en cochant la case du formulaire).
     </li>
   </ul>
@@ -22,18 +22,18 @@
   <p>
     Les membres du bureau, selon leur rôle (trésorier pour les cotisations, etc.). Les autres adhérents voient seulement
     ton pseudo, ton avatar et tes badges — jamais ton email ni ton téléphone. Les réponses sans compte ne sont visibles
-    que des organisateurs de l’événement ; le public ne voit que des compteurs. Aucune donnée n’est vendue ni cédée.
+    que des organisateurs de l’événement&nbsp;; le public ne voit que des compteurs. Aucune donnée n’est vendue ni cédée.
   </p>
 
   <h2>Durées de conservation</h2>
   <ul>
-    <li>Compte : jusqu’à sa suppression par toi ou par le bureau.</li>
+    <li>Compte&nbsp;: jusqu’à sa suppression par toi ou par le bureau.</li>
     <li>
-      Réponses sans compte : 48 heures si elles ne sont pas confirmées, sinon 30 jours après l’événement. Tu peux les
+      Réponses sans compte&nbsp;: 48 heures si elles ne sont pas confirmées, sinon 30 jours après l’événement. Tu peux les
       retirer à tout moment avec le lien reçu par email.
     </li>
-    <li>Pièces comptables (cotisations) : 10 ans, détachées de ton compte s’il est supprimé.</li>
-    <li>Journal d’administration : [durée à définir].</li>
+    <li>Pièces comptables (cotisations)&nbsp;: 10 ans, détachées de ton compte s’il est supprimé.</li>
+    <li>Journal d’administration&nbsp;: [durée à définir].</li>
   </ul>
 
   <h2>Hébergement des données</h2>
@@ -50,17 +50,17 @@
 
   <h2>Tes droits</h2>
   <p>
-    Accès, rectification, effacement, portabilité, opposition : depuis <em>Mon compte → Sécurité</em> tu peux
-    télécharger toutes tes données et supprimer ton compte. Pour toute autre demande : [email]. Tu peux aussi saisir
+    Accès, rectification, effacement, portabilité, opposition&nbsp;: depuis <em>Mon compte → Sécurité</em> tu peux
+    télécharger toutes tes données et supprimer ton compte. Pour toute autre demande&nbsp;: [email]. Tu peux aussi saisir
     la CNIL (cnil.fr).
   </p>
 
   <h2>Mesure d’audience des annonces d’événements</h2>
   <p>
     Pour savoir combien de personnes différentes voient l’annonce d’un événement, le site enregistre une empreinte
-    irréversible, sans cookie : celle de ton compte si tu es connecté(e), sinon celle de ton adresse IP et de ton
+    irréversible, sans cookie&nbsp;: celle de ton compte si tu es connecté(e), sinon celle de ton adresse IP et de ton
     navigateur (l’adresse IP elle-même n’est jamais conservée). La clé qui permet de calculer ces empreintes est propre
-    à chaque événement et détruite 30 jours après lui ; le détail est supprimé au bout de 13 mois, seuls des totaux
+    à chaque événement et détruite 30 jours après lui&nbsp;; le détail est supprimé au bout de 13 mois, seuls des totaux
     restent. Ces statistiques ne sont visibles que de l’administrateur du site et ne servent qu’à la vie du club
     (mesure d’audience exemptée de consentement selon les recommandations de la CNIL).
   </p>
@@ -69,6 +69,6 @@
   <p>
     Uniquement des cookies techniques nécessaires au fonctionnement (session, indicateur de connexion, temps réel).
     Les préférences d’affichage (thème, langue) restent dans ton navigateur.
-    Aucun cookie publicitaire ni de mesure d’audience : aucun bandeau de consentement n’est donc nécessaire.
+    Aucun cookie publicitaire ni de mesure d’audience&nbsp;: aucun bandeau de consentement n’est donc nécessaire.
   </p>
 </template>

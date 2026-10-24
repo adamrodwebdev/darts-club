@@ -72,7 +72,10 @@ onMounted(refresh)
   <section v-else class="page stack">
     <div class="head">
       <h1>{{ t('events.list.title') }}</h1>
-      <RouterLink v-if="canManage" to="/evenements/nouveau" class="cta">{{ t('events.list.create') }}</RouterLink>
+      <div v-if="canManage" class="head__actions">
+        <RouterLink :to="{ name: 'event-poster' }" class="cta cta--ghost">{{ t('events.list.qrPoster') }}</RouterLink>
+        <RouterLink to="/evenements/nouveau" class="cta">{{ t('events.list.create') }}</RouterLink>
+      </div>
     </div>
 
     <div class="tabs" role="tablist" :aria-label="t('events.list.periodLabel')">
@@ -112,6 +115,18 @@ onMounted(refresh)
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cta.cta--ghost {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
 }
 
 .cta {
