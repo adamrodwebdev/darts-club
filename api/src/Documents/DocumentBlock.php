@@ -2,6 +2,8 @@
 
 namespace App\Documents;
 
+use App\Translation\FrenchTypography;
+
 /**
  * Morceau d'un document, repéré par un identifiant stable : le secrétariat peut en réécrire le texte.
  * Le texte suit la typographie française (espaces insécables), qu'il vienne du modèle ou d'une réécriture.

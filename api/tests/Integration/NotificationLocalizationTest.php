@@ -29,7 +29,8 @@ final class NotificationLocalizationTest extends KernelTestCase
         );
 
         $fr = $notification->localize($this->translator(), 'fr');
-        self::assertSame('[Événement] Nouvel événement : Soirée fléchettes', $fr->labelledTitle());
+        // Français : espace insécable avant les deux-points ; anglais : texte tel qu'écrit
+        self::assertSame("[Événement] Nouvel événement\u{00A0}: Soirée fléchettes", $fr->labelledTitle());
         self::assertSame('Vendredi 16 octobre à 20:00 · Bar du club', $fr->body);
 
         $en = $notification->localize($this->translator(), 'en');

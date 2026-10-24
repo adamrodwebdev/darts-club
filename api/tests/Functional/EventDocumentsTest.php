@@ -4,10 +4,10 @@ namespace App\Tests\Functional;
 
 use App\ClubEvent\EventDetails;
 use App\Documents\DocumentType;
-use App\Documents\FrenchTypography;
 use App\Entity\ClubEvent;
 use App\Enum\Role;
 use App\Tests\ApiTestCase;
+use App\Translation\FrenchTypography;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
