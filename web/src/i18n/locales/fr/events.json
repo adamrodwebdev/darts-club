@@ -10,7 +10,8 @@
       "allSeasons": "Toutes",
       "search": "Rechercher (titre, lieu)",
       "emptyUpcoming": "Aucun événement prévu pour le moment.",
-      "emptyPast": "Aucune archive pour ces critères."
+      "emptyPast": "Aucune archive pour ces critères.",
+      "qrPoster": "Affiche QR"
     },
     "detail": {
       "back": "← Événements",
@@ -111,7 +112,8 @@
       "title": "Page publique",
       "text": "Toute personne, même sans compte, peut y répondre « Je viens » ou « Pas sûr ». Seule la ville ({city}) y est affichée.",
       "copy": "Copier le lien",
-      "copied": "Lien copié"
+      "copied": "Lien copié",
+      "qrPoster": "Affiche QR"
     },
     "guests": {
       "title": "Invités sans compte ({count})",
@@ -138,6 +140,32 @@
       "closed": "Mesure terminée (30 jours après l’événement) : les chiffres sont définitifs.",
       "archived": "Détail supprimé après 13 mois : seuls les totaux sont conservés.",
       "export": "Exporter (CSV)"
+    },
+    "qrPoster": {
+      "title": "Affiche QR",
+      "intro": "Pose-la sur les tables pendant les soirées : un scan et on arrive sur le site, ou sur la page de la soirée pour répondre.",
+      "target": "Le QR code mène vers",
+      "targetSite": "Le site du club",
+      "noPublicEvening": "Aucune soirée publique à venir : seule l’affiche du site est proposée.",
+      "ink": "Fond",
+      "inkLight": "Blanc",
+      "inkLightHint": "économise l’encre",
+      "inkDark": "Noir",
+      "inkDarkHint": "aux couleurs du club, pour un imprimeur",
+      "size": "Format",
+      "sizeA5Hint": "demi-feuille",
+      "print": "Imprimer l’affiche",
+      "download": "Télécharger le QR code (SVG)",
+      "printHint": "Teste le QR code avec ton téléphone avant de l’afficher.",
+      "preview": "Aperçu",
+      "siteHeading": "Rejoins le club",
+      "siteSubheading": "Fléchettes, fuzz et amitié · Bellevesvre",
+      "siteCta": "Scanne avec l’appareil photo de ton téléphone",
+      "eventCta": "Scanne pour répondre",
+      "footer": "Association loi 1901 · Skull Darts 71",
+      "qrAlt": "QR code vers {address}",
+      "sizeA5": "A5",
+      "sizeA4": "A4"
     }
   },
   "publicEvent": {

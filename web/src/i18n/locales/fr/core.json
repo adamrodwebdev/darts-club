@@ -35,7 +35,8 @@
     "guestResponse": "Ma réponse",
     "confirmEmail": "Confirmer mon adresse",
     "forgotPassword": "Mot de passe oublié",
-    "resetPassword": "Nouveau mot de passe"
+    "resetPassword": "Nouveau mot de passe",
+    "eventPoster": "Affiche QR"
   },
   "app": {
     "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",

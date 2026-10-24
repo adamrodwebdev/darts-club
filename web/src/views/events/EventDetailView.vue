@@ -176,6 +176,7 @@ async function saveSummary(): Promise<void> {
         <div class="actions">
           <a :href="publicUrl" target="_blank" rel="noopener" class="share__url">{{ publicUrl }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
           <BaseButton variant="ghost" @click="copyPublicLink">{{ copied ? t('events.share.copied') : t('events.share.copy') }}</BaseButton>
+          <RouterLink v-if="detail.canManage" :to="{ name: 'event-poster', query: { soiree: event.id } }" class="link-button">{{ t('events.share.qrPoster') }}</RouterLink>
         </div>
         <p class="visually-hidden" role="status"><template v-if="copied">{{ t('events.share.copied') }}</template></p>
       </section>

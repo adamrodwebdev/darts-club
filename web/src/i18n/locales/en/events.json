@@ -10,7 +10,8 @@
       "allSeasons": "All",
       "search": "Search (title, venue)",
       "emptyUpcoming": "No events planned for now.",
-      "emptyPast": "No archived events match these filters."
+      "emptyPast": "No archived events match these filters.",
+      "qrPoster": "QR poster"
     },
     "detail": {
       "back": "← Events",
@@ -111,7 +112,8 @@
       "title": "Public page",
       "text": "Anyone, even without an account, can answer “I’m coming” or “Not sure” there. Only the city ({city}) is shown.",
       "copy": "Copy the link",
-      "copied": "Link copied"
+      "copied": "Link copied",
+      "qrPoster": "QR poster"
     },
     "guests": {
       "title": "Guests without an account ({count})",
@@ -138,6 +140,32 @@
       "closed": "Measurement ended (30 days after the event): figures are final.",
       "archived": "Detail deleted after 13 months: only totals are kept.",
       "export": "Export (CSV)"
+    },
+    "qrPoster": {
+      "title": "QR poster",
+      "intro": "Put it on the tables during club nights: one scan opens the website, or the evening’s page to reply.",
+      "target": "The QR code opens",
+      "targetSite": "The club’s website",
+      "noPublicEvening": "No upcoming public evening: only the website poster is available.",
+      "ink": "Background",
+      "inkLight": "White",
+      "inkLightHint": "saves ink",
+      "inkDark": "Black",
+      "inkDarkHint": "in the club’s colours, for a print shop",
+      "size": "Size",
+      "sizeA5Hint": "half sheet",
+      "print": "Print the poster",
+      "download": "Download the QR code (SVG)",
+      "printHint": "Test the QR code with your phone before putting it up.",
+      "preview": "Preview",
+      "siteHeading": "Join the club",
+      "siteSubheading": "Darts, fuzz and friendship · Bellevesvre",
+      "siteCta": "Scan with your phone’s camera",
+      "eventCta": "Scan to reply",
+      "footer": "Non-profit association · Skull Darts 71",
+      "qrAlt": "QR code to {address}",
+      "sizeA5": "A5",
+      "sizeA4": "A4"
     }
   },
   "publicEvent": {
