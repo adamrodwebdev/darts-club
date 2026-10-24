@@ -11,6 +11,10 @@ describe('PasswordPolicy', () => {
     expect(unmet('f3!')).toEqual(['length'])
   })
 
+  it('meets no rule while the field is empty', () => {
+    expect(unmet('')).toEqual(['length', 'digit', 'special'])
+  })
+
   it('counts accents as letters, spaces as special characters, an emoji as one character', () => {
     expect(meetsRule('é', 'special')).toBe(false)
     expect(meetsRule('é', 'special')).toBe(false)
