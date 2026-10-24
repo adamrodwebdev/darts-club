@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { bool, obj, strList } from '@/models/guards'
+import { bool, obj, str, strList } from '@/models/guards'
 import { Profile } from '@/models/Profile'
 
 export interface Registration {
@@ -11,8 +11,14 @@ export interface Registration {
 export const OAUTH_PROVIDERS = ['google', 'discord'] as const
 export type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 
-/** Mot de passe accepté : session complète, ou code 2FA attendu. */
-export type LoginResult = { status: 'authenticated'; profile: Profile } | { status: 'two-factor' }
+/** Deuxième étape : code TOTP (administrateur, membres qui l'ont choisi) ou clé d'accès (bureau) */
+export type TwoFactorMethod = 'totp' | 'passkey'
+
+/** Identifiants acceptés : session complète, ou deuxième étape attendue. */
+export type LoginResult = { status: 'authenticated'; profile: Profile } | { status: 'two-factor'; method: TwoFactorMethod }
+
+/** Suite d'une connexion : session ouverte, ou méthode de la deuxième étape */
+export type LoginStep = 'authenticated' | TwoFactorMethod
 
 export interface TwoFactorSetup {
   secret: string
@@ -40,9 +46,15 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<LoginResult> {
-    const data = await this.api.post('/api/auth/login', { email, password })
-    if (obj(data).twoFactorRequired !== undefined && bool(obj(data).twoFactorRequired)) {
-      return { status: 'two-factor' }
+    return AuthService.loginResult(await this.api.post('/api/auth/login', { email, password }))
+  }
+
+  /** Réponse d'une connexion, par mot de passe ou par clé d'accès */
+  static loginResult(data: unknown): LoginResult {
+    const d = obj(data)
+    if (d.twoFactorRequired !== undefined && bool(d.twoFactorRequired)) {
+      // Sans « method » (API plus ancienne) : le code TOTP
+      return { status: 'two-factor', method: d.method === 'passkey' ? 'passkey' : 'totp' }
     }
     return { status: 'authenticated', profile: Profile.parse(data) }
   }
@@ -63,6 +75,32 @@ export class AuthService {
 
   async resendVerification(email: string): Promise<void> {
     await this.api.post('/api/auth/verify/resend', { email })
+  }
+
+  /**
+   * Paramètres d'un lien reçu par email (confirmation d'adresse, nouveau mot de passe), recopiés tels
+   * quels vers l'API : seulement les clés attendues, une seule valeur chacune.
+   */
+  static linkQuery(query: Readonly<Record<string, unknown>>, keys: readonly string[]): string {
+    const params = new URLSearchParams()
+    for (const key of keys) {
+      const value = query[key]
+      if (typeof value === 'string') params.set(key, value)
+    }
+    return params.toString()
+  }
+
+  /** Confirme l'adresse avec le mot de passe choisi à l'inscription ; renvoie l'email du compte. */
+  async confirmEmail(linkQuery: string, password: string): Promise<string> {
+    return str(obj(await this.api.post(`/api/auth/verify?${linkQuery}`, { password })).email)
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.api.post('/api/auth/password/forgot', { email })
+  }
+
+  async resetPassword(linkQuery: string, password: string): Promise<void> {
+    await this.api.post(`/api/auth/password/reset?${linkQuery}`, { password })
   }
 
   /** Fournisseurs configurés sur le serveur (aucun bouton si l'API est injoignable). */

@@ -201,6 +201,8 @@ final class DemoSeedCommand
             $this->clock->now(),
         );
         $user->markVerified();
+        $user->approve($this->clock->now());
+        $user->releaseEvents();
         $user->rename(DisplayName::fromString($name));
         if (null !== $role) {
             $user->grantRole($role);

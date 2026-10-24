@@ -43,6 +43,7 @@ final class OperationsTest extends ApiTestCase
         $user = $this->entityManager()->getRepository(User::class)->findOneBy(['email' => 'bureau@example.com']);
         self::assertNotNull($user);
         self::assertContains('ROLE_PRESIDENT', $user->getRoles());
-        self::assertTrue($user->mustSetUpTwoFactor());
+        // Bureau : une clé d'accès avant les fonctions de la présidence
+        self::assertTrue($user->mustSetUpPasskey());
     }
 }

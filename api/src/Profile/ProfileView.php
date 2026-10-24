@@ -34,6 +34,11 @@ final class ProfileView
             'hasPassword' => $user->hasPassword(),
             'twoFactorEnabled' => $user->hasTwoFactor(),
             'twoFactorSetupRequired' => $user->mustSetUpTwoFactor(),
+            // Bureau hors administrateur : la clé d'accès remplace le code (obligatoire sans code actif)
+            'passkeyRequired' => $user->requiresPasskey(),
+            'passkeySetupRequired' => $user->mustSetUpPasskey(),
+            'hasPasskey' => $user->hasPasskey(),
+            'approved' => $user->isApproved(),
             'preferences' => ['language' => $user->language()->value, 'theme' => $user->theme()->value],
         ];
     }

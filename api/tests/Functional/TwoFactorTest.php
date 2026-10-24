@@ -102,15 +102,16 @@ final class TwoFactorTest extends ApiTestCase
         self::assertResponseStatusCodeSame(429);
     }
 
-    public function testBoardMemberMustEnableTwoFactor(): void
+    public function testTheAdministratorMustEnableTwoFactor(): void
     {
-        $treasurer = $this->createUser('treasurer@example.com');
-        $treasurer->grantRole(Role::Treasurer);
+        $admin = $this->createUser('admin@example.com');
+        $admin->grantRole(Role::Admin);
         $this->entityManager()->flush();
 
-        $this->login('treasurer@example.com', self::PASSWORD);
+        $this->login('admin@example.com', self::PASSWORD);
         $this->client->request('GET', '/api/me');
         self::assertTrue($this->json()['twoFactorSetupRequired']);
+        self::assertFalse($this->json()['passkeyRequired'], 'L\'administrateur garde le code TOTP');
 
         // Fonctions du club bloquées, configuration du compte autorisée
         $this->client->request('GET', '/api/conversations');
@@ -118,6 +119,22 @@ final class TwoFactorTest extends ApiTestCase
         self::assertSame('two_factor_setup_required', $this->json()['code']);
 
         $this->postJson('/api/me/2fa/setup', []);
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testABoardMemberWithACodeKeepsAccessUntilTheirPasskey(): void
+    {
+        $treasurer = $this->createUser('treasurer@example.com');
+        $treasurer->grantRole(Role::Treasurer);
+        $this->entityManager()->flush();
+        $this->loginWithTwoFactor('treasurer@example.com', $this->enableTwoFactor($treasurer));
+
+        // Son code suffit encore ; le site l'invite à créer sa clé d'accès
+        $this->client->request('GET', '/api/me');
+        self::assertTrue($this->json()['passkeyRequired']);
+        self::assertFalse($this->json()['passkeySetupRequired']);
+        self::assertFalse($this->json()['hasPasskey']);
+        $this->client->request('GET', '/api/conversations');
         self::assertResponseIsSuccessful();
     }
 
@@ -130,7 +147,11 @@ final class TwoFactorTest extends ApiTestCase
         $this->request('DELETE', '/api/me/2fa', ['code' => '000000']);
         self::assertResponseStatusCodeSame(422);
 
+        // Le code de la connexion a déjà servi : il ne désactive rien (usage unique)
         $this->request('DELETE', '/api/me/2fa', ['code' => $this->totpCode($secret)]);
+        self::assertResponseStatusCodeSame(422);
+
+        $this->request('DELETE', '/api/me/2fa', ['code' => 'AAAAA 11111']);
         self::assertResponseStatusCodeSame(204);
 
         $this->entityManager()->clear();

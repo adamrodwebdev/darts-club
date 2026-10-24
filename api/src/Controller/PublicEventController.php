@@ -139,9 +139,11 @@ final class PublicEventController extends AbstractController
     }
 
     #[Route('/api/public/responses/confirm', name: 'public_response_confirm', methods: ['POST'], format: 'json')]
-    public function confirm(Request $request, RateLimiterFactoryInterface $guestTokenLimiter): JsonResponse
+    public function confirm(Request $request, RateLimiterFactoryInterface $guestTokenLimiter, RateLimiterFactoryInterface $guestConfirmEventLimiter): JsonResponse
     {
         $response = $this->response($request, $guestTokenLimiter);
+        // 30 confirmations par jour et par événement : des adresses jetables ne remplissent pas toutes les places
+        $this->requestThrottle->consume($guestConfirmEventLimiter, 'event-'.$response->getEvent()->getId()->toRfc4122());
         DomainCall::run(fn () => $this->guests->confirm($response));
 
         return $this->json($this->responseView($response));

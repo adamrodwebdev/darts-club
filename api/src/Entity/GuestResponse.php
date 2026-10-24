@@ -33,6 +33,13 @@ class GuestResponse
     #[ORM\Column(length: DisplayName::MAX)]
     private string $name;
 
+    /**
+     * Nom d'une nouvelle demande pour la même adresse : appliqué à sa confirmation seulement. Quiconque
+     * connaît l'adresse d'un invité peut renvoyer le formulaire ; sans l'email, il ne renomme personne.
+     */
+    #[ORM\Column(length: DisplayName::MAX, nullable: true)]
+    private ?string $pendingName = null;
+
     #[ORM\Column(length: 180)]
     private string $email;
 
@@ -85,7 +92,7 @@ class GuestResponse
     /** Nouvelle demande pour la même adresse : nouveau lien, nouvelle réponse à confirmer. */
     public function reissue(GuestRequest $request, string $tokenHash, \DateTimeImmutable $now): void
     {
-        $this->name = $request->name->value;
+        $this->pendingName = $request->name->value;
         $this->pendingAnswer = $request->answer;
         $this->tokenHash = $tokenHash;
         $this->tokenIssuedAt = $now;
@@ -104,6 +111,8 @@ class GuestResponse
 
         $this->answer = $this->pendingAnswer;
         $this->pendingAnswer = null;
+        $this->name = $this->pendingName ?? $this->name;
+        $this->pendingName = null;
         $this->confirmedAt ??= $now;
     }
 

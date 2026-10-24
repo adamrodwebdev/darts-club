@@ -1,0 +1,7 @@
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
+
+{{ 'provider_linked.intro'|trans({'%provider%': provider}) }}
+{{ 'provider_linked.not_you'|trans }}
+
+{{ 'provider_linked.button'|trans }} : {{ securityUrl }}

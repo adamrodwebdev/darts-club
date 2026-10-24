@@ -12,6 +12,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 /** Balayage des largeurs de 320 à 2560 px : une seule fois, en Chromium bureau */
 const SWEEP = /responsive\.spec\.ts$/
+/** Clés d'accès réelles (authentificateur virtuel du protocole de Chromium) : projets Chromium seulement */
+const WEBAUTHN = /@webauthn/
 
 export default defineConfig({
   testDir: './e2e',
@@ -68,6 +70,7 @@ export default defineConfig({
         ...devices['Desktop Firefox'],
       },
       testIgnore: SWEEP,
+      grepInvert: WEBAUTHN,
     },
     {
       name: 'webkit',
@@ -75,6 +78,7 @@ export default defineConfig({
         ...devices['Desktop Safari'],
       },
       testIgnore: SWEEP,
+      grepInvert: WEBAUTHN,
     },
 
     /* Responsive design obligatoire : parcours testés sur mobile */
@@ -91,6 +95,7 @@ export default defineConfig({
         ...devices['iPhone 14'],
       },
       testIgnore: SWEEP,
+      grepInvert: WEBAUTHN,
     },
 
     /* Test against branded browsers. */

@@ -5,6 +5,11 @@ namespace App\Entity;
 use App\Doctrine\EncryptedStringType;
 use App\Enum\Role;
 use App\Event\DomainEventsTrait;
+use App\Event\MemberApproved;
+use App\Event\MemberAwaitingApproval;
+use App\Event\PasskeyAdded;
+use App\Event\PasskeysReset;
+use App\Event\ProviderLinked;
 use App\Event\RecordsDomainEvents;
 use App\Event\UserRegistered;
 use App\Notification\NotificationPreferences;
@@ -15,9 +20,10 @@ use App\ValueObject\DisplayName;
 use App\ValueObject\EmailAddress;
 use App\ValueObject\NewAccount;
 use App\ValueObject\PhoneNumber;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Scheb\TwoFactorBundle\Model\BackupCodeInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
@@ -28,7 +34,8 @@ use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface, BackupCodeInterface
+#[ORM\UniqueConstraint(name: 'uniq_user_passkey_handle', columns: ['passkey_handle'])]
+class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface
 {
     use DomainEventsTrait;
 
@@ -80,6 +87,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column]
     private bool $totpEnabled = false;
 
+    /** Dernier pas de temps TOTP accepté : un code déjà utilisé (ou plus ancien) ne sert plus */
+    #[ORM\Column(nullable: true)]
+    private ?int $totpLastTimestep = null;
+
+    /**
+     * Génération des sessions : chaque session note celle de sa connexion, et les sessions d'une
+     * génération passée sont fermées (activation de la 2FA, réinitialisation d'accès).
+     */
+    #[ORM\Column(options: ['default' => 0])]
+    private int $sessionGeneration = 0;
+
     /** Empreinte SHA-256 du jeton d'abonnement calendrier (le jeton n'est jamais stocké) */
     #[ORM\Column(length: 64, unique: true, nullable: true)]
     private ?string $calendarTokenHash = null;
@@ -92,7 +110,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     private ?string $suspensionReason = null;
 
     /**
-     * Empreintes SHA-256 des codes de secours non utilisés.
+     * Empreintes des codes de secours non utilisés (HMAC, clé du serveur ; SHA-256 seul pour les
+     * codes d'avant octobre 2026), calculées par App\Security\TwoFactor\BackupCodes.
      *
      * @var list<string>
      */
@@ -106,11 +125,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     #[ORM\Column(length: 6, enumType: Theme::class, options: ['default' => 'system'])]
     private Theme $theme = Theme::System;
 
+    /**
+     * Validé par le président ou l'administrateur : l'espace membres (annuaire, événements, photos,
+     * messagerie) n'est ouvert qu'ensuite. Une adresse confirmée ne suffit pas.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $approvedAt = null;
+
+    /** Identifiant WebAuthn de l'adhérent (32 octets aléatoires, base64url) : jamais son email ni son id */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $passkeyHandle = null;
+
+    /** @var Collection<int, Passkey> */
+    #[ORM\OneToMany(targetEntity: Passkey::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $passkeys;
+
     private function __construct(EmailAddress $email, \DateTimeImmutable $now)
     {
         $this->id = Uuid::v7();
         $this->email = $email->value;
         $this->createdAt = $now;
+        $this->passkeys = new ArrayCollection();
     }
 
     /** Inscription classique : le compte reste inactif jusqu'à la vérification de l'email. */
@@ -132,6 +167,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         $user->language = $language;
         $user->verified = true;
         $user->recordThat(new UserRegistered($user->id, viaOAuth: true));
+        $user->recordThat(new MemberAwaitingApproval($user->id));
 
         return $user;
     }
@@ -164,9 +200,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     }
 
     /** @return list<string> */
+    /** ROLE_MEMBER une fois validé ; avant, ROLE_USER seul (son compte, rien d'autre). Le bureau en hérite. */
     public function getRoles(): array
     {
-        return array_values(array_unique([...$this->roles, Role::Member->value]));
+        return array_values(array_unique([...$this->roles, $this->isApproved() ? Role::Member->value : 'ROLE_USER']));
+    }
+
+    public function isApproved(): bool
+    {
+        return null !== $this->approvedAt || $this->isBoardMember();
+    }
+
+    /** Validé par le bureau ; sans effet sur un compte déjà validé. */
+    public function approve(\DateTimeImmutable $now): void
+    {
+        if (!$this->verified) {
+            throw new \LogicException('Le compte doit être vérifié avant d\'être validé.');
+        }
+
+        if (null === $this->approvedAt) {
+            $this->approvedAt = $now;
+            $this->recordThat(new MemberApproved($this->id));
+        }
     }
 
     public function hasRole(Role $role): bool
@@ -201,8 +256,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return $this->verified;
     }
 
+    /** Adresse confirmée : le bureau est prévenu qu'un compte attend sa validation (MemberAwaitingApproval). */
     public function markVerified(): void
     {
+        if (!$this->verified && !$this->isApproved()) {
+            $this->recordThat(new MemberAwaitingApproval($this->id));
+        }
         $this->verified = true;
     }
 
@@ -216,7 +275,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         if (!$this->verified) {
             $this->password = '';
         }
-        $this->verified = true;
+        $this->markVerified();
+    }
+
+    /** Compte existant relié à un fournisseur OAuth : l'adresse est prouvée, et le titulaire en est averti. */
+    public function linkProvider(string $provider): void
+    {
+        $this->verifyThroughProvider();
+        $this->recordThat(new ProviderLinked($this->id, $provider));
     }
 
     public function getCreatedAt(): \DateTimeImmutable
@@ -280,16 +346,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
     /**
      * Étape 2 : l'adhérent a saisi un code valide.
      *
-     * @param list<string> $backupCodes codes en clair, seules leurs empreintes sont stockées
+     * @param list<string> $backupCodeHashes empreintes des codes de secours (BackupCodes), jamais les codes
      */
-    public function enableTotp(array $backupCodes): void
+    public function enableTotp(array $backupCodeHashes): void
     {
         if (null === $this->totpSecret) {
             throw new \LogicException('Aucune configuration TOTP en cours.');
         }
 
         $this->totpEnabled = true;
-        $this->backupCodes = array_map(self::hashBackupCode(...), $backupCodes);
+        $this->backupCodes = $backupCodeHashes;
+    }
+
+    /** Un code TOTP n'est accepté qu'une fois : son pas de temps doit suivre le dernier utilisé */
+    public function acceptsTotpTimestep(int $timestep): bool
+    {
+        return null === $this->totpLastTimestep || $timestep > $this->totpLastTimestep;
+    }
+
+    public function useTotpTimestep(int $timestep): void
+    {
+        if (!$this->acceptsTotpTimestep($timestep)) {
+            throw new \LogicException('Code TOTP déjà utilisé.');
+        }
+
+        $this->totpLastTimestep = $timestep;
+    }
+
+    /** Toutes les sessions ouvertes jusqu'ici sont fermées à leur prochaine requête. */
+    public function revokeSessions(): void
+    {
+        ++$this->sessionGeneration;
+    }
+
+    public function sessionGeneration(): int
+    {
+        return $this->sessionGeneration;
+    }
+
+    /** Session ouverte à cette génération (0 si inconnue) et fermée depuis par revokeSessions() */
+    public function isSessionRevoked(?int $generation): bool
+    {
+        return ($generation ?? 0) < $this->sessionGeneration;
     }
 
     public function disableTotp(): void
@@ -376,10 +474,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         return false;
     }
 
-    /** Politique du club : 2FA obligatoire pour le bureau. */
+    /**
+     * Politique du club : l'administrateur garde le code TOTP obligatoire ; le reste du bureau
+     * (président, trésorier, secrétaire) se connecte avec une clé d'accès (requiresPasskey).
+     */
     public function mustSetUpTwoFactor(): bool
     {
-        return $this->isBoardMember() && !$this->hasTwoFactor();
+        return $this->hasRole(Role::Admin) && !$this->hasTwoFactor();
+    }
+
+    /** Bureau hors administrateur : la clé d'accès remplace le code à 6 chiffres. */
+    public function requiresPasskey(): bool
+    {
+        return $this->isBoardMember() && !$this->hasRole(Role::Admin);
+    }
+
+    /**
+     * Fonctions du bureau bloquées : ni clé d'accès, ni code TOTP. Un membre du bureau qui a encore
+     * son code garde l'accès (le site l'invite à créer sa clé) ; aucun appareil n'est indispensable.
+     */
+    public function mustSetUpPasskey(): bool
+    {
+        return $this->requiresPasskey() && !$this->hasPasskey() && !$this->hasTwoFactor();
+    }
+
+    public function hasPasskey(): bool
+    {
+        return !$this->passkeys->isEmpty();
+    }
+
+    /** @return list<Passkey> */
+    public function passkeys(): array
+    {
+        return array_values($this->passkeys->toArray());
+    }
+
+    public function passkeyHandle(): ?string
+    {
+        return $this->passkeyHandle;
+    }
+
+    /** Identifiant WebAuthn tiré par l'appelant (TokenGenerator), une seule fois pour le compte. */
+    public function assignPasskeyHandle(string $handle): void
+    {
+        $this->passkeyHandle ??= $handle;
+    }
+
+    /**
+     * Nouvelle clé d'accès. Pour le bureau, elle remplace le code TOTP : son application n'est plus
+     * demandée (l'administrateur, lui, garde son code).
+     */
+    public function addPasskey(Passkey $passkey): void
+    {
+        $this->passkeys->add($passkey);
+        $this->recordThat(new PasskeyAdded($this->id));
+        if ($this->requiresPasskey() && $this->hasTwoFactor()) {
+            $this->disableTotp();
+        }
+    }
+
+    public function removePasskey(Passkey $passkey): void
+    {
+        $this->passkeys->removeElement($passkey);
+    }
+
+    /** Appareil perdu : toutes les clés retirées (réinitialisation par l'administrateur) */
+    public function removePasskeys(): void
+    {
+        if (!$this->passkeys->isEmpty()) {
+            $this->recordThat(new PasskeysReset($this->id));
+        }
+        $this->passkeys->clear();
     }
 
     public function hasTwoFactor(): bool
@@ -410,20 +575,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
             : null;
     }
 
-    public function isBackupCode(string $code): bool
+    public function hasBackupCode(string $hash): bool
     {
-        return \in_array(self::hashBackupCode($code), $this->backupCodes, true);
+        return \in_array($hash, $this->backupCodes, true);
     }
 
-    public function invalidateBackupCode(string $code): void
+    /** Code de secours utilisé : il ne servira plus */
+    public function useBackupCode(string $hash): void
     {
-        $hash = self::hashBackupCode($code);
         $this->backupCodes = array_values(array_filter($this->backupCodes, static fn (string $h): bool => $h !== $hash));
-    }
-
-    private static function hashBackupCode(string $code): string
-    {
-        return hash('sha256', strtolower(str_replace([' ', '-'], '', $code)));
     }
 
     public function notificationPreferences(): NotificationPreferences
@@ -453,6 +613,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
             $data["\0".self::class."\0domainEvents"],
             $data["\0".self::class."\0totpSecret"],
             $data["\0".self::class."\0backupCodes"],
+            $data["\0".self::class."\0passkeys"],
         );
         $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
 

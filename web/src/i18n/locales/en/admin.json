@@ -26,7 +26,19 @@
       "suspendHint": "They are signed out immediately and can no longer sign in or be contacted. This can be undone and is logged.",
       "reason": "Reason",
       "suspended": "{name} has been suspended and signed out.",
-      "reactivated": "{name} has been reactivated."
+      "reactivated": "{name} has been reactivated.",
+      "pending": "Waiting for approval",
+      "approve": "Approve",
+      "approved": "{name} can now use the members’ area.",
+      "passkeys": "no passkey | {n} passkey | {n} passkeys",
+      "passkeyMissing": "Passkey to create",
+      "resetAccess": "Reset access",
+      "resetTitle": "Reset {name}’s access?",
+      "resetKeys": "Their passkey will be removed and their sessions closed. | Their {n} passkeys will be removed and their sessions closed.",
+      "resetNext": "At their next login with their password, {name} will create a new passkey before getting back to the board tools.",
+      "resetNotice": "An email lets {name} know. The operation is recorded in the log.",
+      "reset": "Reset",
+      "resetDone": "{name}’s access has been reset."
     },
     "broadcast": {
       "title": "New message",
@@ -73,7 +85,8 @@
         "after": "After",
         "created": "Created",
         "author": "Author",
-        "recipients": "Recipients"
+        "recipients": "Recipients",
+        "name": "Name"
       }
     }
   }

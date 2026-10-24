@@ -35,7 +35,7 @@ test.describe('theme', () => {
     await page.goto('/connexion')
     await page.getByLabel('Email').fill('alice@example.com')
     await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-    await page.getByRole('button', { name: 'Se connecter' }).click()
+    await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
     const display = page.getByRole('region', { name: 'Affichage' })
     await display.getByRole('radio', { name: 'Clair' }).check()
@@ -89,7 +89,7 @@ test.describe('account preferences', () => {
     await page.goto('/connexion')
     await page.getByLabel('Email').fill('alice@example.com')
     await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-    await page.getByRole('button', { name: 'Se connecter' }).click()
+    await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
     // Choix faits sur un autre appareil : anglais, thème sombre
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('My account')

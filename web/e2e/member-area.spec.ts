@@ -34,7 +34,7 @@ test('member logs in and lands on the requested page', async ({ page }) => {
 
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await expect(page).toHaveURL(/\/messages$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Messages')
@@ -64,7 +64,7 @@ test('two-factor login asks for a code after the password', async ({ page }) => 
 
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await page.getByLabel('Code de vérification').fill('123456')
   await page.getByRole('button', { name: 'Vérifier' }).click()
@@ -96,7 +96,7 @@ test('treasurer records a payment from the treasury screen', async ({ page }) =>
   await page.goto('/connexion?redirect=/tresorerie')
   await page.getByLabel('Email').fill('treasurer@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Trésorerie')
   await page.getByRole('button', { name: 'Encaisser' }).click()
@@ -124,7 +124,7 @@ test('president broadcasts a labelled message to all members', async ({ page }) 
   await page.goto('/connexion?redirect=/admin/diffusion')
   await page.getByLabel('Email').fill('president@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   await page.getByText('Annulation', { exact: true }).click()
   await page.getByLabel('Titre').fill('Tournoi annulé')
@@ -164,7 +164,7 @@ test('an organizer publishes an event with its poster', async ({ page }) => {
   await page.goto('/evenements/nouveau')
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Nouvel événement')
 
   await page.getByLabel('Titre').fill('Soirée cricket')
@@ -211,7 +211,7 @@ test('only the administrator sees the announcement audience', async ({ page }) =
   await page.goto(`/evenements/${id}`)
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
 
   const panel = page.getByRole('region', { name: 'Audience de l’annonce' })
   await expect(panel.getByText('Personnes uniques')).toBeVisible()
@@ -220,6 +220,99 @@ test('only the administrator sees the announcement audience', async ({ page }) =
   await expect(panel.getByText('25 %')).toBeVisible()
   await expect(panel.getByRole('table', { name: 'Nouvelles personnes par jour' }).getByRole('row')).toHaveCount(3)
   await expect(panel.getByRole('link', { name: 'Exporter (CSV)' })).toHaveAttribute('href', `/api/admin/events/${id}/audience.csv`)
+})
+
+test('an organizer removes a fake guest after confirming', async ({ page }) => {
+  const organizer = { ...profile, roles: ['ROLE_SECRETARY', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const id = '01a1b2c3-0000-7000-8000-0000000000e4'
+  const guestId = '01a1b2c3-0000-7000-8000-0000000000f1'
+  let guests = [{ id: guestId, name: 'Robot', email: 'bot@example.net', answer: 'je-viens' }]
+  const removals: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: organizer }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route(`**/api/events/${id}/view`, (route) => route.fulfill({ status: 204, body: '' }))
+  await page.route(`**/api/events/${id}/guests/${guestId}`, (route) => {
+    removals.push(route.request().method())
+    guests = []
+    return route.fulfill({ status: 204, body: '' })
+  })
+  await page.route(`**/api/events/${id}`, (route) =>
+    route.fulfill({
+      json: {
+        id, title: 'Soirée cricket', location: 'Bar du Centre', startsAt: '2026-11-14T19:00:00+00:00', endsAt: '2026-11-14T23:00:00+00:00',
+        season: '2026-2027', status: 'prevu', cancelReason: null, capacity: null, registered: 1, isRegistered: false,
+        full: false, started: false, past: false, hasSummary: false, public: true, city: 'Louhans', publicPath: '/e/soiree-cricket-a1b2c3',
+        description: '', organizer: 'Alice', summary: null, canManage: true, photos: [], posts: [], participants: [], guests,
+      },
+    }),
+  )
+
+  await page.goto(`/evenements/${id}`)
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
+
+  await page.getByText('Invités sans compte (1)').click()
+  await page.getByRole('button', { name: 'Retirer' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Retirer Robot des invités ?' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: 'Retirer' }).click()
+
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByText('Invités sans compte')).toHaveCount(0)
+  expect(removals).toEqual(['DELETE'])
+})
+
+test('an account waiting for approval stays on its own account', async ({ page }) => {
+  const notificationCalls: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: { ...profile, approved: false } }))
+  await page.route('**/api/notifications', (route) => {
+    notificationCalls.push(route.request().url())
+    return route.fulfill({ status: 403, json: {} })
+  })
+
+  await page.goto('/connexion?redirect=/messages')
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
+
+  // Espace membres fermé : retour à son compte, qui explique l'attente
+  await expect(page).toHaveURL(/\/compte$/)
+  await expect(page.getByRole('status')).toContainText('Ton compte attend la validation du bureau')
+  await expect(page.getByRole('link', { name: 'Messages' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Ma cotisation' })).toHaveCount(0)
+  expect(notificationCalls).toEqual([])
+})
+
+test('the presidency approves a new member', async ({ page }) => {
+  const president = { ...profile, roles: ['ROLE_PRESIDENT', 'ROLE_MEMBER'], twoFactorEnabled: true }
+  const pending = {
+    id: '01a1b2c3-0000-7000-8000-0000000000a9', displayName: 'Nina', email: 'nina@example.com', phone: null, avatarUrl: null,
+    roles: [], admin: false, badges: [], verified: true, approved: false, twoFactorEnabled: false, suspended: false,
+    suspensionReason: null, membership: null, createdAt: '2026-10-23T12:00:00+00:00',
+  }
+  const approvals: string[] = []
+  await page.route('**/api/auth/login', (route) => route.fulfill({ json: president }))
+  await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
+  await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
+  await page.route('**/api/admin/members?*', (route) => route.fulfill({ json: { season: '2026-2027', items: [pending] } }))
+  await page.route(`**/api/admin/members/${pending.id}/approve`, (route) => {
+    approvals.push(route.request().method())
+    pending.approved = true
+    return route.fulfill({ status: 204, body: '' })
+  })
+
+  await page.goto('/admin')
+  await page.getByLabel('Email').fill('alice@example.com')
+  await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
+
+  await expect(page.getByText('En attente de validation')).toBeVisible()
+  await page.getByRole('button', { name: 'Valider' }).click()
+  await expect(page.getByRole('status')).toContainText('Nina peut maintenant accéder à l’espace membres.')
+  await expect(page.getByText('En attente de validation')).toHaveCount(0)
+  expect(approvals).toEqual(['POST'])
 })
 
 test('the president does not get the audience panel', async ({ page }) => {
@@ -247,7 +340,7 @@ test('the president does not get the audience panel', async ({ page }) => {
   await page.goto(`/evenements/${id}`)
   await page.getByLabel('Email').fill('alice@example.com')
   await page.getByLabel('Mot de passe').fill('Tr1ple-20-Bullseye!')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.getByRole('button', { name: 'Se connecter', exact: true }).click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Soirée cricket')
   await expect(page.getByRole('region', { name: 'Audience de l’annonce' })).toHaveCount(0)
   expect(audienceCalls).toEqual([])

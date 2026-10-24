@@ -52,10 +52,11 @@ function stringLabel(n: number, name: string): string {
         <SplitText tag="p" class="hero__tagline" :text="t('landing.tagline')" rise />
         <p class="hero__intro">{{ t('landing.intro') }}</p>
         <div class="hero__cta">
-          <template v-if="auth.isAuthenticated">
+          <template v-if="auth.isMember">
             <RouterLink to="/evenements" class="btn btn--primary sheen-button">{{ t('landing.upcoming') }}</RouterLink>
             <RouterLink to="/infos" class="btn btn--ghost">{{ t('landing.infos') }}</RouterLink>
           </template>
+          <RouterLink v-else-if="auth.isAuthenticated" to="/compte" class="btn btn--primary sheen-button">{{ t('nav.account') }}</RouterLink>
           <template v-else>
             <RouterLink to="/inscription" class="btn btn--primary sheen-button">{{ t('landing.join') }}</RouterLink>
             <RouterLink to="/connexion" class="btn btn--ghost">{{ t('landing.login') }}</RouterLink>
@@ -132,8 +133,8 @@ function stringLabel(n: number, name: string): string {
               <a :href="LANDING.facebook" target="_blank" rel="noopener noreferrer external">{{ t('landing.cta.facebookLink') }}<span class="visually-hidden"> {{ t('common.newTab') }}</span></a>
             </template>
           </i18n-t>
-          <RouterLink :to="auth.isAuthenticated ? '/evenements' : '/inscription'" class="btn btn--primary sheen-button">
-            {{ auth.isAuthenticated ? t('landing.cta.calendar') : t('landing.cta.signUp') }}
+          <RouterLink :to="auth.isMember ? '/evenements' : auth.isAuthenticated ? '/compte' : '/inscription'" class="btn btn--primary sheen-button">
+            {{ auth.isMember ? t('landing.cta.calendar') : auth.isAuthenticated ? t('nav.account') : t('landing.cta.signUp') }}
           </RouterLink>
         </section>
       </div>

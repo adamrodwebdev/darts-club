@@ -26,7 +26,19 @@
       "suspendHint": "La personne est déconnectée immédiatement, ne peut plus se connecter ni être contactée. Action réversible et journalisée.",
       "reason": "Motif",
       "suspended": "{name} est suspendu(e) et déconnecté(e).",
-      "reactivated": "{name} est réactivé(e)."
+      "reactivated": "{name} est réactivé(e).",
+      "pending": "En attente de validation",
+      "approve": "Valider",
+      "approved": "{name} peut maintenant accéder à l’espace membres.",
+      "passkeys": "aucune clé d’accès | {n} clé d’accès | {n} clés d’accès",
+      "passkeyMissing": "Clé d’accès à créer",
+      "resetAccess": "Réinitialiser l’accès",
+      "resetTitle": "Réinitialiser l’accès de {name} ?",
+      "resetKeys": "Sa clé d’accès sera retirée et ses sessions fermées. | Ses {n} clés d’accès seront retirées et ses sessions fermées.",
+      "resetNext": "À sa prochaine connexion avec son mot de passe, {name} créera une nouvelle clé avant de retrouver le bureau.",
+      "resetNotice": "Un email prévient {name}. L’opération est inscrite au journal.",
+      "reset": "Réinitialiser",
+      "resetDone": "Accès de {name} réinitialisé."
     },
     "broadcast": {
       "title": "Nouveau message",
@@ -73,7 +85,8 @@
         "after": "Après",
         "created": "Créées",
         "author": "Auteur",
-        "recipients": "Destinataires"
+        "recipients": "Destinataires",
+        "name": "Nom"
       }
     }
   }

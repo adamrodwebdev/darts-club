@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Dto\Registration;
 use App\Entity\User;
 use App\Message\SendAccountExistsEmail;
+use App\Message\SendVerificationEmail;
 use App\Preference\Language;
 use App\Repository\UserRepository;
 use App\ValueObject\EmailAddress;
@@ -37,9 +38,20 @@ final class UserRegistrar
 
         $existing = $this->users->findOneByEmail($email);
         if (null !== $existing) {
-            // Hachage inutile mais volontaire : même durée de réponse qu'une vraie inscription
-            $this->hashers->getPasswordHasher(User::class)->hash($registration->password);
-            $this->bus->dispatch(new SendAccountExistsEmail($existing->getId()->toRfc4122()));
+            // Hachage dans tous les cas : même durée de réponse qu'une vraie inscription
+            $hash = $this->hashers->getPasswordHasher(User::class)->hash($registration->password);
+            if ($existing->isVerified()) {
+                $this->bus->dispatch(new SendAccountExistsEmail($existing->getId()->toRfc4122()));
+
+                return;
+            }
+
+            // Inscription jamais confirmée : le dernier mot de passe choisi remplace le précédent. Seul le
+            // titulaire de l'adresse reçoit le lien, et la confirmation demande ce mot de passe : une
+            // inscription faite par quelqu'un d'autre ne bloque plus l'adresse.
+            $existing->changePassword($hash);
+            $this->em->flush();
+            $this->bus->dispatch(new SendVerificationEmail($existing->getId()->toRfc4122()));
 
             return;
         }

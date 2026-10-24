@@ -32,11 +32,17 @@
     "privacy": "Confidentialité",
     "notFound": "Page introuvable",
     "publicEvent": "Événement",
-    "guestResponse": "Ma réponse"
+    "guestResponse": "Ma réponse",
+    "confirmEmail": "Confirmer mon adresse",
+    "forgotPassword": "Mot de passe oublié",
+    "resetPassword": "Nouveau mot de passe",
+    "passkeySetup": "Clé d’accès"
   },
   "app": {
-    "twoFactorBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
-    "twoFactorLink": "active la double authentification"
+    "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
+    "twoFactorLink": "active la double authentification",
+    "passkeyBanner": "Membre du bureau : {link} pour accéder aux fonctions du club.",
+    "passkeyLink": "crée ta clé d’accès"
   },
   "nav": {
     "skip": "Aller au contenu",
@@ -231,7 +237,11 @@
       "resend": "Renvoyer le lien de confirmation",
       "resent": "Si un compte en attente existe, un nouveau lien vient d’être envoyé.",
       "noAccount": "Pas encore de compte ?",
-      "join": "Rejoindre le club"
+      "join": "Rejoindre le club",
+      "forgot": "Mot de passe oublié ?",
+      "resetSuccess": "Mot de passe changé : connecte-toi avec le nouveau.",
+      "passkey": "Se connecter avec une clé d’accès",
+      "passkeyHint": "Empreinte, visage ou code du téléphone : ni mot de passe, ni code à taper."
     },
     "register": {
       "title": "Rejoindre le club",
@@ -243,6 +253,40 @@
       "submit": "Créer mon compte",
       "alreadyMember": "Déjà membre ?",
       "login": "Se connecter"
+    },
+    "confirm": {
+      "title": "Confirmer mon adresse",
+      "intro": "Saisis le mot de passe choisi à l’inscription : ton compte s’active et tu es connecté.",
+      "submit": "Confirmer et me connecter",
+      "notYou": "Ce n’est pas toi qui as choisi ce mot de passe, ou tu l’as oublié ?",
+      "choosePassword": "Choisir mon mot de passe"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "intro": "Indique ton adresse : tu recevras un lien, valable une heure, pour choisir un nouveau mot de passe.",
+      "submit": "Recevoir le lien",
+      "sent": "Si un compte existe avec cette adresse, le lien vient de partir. Pense à regarder dans les indésirables.",
+      "back": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "password": "Nouveau mot de passe",
+      "submit": "Enregistrer",
+      "newLink": "Lien expiré ? En demander un nouveau"
+    },
+    "passkeyStep": {
+      "eyebrow": "Espace du bureau",
+      "title": "Confirme que c’est bien toi",
+      "text": "Ton téléphone va te demander ton empreinte, ton visage ou son code de déverrouillage.",
+      "use": "Utiliser ma clé d’accès",
+      "lostTitle": "Appareil perdu ?",
+      "lostText": "L’administrateur peut réinitialiser ton accès : tu créeras alors une nouvelle clé."
+    },
+    "passkeyErrors": {
+      "cancelled": "Clé d’accès non utilisée : réessaie quand tu veux.",
+      "duplicate": "Cet appareil a déjà une clé d’accès pour ton compte.",
+      "unsupported": "Cet appareil ne peut pas utiliser de clé d’accès : essaie depuis ton téléphone.",
+      "failed": "La clé d’accès n’a pas fonctionné : réessaie."
     }
   },
   "notFound": {
@@ -302,7 +346,9 @@
       "member": {
         "roles": "Rôles modifiés",
         "suspend": "Compte suspendu",
-        "reactivate": "Compte réactivé"
+        "reactivate": "Compte réactivé",
+        "approve": "Compte validé",
+        "passkeys_reset": "Accès réinitialisé (clés d’accès)"
       },
       "broadcast": {
         "send": "Message diffusé"
@@ -334,6 +380,9 @@
       },
       "post": {
         "delete": "Message retiré (modération)"
+      },
+      "guest": {
+        "remove": "Invité retiré"
       }
     }
   }

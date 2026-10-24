@@ -37,6 +37,16 @@ export class AdminService {
     await this.api.put(`/api/admin/members/${encodeURIComponent(memberId)}/roles`, { roles })
   }
 
+  /** Ouvre l'espace membres à un compte confirmé */
+  async approve(memberId: string): Promise<void> {
+    await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/approve`)
+  }
+
+  /** Appareil perdu : clés retirées et sessions fermées (administrateur seulement) */
+  async resetPasskeys(memberId: string): Promise<void> {
+    await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/passkeys/reset`)
+  }
+
   async suspend(memberId: string, reason: string): Promise<void> {
     await this.api.post(`/api/admin/members/${encodeURIComponent(memberId)}/suspend`, { reason })
   }

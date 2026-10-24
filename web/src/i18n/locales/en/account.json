@@ -12,7 +12,8 @@
         "membership": "Membership fee",
         "notifications": "Notifications",
         "security": "Security"
-      }
+      },
+      "pending": "Your account is waiting for the board’s approval. You will get an email as soon as the members’ area (events, photos, messages) is open to you."
     },
     "profile": {
       "avatarTitle": "Avatar",
@@ -44,7 +45,7 @@
     },
     "twoFactor": {
       "title": "Two-factor authentication",
-      "required": "Required for board members: turn it on to access the club’s features.",
+      "required": "Required for the administrator: turn it on to access the club’s features.",
       "enabled": "Two-factor authentication enabled.",
       "backupIntro": "Keep these backup codes somewhere safe: each one only works once.",
       "download": "Download",
@@ -106,6 +107,50 @@
       "empty": "No announcements yet.",
       "pinned": "Pinned",
       "edited": "edited"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "required": "Required for the board",
+      "intro": "You log in with the fingerprint, face or PIN of these devices. A synced passkey (iCloud, Google) follows you to your other devices.",
+      "empty": "Log in with your phone’s fingerprint, face or PIN, without a password.",
+      "unnamed": "Passkey",
+      "created": "Created on {date}",
+      "used": "used {when}",
+      "neverUsed": "not used yet",
+      "synced": "synced",
+      "remove": "Remove",
+      "removeTitle": "Remove the “{name}” passkey?",
+      "removeText": "You will no longer be able to log in with it.",
+      "removeLast": "This is your last passkey: you will have to create a new one to get the board tools back.",
+      "removed": "Passkey removed.",
+      "add": "Add a passkey",
+      "addHint": "An email warns you whenever a passkey is added.",
+      "added": "Passkey added.",
+      "reauthenticate": "Log in again",
+      "unsupported": "This browser doesn’t support passkeys."
+    },
+    "passkeySetup": {
+      "eyebrow": "Board area",
+      "titleReplace": "A passkey replaces the 6-digit code",
+      "titleCreate": "Create your passkey",
+      "lead": "It protects the members’ data and the treasury. It takes a minute, once.",
+      "typingTitle": "Nothing left to type.",
+      "typingText": "Your fingerprint, your face or your phone’s PIN is enough.",
+      "phishingTitle": "Useless on a fake site.",
+      "phishingText": "The passkey only opens on {site}: a trap email can’t steal it.",
+      "deviceTitle": "Your fingerprint stays on your phone.",
+      "deviceText": "The site never receives it.",
+      "create": "Create my passkey",
+      "createHint": "Your phone then opens its own window: approve it as if unlocking it.",
+      "later": "Later",
+      "doneTitle": "Passkey created",
+      "doneText": "Next time you log in, your fingerprint or your face will do.",
+      "doneCodeGone": "The 6-digit code is no longer asked for.",
+      "doneSynced": "Synced to your other devices",
+      "doneLocal": "Saved on this device",
+      "continue": "Continue",
+      "tip": "Tip: also add a passkey on your computer, from {link}.",
+      "tipLink": "My account › Security"
     }
   }
 }

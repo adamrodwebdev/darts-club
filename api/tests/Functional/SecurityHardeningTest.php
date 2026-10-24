@@ -88,6 +88,6 @@ final class SecurityHardeningTest extends ApiTestCase
 
         $this->client->request('GET', '/api/members?q=a');
         self::assertResponseStatusCodeSame(403);
-        self::assertSame('two_factor_setup_required', $this->json()['code']);
+        self::assertSame('passkey_setup_required', $this->json()['code']);
     }
 }

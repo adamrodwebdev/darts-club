@@ -6,6 +6,7 @@ import { AuthService } from './AuthService'
 import { EventService } from './EventService'
 import { MessagingService } from './MessagingService'
 import { NotificationService } from './NotificationService'
+import { PasskeyService } from './PasskeyService'
 import { ProfileService } from './ProfileService'
 import { PublicEventService } from './PublicEventService'
 import { PushService } from './PushService'
@@ -27,6 +28,7 @@ export function createServices({ api = new ApiClient(), clock = systemClock }: S
   return {
     clock,
     auth: new AuthService(api),
+    passkeys: new PasskeyService(api),
     profile: new ProfileService(api),
     notifications: new NotificationService(api),
     messaging: new MessagingService(api),

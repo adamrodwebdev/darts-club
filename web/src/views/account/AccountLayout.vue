@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import BaseButton from '@/components/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -8,12 +9,15 @@ const auth = useAuthStore()
 const router = useRouter()
 const { t } = useI18n()
 
-const tabs = [
-  { to: '/compte', key: 'profile' },
-  { to: '/compte/cotisation', key: 'membership' },
-  { to: '/compte/notifications', key: 'notifications' },
-  { to: '/compte/securite', key: 'security' },
+const TABS = [
+  { to: '/compte', key: 'profile', pending: true },
+  { to: '/compte/cotisation', key: 'membership', pending: false },
+  { to: '/compte/notifications', key: 'notifications', pending: false },
+  { to: '/compte/securite', key: 'security', pending: true },
 ] as const
+
+/** Compte en attente de validation : son profil et sa sécurité seulement */
+const tabs = computed(() => TABS.filter((tab) => auth.user?.approved !== false || tab.pending))
 
 async function logout(): Promise<void> {
   await auth.logout()
@@ -33,6 +37,8 @@ async function logout(): Promise<void> {
       <RouterLink v-if="auth.user?.canAdminister" to="/admin">{{ t('account.layout.president') }}</RouterLink>
       <RouterLink v-if="auth.user?.canManageTreasury" to="/tresorerie">{{ t('account.layout.treasury') }}</RouterLink>
     </nav>
+
+    <p v-if="auth.user?.approved === false" class="notice" role="status">{{ t('account.layout.pending') }}</p>
 
     <nav class="tabs" :aria-label="t('account.layout.sectionsNav')">
       <RouterLink v-for="tab in tabs" :key="tab.to" :to="tab.to" class="tabs__link" exact-active-class="tabs__link--active">

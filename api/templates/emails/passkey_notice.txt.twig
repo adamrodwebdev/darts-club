@@ -1,0 +1,12 @@
+{% trans_default_domain 'emails' %}
+{{ 'greeting'|trans }}
+
+{% if notice == 'added' %}
+{{ 'passkey.added.intro'|trans }}
+{{ 'passkey.added.not_you'|trans }}
+{% else %}
+{{ 'passkey.reset.intro'|trans }}
+{{ 'passkey.reset.next'|trans }}
+{% endif %}
+
+{{ 'passkey.button'|trans }} : {{ securityUrl }}

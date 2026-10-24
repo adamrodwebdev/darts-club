@@ -32,8 +32,11 @@ watch(
         await preferences.adoptAccount(saved)
         if (route.meta.homeLocale && route.meta.homeLocale !== preferences.locale) await router.replace(HOME_PATHS[preferences.locale])
       }
-      await notifications.load().catch(() => undefined)
-      await notifications.connectRealtime()
+      // Compte en attente de validation : ni centre de notifications ni temps réel (espace membres)
+      if (auth.user?.approved) {
+        await notifications.load().catch(() => undefined)
+        await notifications.connectRealtime()
+      }
     } else {
       notifications.reset()
     }
@@ -46,6 +49,18 @@ watch(
   <i18n-t v-if="auth.user?.twoFactorSetupRequired" keypath="app.twoFactorBanner" tag="p" class="tfa-banner" role="alert" scope="global">
     <template #link>
       <RouterLink to="/compte/securite">{{ t('app.twoFactorLink') }}</RouterLink>
+    </template>
+  </i18n-t>
+  <i18n-t
+    v-else-if="auth.user?.passkeySetupRequired && route.name !== 'passkey-setup'"
+    keypath="app.passkeyBanner"
+    tag="p"
+    class="tfa-banner"
+    role="alert"
+    scope="global"
+  >
+    <template #link>
+      <RouterLink :to="{ name: 'passkey-setup' }">{{ t('app.passkeyLink') }}</RouterLink>
     </template>
   </i18n-t>
   <main id="main" tabindex="-1">

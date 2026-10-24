@@ -32,11 +32,17 @@
     "privacy": "Privacy",
     "notFound": "Page not found",
     "publicEvent": "Event",
-    "guestResponse": "My answer"
+    "guestResponse": "My answer",
+    "confirmEmail": "Confirm my address",
+    "forgotPassword": "Forgotten password",
+    "resetPassword": "New password",
+    "passkeySetup": "Passkey"
   },
   "app": {
-    "twoFactorBanner": "Board member: {link} to access the club tools.",
-    "twoFactorLink": "enable two-factor authentication"
+    "twoFactorBanner": "Administrator: {link} to access the club tools.",
+    "twoFactorLink": "enable two-factor authentication",
+    "passkeyBanner": "Board member: {link} to access the club tools.",
+    "passkeyLink": "create your passkey"
   },
   "nav": {
     "skip": "Skip to content",
@@ -231,7 +237,11 @@
       "resend": "Resend the confirmation link",
       "resent": "If a pending account exists, a new link has just been sent.",
       "noAccount": "No account yet?",
-      "join": "Join the club"
+      "join": "Join the club",
+      "forgot": "Forgot your password?",
+      "resetSuccess": "Password changed: log in with the new one.",
+      "passkey": "Log in with a passkey",
+      "passkeyHint": "Fingerprint, face or phone PIN: no password, no code to type."
     },
     "register": {
       "title": "Join the club",
@@ -243,6 +253,40 @@
       "submit": "Create my account",
       "alreadyMember": "Already a member?",
       "login": "Log in"
+    },
+    "confirm": {
+      "title": "Confirm my address",
+      "intro": "Enter the password you chose when signing up: your account is activated and you are logged in.",
+      "submit": "Confirm and log in",
+      "notYou": "You didn’t choose this password, or you forgot it?",
+      "choosePassword": "Choose my password"
+    },
+    "forgot": {
+      "title": "Forgotten password",
+      "intro": "Enter your address: you will receive a link, valid for one hour, to choose a new password.",
+      "submit": "Send me the link",
+      "sent": "If an account exists with this address, the link is on its way. Check your spam folder too.",
+      "back": "Back to log in"
+    },
+    "reset": {
+      "title": "New password",
+      "password": "New password",
+      "submit": "Save",
+      "newLink": "Link expired? Ask for a new one"
+    },
+    "passkeyStep": {
+      "eyebrow": "Board area",
+      "title": "Confirm it’s really you",
+      "text": "Your phone will ask for your fingerprint, your face or its unlock code.",
+      "use": "Use my passkey",
+      "lostTitle": "Lost your device?",
+      "lostText": "The administrator can reset your access: you will then create a new passkey."
+    },
+    "passkeyErrors": {
+      "cancelled": "Passkey not used: try again whenever you like.",
+      "duplicate": "This device already has a passkey for your account.",
+      "unsupported": "This device can’t use passkeys: try from your phone.",
+      "failed": "The passkey didn’t work: please try again."
     }
   },
   "notFound": {
@@ -302,7 +346,9 @@
       "member": {
         "roles": "Roles changed",
         "suspend": "Account suspended",
-        "reactivate": "Account reactivated"
+        "reactivate": "Account reactivated",
+        "approve": "Account approved",
+        "passkeys_reset": "Access reset (passkeys)"
       },
       "broadcast": {
         "send": "Message broadcast"
@@ -334,6 +380,9 @@
       },
       "post": {
         "delete": "Post removed (moderation)"
+      },
+      "guest": {
+        "remove": "Guest removed"
       }
     }
   }
