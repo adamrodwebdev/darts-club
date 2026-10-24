@@ -7,6 +7,7 @@ import BaseField from '@/components/BaseField.vue'
 import PasswordRules from '@/components/PasswordRules.vue'
 import OAuthButtons from '@/components/OAuthButtons.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useStages } from '@/composables/useStages'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -18,6 +19,12 @@ const password = ref('')
 const rulesId = useId()
 const done = ref(false)
 const { pending, error, fieldErrors, run } = useAsyncAction()
+/**
+ * Connexion par un fournisseur une image après le formulaire : le rendu de la page reste sous le
+ * seuil d'une tâche longue au démarrage (Lighthouse : temps de blocage). En bas de page, elle ne
+ * décale rien au-dessus d'elle.
+ */
+const extras = useStages(1, { all: false })
 
 async function submit(): Promise<void> {
   await run(async () => {
@@ -64,7 +71,7 @@ async function submit(): Promise<void> {
         <BaseButton type="submit" :pending="pending">{{ t('auth.register.submit') }}</BaseButton>
       </form>
 
-      <OAuthButtons />
+      <OAuthButtons v-if="extras >= 1" />
     </template>
 
     <p class="switch">{{ t('auth.register.alreadyMember') }} <RouterLink to="/connexion">{{ t('auth.register.login') }}</RouterLink></p>

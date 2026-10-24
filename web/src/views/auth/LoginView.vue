@@ -7,6 +7,7 @@ import BaseField from '@/components/BaseField.vue'
 import LineIcon from '@/components/LineIcon.vue'
 import OAuthButtons from '@/components/OAuthButtons.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useStages } from '@/composables/useStages'
 import { internalPath } from '@/router/redirect'
 import { useServices } from '@/services'
 import type { LoginStep } from '@/services/AuthService'
@@ -29,6 +30,12 @@ const resend = useAsyncAction()
 const resent = ref(false)
 /** Sans WebAuthn dans le navigateur, aucun bouton de clé d'accès */
 const passkeySupported = services.passkeys.isSupported()
+/**
+ * Connexion par un fournisseur une image après le formulaire : le rendu de la page reste sous le
+ * seuil d'une tâche longue au démarrage (Lighthouse : temps de blocage). En bas de page, elle ne
+ * décale rien au-dessus d'elle.
+ */
+const extras = useStages(1, { all: false })
 
 const notice = computed(() => {
   switch (route.query.verify) {
@@ -179,7 +186,7 @@ async function resendLink(): Promise<void> {
       <p class="muted passkey__hint">{{ t('auth.login.passkeyHint') }}</p>
     </div>
 
-    <OAuthButtons v-if="step === 'password'" :separated="!passkeySupported" />
+    <OAuthButtons v-if="step === 'password' && extras >= 1" :separated="!passkeySupported" />
 
     <p class="switch">{{ t('auth.login.noAccount') }} <RouterLink to="/inscription">{{ t('auth.login.join') }}</RouterLink></p>
   </section>
