@@ -21,7 +21,7 @@
   "dependencies": {
     "@simplewebauthn/browser": "14.0.0",
     "pinia": "^4.0.3",
-    "vue": "^3.5.42",
+    "vue": "^3.5.44",
     "vue-i18n": "^11.4.14",
     "vue-router": "^5.3.1"
   },
