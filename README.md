@@ -54,10 +54,22 @@ Pour naviguer sur le site avec des données de démonstration (SQLite, emails é
 
 Sans hub Mercure, le temps réel est inactif : les notifications apparaissent au rechargement.
 
+## Branches et déploiement
+
+- **`dev`** reçoit tout le travail : une branche et une PR par étape de la feuille de route, ouvertes vers `dev`.
+- **`main`** est la production : chaque push y déclenche la CI puis le déploiement. Elle ne reçoit `dev` que sur demande du bureau, par une PR de publication `dev` → `main` (une seule mise en ligne pour toutes les étapes depuis la précédente).
+
+```bash
+gh pr create --base dev --head <branche-de-l-etape>     # une étape
+gh pr create --base main --head dev                    # publication, sur demande
+```
+
 ## Production
 
 Serveur Docker (FrankenPHP/Caddy, PostgreSQL, Redis, Mercure), image publiée sur `ghcr.io` par GitHub Actions
 et déployée automatiquement après chaque CI verte sur `main`. Guide pas à pas : [docs/deploiement.md](docs/deploiement.md).
+L'image contient ffmpeg (vidéos de la galerie, converties par le worker) ; sa construction échoue si l'AVIF, le H.264,
+le WebP ou un encodeur AV1 manquent.
 
 ```bash
 docker compose -f compose.yaml -f compose.prod.yaml up -d      # sur le serveur, avec /opt/skull-darts-71/.env

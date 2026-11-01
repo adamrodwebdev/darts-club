@@ -78,16 +78,61 @@
       "revoke": "Désactiver mon lien"
     },
     "gallery": {
-      "title": "Photos",
+      "title": "Photos et vidéos",
+      "membersOnly": "Visibles par les membres validés seulement",
       "uploading": "Envoi…",
       "upload": "Ajouter des photos",
-      "empty": "Pas encore de photo.",
+      "uploadMedia": "Ajouter des photos ou des vidéos",
+      "empty": "Pas encore de photo ni de vidéo.",
       "enlarge": "Agrandir la photo {index} sur {total}",
+      "play": "Lire la vidéo {index} sur {total}, {duration}",
+      "pendingTile": "Vidéo en préparation, {index} sur {total}",
       "photoBy": "Photo de {name}",
+      "videoBy": "Vidéo de {name}",
       "position": "Photo {index} / {total}",
+      "positionVideo": "Vidéo {index} / {total}",
       "addedBy": "Ajoutée par {name}",
       "previous": "← Précédente",
-      "next": "Suivante →"
+      "next": "Suivante →",
+      "filterLabel": "Filtrer la galerie",
+      "filters": {
+        "all": "Tout · {n}",
+        "photos": "Photos · {n}",
+        "videos": "Vidéos · {n}"
+      },
+      "hiddenBadge": "Masquée",
+      "convertingBadge": "Conversion…",
+      "failedBadge": "Refusée",
+      "hiddenBy": "Masquée à la demande de {name}, en attendant la décision de la présidence.",
+      "convertingHint": "Conversion en cours : la vidéo apparaît ici dès qu’elle est prête.",
+      "failedVideo": "Cette vidéo n’a pas pu être convertie. Supprime-la et envoie un autre fichier.",
+      "requestRemoval": "Demander le retrait",
+      "removalText": "Elle disparaît tout de suite de la galerie et la présidence est prévenue. Elle décidera de la remettre en ligne ou de la supprimer.",
+      "removalHint": "Tu apparais sur une photo ou une vidéo et tu préfères qu’elle disparaisse ? Ouvre-la, puis « Demander le retrait ».",
+      "restore": "Remettre en ligne",
+      "uploadsTitle": "Envois",
+      "photosBatch": "{n} photo | {n} photos",
+      "rules": {
+        "videos": "Vidéos : 60 secondes au plus. Le serveur les convertit pour qu’elles se lisent partout et restent légères.",
+        "photos": "Photos : 10 Mo au plus, réduites automatiquement. Les données de localisation sont retirées.",
+        "consent": "Ne publie que des personnes d’accord pour être vues. Garde l’écran allumé pendant l’envoi."
+      },
+      "status": {
+        "checking": "Vérification…",
+        "sending": "Envoi…",
+        "sendingPercent": "Envoi {percent} · reprend tout seul si la connexion coupe",
+        "converting": "Conversion en cours…",
+        "done": "Ajoutée à la galerie",
+        "photosDone": "Ajoutées à la galerie"
+      },
+      "failure": {
+        "tooLong": "Trop longue : 60 secondes au plus. Coupe-la sur le téléphone avant de l’envoyer.",
+        "tooHeavy": "Trop lourde : 500 Mo au plus.",
+        "photoTooHeavy": "Photo trop lourde : 10 Mo au plus.",
+        "oversized": "Image trop grande : au-delà de la 4K.",
+        "unreadable": "Vidéo illisible : essaie un autre fichier (MP4, MOV ou WebM).",
+        "unsupported": "Format non pris en charge : photos JPEG, PNG ou WebP, vidéos MP4, MOV ou WebM."
+      }
     },
     "poster": {
       "label": "Affiche (facultatif)",

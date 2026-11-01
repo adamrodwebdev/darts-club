@@ -2,15 +2,26 @@
 
 namespace App\Entity;
 
+use App\Event\DomainEventsTrait;
+use App\Event\RecordsDomainEvents;
+use App\Gallery\GalleryMedia;
+use App\Gallery\HiddenOnRequest;
+use App\Gallery\MediaKind;
 use App\Repository\EventPhotoRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
-/** Photo de la galerie d'un événement (grande version + vignette WebP). */
+/**
+ * Photo de la galerie d'un événement (grande version + vignette en WebP, et en AVIF plus légère
+ * une fois que le worker les a produites).
+ */
 #[ORM\Entity(repositoryClass: EventPhotoRepository::class)]
-class EventPhoto
+class EventPhoto implements GalleryMedia, RecordsDomainEvents
 {
+    use DomainEventsTrait;
+    use HiddenOnRequest;
+
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
     private Uuid $id;
@@ -48,6 +59,16 @@ class EventPhoto
     public function isUploadedBy(User $user): bool
     {
         return null !== $this->uploader && $this->uploader->getId()->equals($user->getId());
+    }
+
+    public function kind(): MediaKind
+    {
+        return MediaKind::Photo;
+    }
+
+    public function isVisible(): bool
+    {
+        return !$this->isHidden();
     }
 
     public function uploaderName(): string
@@ -90,6 +111,8 @@ class EventPhoto
             'uploader' => $this->uploaderName,
             'uploaderId' => $this->uploader?->getId()->toRfc4122(),
             'uploadedAt' => $this->uploadedAt->format(\DATE_ATOM),
+            'hidden' => $this->isHidden(),
+            'hiddenBy' => $this->hiddenBy(),
         ];
     }
 }

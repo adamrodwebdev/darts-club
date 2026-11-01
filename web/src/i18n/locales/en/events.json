@@ -78,16 +78,61 @@
       "revoke": "Disable my link"
     },
     "gallery": {
-      "title": "Photos",
+      "title": "Photos and videos",
+      "membersOnly": "Visible to approved members only",
       "uploading": "Uploading…",
       "upload": "Add photos",
-      "empty": "No photos yet.",
+      "uploadMedia": "Add photos or videos",
+      "empty": "No photos or videos yet.",
       "enlarge": "Enlarge photo {index} of {total}",
+      "play": "Play video {index} of {total}, {duration}",
+      "pendingTile": "Video being prepared, {index} of {total}",
       "photoBy": "Photo by {name}",
+      "videoBy": "Video by {name}",
       "position": "Photo {index} / {total}",
+      "positionVideo": "Video {index} / {total}",
       "addedBy": "Added by {name}",
       "previous": "← Previous",
-      "next": "Next →"
+      "next": "Next →",
+      "filterLabel": "Filter the gallery",
+      "filters": {
+        "all": "All · {n}",
+        "photos": "Photos · {n}",
+        "videos": "Videos · {n}"
+      },
+      "hiddenBadge": "Hidden",
+      "convertingBadge": "Converting…",
+      "failedBadge": "Rejected",
+      "hiddenBy": "Hidden at {name}’s request, until the presidency decides.",
+      "convertingHint": "Converting: the video shows up here as soon as it is ready.",
+      "failedVideo": "This video could not be converted. Delete it and send another file.",
+      "requestRemoval": "Ask for removal",
+      "removalText": "It disappears from the gallery right away and the presidency is told. They will put it back online or delete it.",
+      "removalHint": "Are you in a photo or video you would rather see gone? Open it, then “Ask for removal”.",
+      "restore": "Put back online",
+      "uploadsTitle": "Uploads",
+      "photosBatch": "{n} photo | {n} photos",
+      "rules": {
+        "videos": "Videos: 60 seconds at most. The server converts them so they play everywhere and stay light.",
+        "photos": "Photos: 10 MB at most, resized automatically. Location data is removed.",
+        "consent": "Only post people who agree to be seen. Keep the screen on while uploading."
+      },
+      "status": {
+        "checking": "Checking…",
+        "sending": "Uploading…",
+        "sendingPercent": "Uploading {percent} · resumes by itself if the connection drops",
+        "converting": "Converting…",
+        "done": "Added to the gallery",
+        "photosDone": "Added to the gallery"
+      },
+      "failure": {
+        "tooLong": "Too long: 60 seconds at most. Trim it on the phone before sending.",
+        "tooHeavy": "Too large: 500 MB at most.",
+        "photoTooHeavy": "Photo too large: 10 MB at most.",
+        "oversized": "Picture too large: beyond 4K.",
+        "unreadable": "Unreadable video: try another file (MP4, MOV or WebM).",
+        "unsupported": "Unsupported format: JPEG, PNG or WebP photos, MP4, MOV or WebM videos."
+      }
     },
     "poster": {
       "label": "Poster (optional)",

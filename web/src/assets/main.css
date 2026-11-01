@@ -45,6 +45,9 @@
   --paper-ink: #15151a;
   --paper-ink-muted: #55555f;
   --paper-rule: #8e8e99;
+  /* Pastilles posées sur une photo ou une vidéo (durée, lecture) : lisibles sur toute image, dans les deux thèmes */
+  --media-scrim: rgb(0 0 0 / 72%);
+  --on-media: #ffffff;
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;

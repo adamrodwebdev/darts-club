@@ -15,7 +15,13 @@ RUN npm run build-only
 FROM dunglas/frankenphp:1-php8.4-alpine AS base
 WORKDIR /app
 RUN install-php-extensions pdo_pgsql intl opcache apcu redis zip gmp gd \
- && apk add --no-cache libcap
+ && apk add --no-cache libcap ffmpeg \
+ # Galerie : formats les plus légers vérifiés à la construction (l'image ne part pas sans eux) :
+ # AVIF par GD (photos), H.264 et WebP par ffmpeg (vidéos, aperçus), un encodeur AV1
+ && php -r 'exit(function_exists("imageavif") ? 0 : 1);' \
+ && ffmpeg -hide_banner -encoders | grep -q ' libx264 ' \
+ && ffmpeg -hide_banner -encoders | grep -q ' libwebp ' \
+ && ffmpeg -hide_banner -encoders | grep -qE ' (libsvtav1|libaom-av1) '
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY docker/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
@@ -35,8 +41,8 @@ COPY api/ ./
 COPY --from=web-build /web/dist /app/web
 RUN composer dump-autoload --classmap-authoritative --no-dev \
  && composer run-script --no-dev post-install-cmd \
- # Photos et avatars : volume persistant monté sur var/storage (propriétaire www-data)
- && mkdir -p var/storage/avatars var/storage/event-photos \
+ # Photos, avatars et vidéos : volume persistant monté sur var/storage (propriétaire www-data)
+ && mkdir -p var/storage/avatars var/storage/event-photos var/storage/event-videos var/storage/video-uploads var/storage/video-work \
  && chown -R www-data:www-data var \
  # Sans root : autorisation d'écouter les ports 80/443, dossiers Caddy accessibles
  && setcap CAP_NET_BIND_SERVICE=+eip /usr/local/bin/frankenphp \

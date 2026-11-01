@@ -45,6 +45,19 @@ export function formatNumber(value: number): string {
   return cached('number', {}, (locale) => new Intl.NumberFormat(locale)).format(value)
 }
 
+/** 0.64 → « 64 % » */
+export function formatPercent(ratio: number): string {
+  const options = { style: 'percent', maximumFractionDigits: 0 } as const
+  return cached('number', options, (locale) => new Intl.NumberFormat(locale, options)).format(ratio)
+}
+
+/** Taille d'un fichier en mégaoctets : 186 Mo, 4,2 Mo */
+export function formatMegabytes(bytes: number): string {
+  const megabytes = bytes / (1024 * 1024)
+  const options = { style: 'unit', unit: 'megabyte', maximumFractionDigits: megabytes < 10 ? 1 : 0 } as const
+  return cached('number', options, (locale) => new Intl.NumberFormat(locale, options)).format(megabytes)
+}
+
 /** « il y a 3 heures », « dans 2 jours » par rapport à `now` (horloge injectée) ; null sous la minute. */
 export function formatRelative(date: Date, now: Date): string | null {
   const seconds = Math.round((date.getTime() - now.getTime()) / 1000)
