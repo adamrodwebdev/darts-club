@@ -142,6 +142,14 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'eventAccounts', requiresAuth: true, requiresBoard: true },
   },
   {
+    // Écran de l'accueil : son équipe le jour de la soirée, le bureau à tout moment (l'API décide)
+    path: '/evenements/:id([0-9a-f-]{36})/accueil',
+    name: 'evening-entrance',
+    component: () => import('../views/evening/EntranceView.vue'),
+    props: true,
+    meta: { titleKey: 'eveningEntrance', requiresAuth: true },
+  },
+  {
     path: '/evenements/:id([0-9a-f-]{36})/demarches',
     name: 'event-documents',
     component: () => import('../views/events/EventDocumentsView.vue'),

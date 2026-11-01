@@ -256,6 +256,7 @@ const status = computed(() => {
     <TokenDialog
       v-if="tokenDialog && accounts"
       :token="tokenDialog.index === null ? null : (accounts.cash.tokens[tokenDialog.index] ?? null)"
+      :frozen="accounts.cash.frozen"
       :pending="action.pending.value"
       :error="action.error.value"
       @save="saveToken"

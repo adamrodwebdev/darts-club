@@ -47,12 +47,18 @@ export interface BarItem {
   income: string
 }
 
+/** Couleur d'un jeton, reconnue d'un coup d'œil à l'accueil (les sachets n'en ont pas) */
+export type TokenColor = 'vert' | 'jaune' | 'rouge' | 'bleu' | 'violet' | 'orange' | 'blanc' | 'noir'
+
+export const TOKEN_COLORS: readonly TokenColor[] = ['vert', 'jaune', 'rouge', 'bleu', 'violet', 'orange', 'blanc', 'noir']
+
 /** Jeton ou sachet vendu à l'accueil */
 export interface TokenKind {
   name: string
   /** Montant décimal « 0.50 » */
   value: string
   bag: boolean
+  color: TokenColor | null
 }
 
 export interface CashSettings {
@@ -60,6 +66,17 @@ export interface CashSettings {
   tokens: readonly TokenKind[]
   /** Fond de caisse de l'accueil, décimal */
   cashFloat: string
+  /** Figés par la première vente de l'accueil : seuls le fond de caisse et les couleurs changent encore */
+  frozen: boolean
+}
+
+export function parseTokenColor(value: unknown): TokenColor | null {
+  return TOKEN_COLORS.find((color) => color === value) ?? null
+}
+
+export function parseTokenKind(value: unknown): TokenKind {
+  const x = obj(value, 'jeton')
+  return { name: str(x.name), value: str(x.value), bag: bool(x.bag), color: parseTokenColor(x.color) }
 }
 
 export type Team = 'accueil' | 'bar' | 'cuisine'
@@ -173,15 +190,13 @@ function parseItem(value: unknown): BarItem {
 
 /** API plus ancienne, sans jetons ni équipes : encaissement direct, aucune équipe */
 function parseCash(value: unknown): CashSettings {
-  if (value === undefined) return { tokensEnabled: false, tokens: [], cashFloat: '0.00' }
+  if (value === undefined) return { tokensEnabled: false, tokens: [], cashFloat: '0.00', frozen: false }
   const d = obj(value, 'encaissement')
   return {
     tokensEnabled: bool(d.tokensEnabled),
-    tokens: list(d.tokens, (t) => {
-      const x = obj(t, 'jeton')
-      return { name: str(x.name), value: str(x.value), bag: bool(x.bag) }
-    }),
+    tokens: list(d.tokens, parseTokenKind),
     cashFloat: str(d.cashFloat),
+    frozen: d.frozen === true,
   }
 }
 

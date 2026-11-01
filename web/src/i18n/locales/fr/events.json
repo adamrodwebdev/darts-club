@@ -248,7 +248,19 @@
         "name": "Nom (ex. Jeton vert)",
         "value": "Valeur (€)",
         "bag": "Sachet de jetons",
-        "bagHint": "Vendu tel quel à l’accueil, par exemple un sachet de 10 €."
+        "bagHint": "Vendu tel quel à l’accueil, par exemple un sachet de 10 €.",
+        "color": "Couleur du jeton",
+        "colors": {
+          "vert": "Vert",
+          "jaune": "Jaune",
+          "rouge": "Rouge",
+          "bleu": "Bleu",
+          "violet": "Violet",
+          "orange": "Orange",
+          "blanc": "Blanc",
+          "noir": "Noir"
+        },
+        "frozen": "Jetons figés depuis la première vente de l’accueil : seuls le fond de caisse et les couleurs changent encore."
       },
       "teams": {
         "title": "Équipes de la soirée",
@@ -645,5 +657,46 @@
     "empty": "Aucun événement ouvert au public pour le moment. Reviens bientôt !",
     "members": "Adhérent(e) ? {link} pour voir tout le calendrier du club.",
     "login": "Connecte-toi"
+  },
+  "evening": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "screens": {
+      "title": "Écrans de la soirée",
+      "text": "Ouverts à leur équipe le jour de la soirée ; le bureau y a accès à tout moment.",
+      "entrance": "Accueil"
+    },
+    "entrance": {
+      "title": "Accueil",
+      "sale": "Vente de jetons",
+      "saleHint": "espèces ou carte",
+      "perToken": "{price} le jeton",
+      "perBag": "{price} le sachet",
+      "remove": "Retirer : {name}",
+      "add": "Ajouter : {name}",
+      "due": "À payer",
+      "pick": "Choisis des sachets ou des jetons.",
+      "line": "{count} × {name}",
+      "bill": "En espèces, billet reçu",
+      "billLabel": "Billet de {amount}",
+      "change": "À rendre",
+      "tooSmall": "billet trop petit",
+      "cash": "Espèces",
+      "card": "Carte",
+      "byCash": "en espèces",
+      "byCard": "par carte",
+      "sold": "Vente enregistrée : {summary}, {amount} {method}.",
+      "queued": "Vente gardée sur l’appareil : elle partira dès le retour du réseau.",
+      "latest": "Dernières ventes",
+      "none": "Aucune vente pour l’instant.",
+      "pending": "en attente d’envoi",
+      "cancel": "Annuler",
+      "cancelLabel": "Annuler la vente de {time}",
+      "cancelled": "Annulée",
+      "cancelledToast": "Vente de {time} annulée, inscrite au journal.",
+      "drawer": "Caisse de l’accueil ce soir",
+      "float": "Fond de caisse",
+      "noTokens": "Les jetons ne sont pas vendus pour cette soirée : le bar et la cuisine encaissent eux-mêmes."
+    }
   }
 }

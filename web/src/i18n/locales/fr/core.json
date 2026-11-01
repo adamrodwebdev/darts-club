@@ -41,7 +41,8 @@
     "eventAccounts": "Bilan de la soirée",
     "eventDocuments": "Démarches de la soirée",
     "eventDocument": "Document de la soirée",
-    "associationProfile": "Fiche de l’association"
+    "associationProfile": "Fiche de l’association",
+    "eveningEntrance": "Accueil de la soirée"
   },
   "app": {
     "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
@@ -422,6 +423,9 @@
       "association": {
         "update": "Fiche de l’association modifiée",
         "insurance": "Attestation d’assurance rangée"
+      },
+      "entrance": {
+        "sale_cancel": "Vente de l’accueil annulée"
       }
     }
   },

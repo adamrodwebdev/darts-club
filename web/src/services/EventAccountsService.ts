@@ -1,5 +1,5 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { EventAccounts, type EntryKind, type Station, type StockUnit, type Team } from '@/models/EventAccounts'
+import { EventAccounts, type EntryKind, type Station, type StockUnit, type Team, type TokenColor } from '@/models/EventAccounts'
 
 /** Format vendu saisi : contenance en unité de stock (centilitres au litre), null si inconnue */
 export interface SaleFormatDraft {
@@ -28,11 +28,12 @@ export interface BarItemDraft {
   formats: SaleFormatDraft[]
 }
 
-/** Jeton ou sachet vendu à l'accueil, valeur décimale « 0,50 » */
+/** Jeton ou sachet vendu à l'accueil, valeur décimale « 0,50 » ; couleur du jeton (aucune pour un sachet) */
 export interface TokenDraft {
   name: string
   value: string
   bag: boolean
+  color: TokenColor | null
 }
 
 /** Encaissement de la soirée : jetons et fond de caisse de l'accueil */

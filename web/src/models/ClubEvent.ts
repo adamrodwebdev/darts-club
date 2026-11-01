@@ -164,6 +164,19 @@ export interface Guest {
   answer: Attendance
 }
 
+export interface EveningScreens {
+  entrance: boolean
+  bar: boolean
+  kitchen: boolean
+}
+
+/** API plus ancienne : aucun écran */
+function parseEveningScreens(value: unknown): EveningScreens {
+  if (value === undefined) return { entrance: false, bar: false, kitchen: false }
+  const d = obj(value, 'écrans')
+  return { entrance: bool(d.entrance), bar: bool(d.bar), kitchen: bool(d.kitchen) }
+}
+
 export interface EventDetail {
   summary: EventSummary
   description: string
@@ -173,6 +186,8 @@ export interface EventDetail {
   photos: EventPhoto[]
   videos: GalleryVideo[]
   gallery: GalleryRights
+  /** Écrans de la soirée que la personne ouvre maintenant (son équipe le jour même, le bureau toujours) */
+  service: EveningScreens
   posts: EventPost[]
   participants: Participant[] | null
   guests: Guest[] | null
@@ -205,6 +220,7 @@ export function parseEventDetail(value: unknown): EventDetail {
     // API plus ancienne : ni vidéos ni droits de publication
     videos: d.videos === undefined ? [] : list(d.videos, (v) => GalleryVideo.parse(v)),
     gallery: parseGalleryRights(d.gallery),
+    service: parseEveningScreens(d.service),
     posts: list(d.posts, (p) => {
       const x = obj(p, 'post')
       return { id: str(x.id), body: str(x.body), at: new Date(str(x.at)), mine: bool(x.mine), author: parseMember(x.author) }

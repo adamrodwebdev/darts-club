@@ -165,11 +165,17 @@ test('the board adds a token sold at the entrance', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Nouveau jeton ou sachet' })
   await dialog.getByLabel('Nom (ex. Jeton vert)').fill('Jeton rouge')
   await dialog.getByLabel('Valeur (€)').fill('2')
+  await dialog.getByRole('radio', { name: 'Rouge' }).check()
   await dialog.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(dialog).toHaveCount(0)
   expect(saved).toEqual({
     tokensEnabled: true,
-    tokens: [{ name: 'Jeton vert', value: '1.00', bag: false }, { name: 'Jeton jaune', value: '0.50', bag: false }, { name: 'Sachet', value: '10.00', bag: true }, { name: 'Jeton rouge', value: '2', bag: false }],
+    tokens: [
+      { name: 'Jeton vert', value: '1.00', bag: false, color: null },
+      { name: 'Jeton jaune', value: '0.50', bag: false, color: null },
+      { name: 'Sachet', value: '10.00', bag: true, color: null },
+      { name: 'Jeton rouge', value: '2', bag: false, color: 'rouge' },
+    ],
     cashFloat: '100.00',
   })
 })

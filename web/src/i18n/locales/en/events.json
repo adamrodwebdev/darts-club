@@ -248,7 +248,19 @@
         "name": "Name (e.g. Green token)",
         "value": "Value (€)",
         "bag": "Bag of tokens",
-        "bagHint": "Sold as is at the entrance, for example a €10 bag."
+        "bagHint": "Sold as is at the entrance, for example a €10 bag.",
+        "color": "Token colour",
+        "colors": {
+          "vert": "Green",
+          "jaune": "Yellow",
+          "rouge": "Red",
+          "bleu": "Blue",
+          "violet": "Purple",
+          "orange": "Orange",
+          "blanc": "White",
+          "noir": "Black"
+        },
+        "frozen": "Tokens are locked since the entrance’s first sale: only the cash float and the colours can still change."
       },
       "teams": {
         "title": "Teams for the evening",
@@ -645,5 +657,46 @@
     "empty": "No event open to the public at the moment. Come back soon!",
     "members": "Member? {link} to see the club’s full calendar.",
     "login": "Log in"
+  },
+  "evening": {
+    "online": "Online",
+    "offline": "Offline",
+    "screens": {
+      "title": "Evening screens",
+      "text": "Open to their team on the day of the evening; the board can open them at any time.",
+      "entrance": "Entrance"
+    },
+    "entrance": {
+      "title": "Entrance",
+      "sale": "Token sales",
+      "saleHint": "cash or card",
+      "perToken": "{price} per token",
+      "perBag": "{price} per bag",
+      "remove": "Remove: {name}",
+      "add": "Add: {name}",
+      "due": "To pay",
+      "pick": "Pick bags or tokens.",
+      "line": "{count} × {name}",
+      "bill": "Cash, note received",
+      "billLabel": "{amount} note",
+      "change": "Change",
+      "tooSmall": "note too small",
+      "cash": "Cash",
+      "card": "Card",
+      "byCash": "in cash",
+      "byCard": "by card",
+      "sold": "Sale recorded: {summary}, {amount} {method}.",
+      "queued": "Sale kept on this device: it will be sent as soon as the network is back.",
+      "latest": "Latest sales",
+      "none": "No sales yet.",
+      "pending": "waiting to be sent",
+      "cancel": "Cancel",
+      "cancelLabel": "Cancel the {time} sale",
+      "cancelled": "Cancelled",
+      "cancelledToast": "{time} sale cancelled and recorded in the log.",
+      "drawer": "Entrance cash tonight",
+      "float": "Cash float",
+      "noTokens": "Tokens are not sold for this evening: the bar and the kitchen take payment themselves."
+    }
   }
 }

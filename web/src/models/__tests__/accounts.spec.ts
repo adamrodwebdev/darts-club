@@ -82,7 +82,7 @@ describe('EventAccounts', () => {
   it('reads an older answer without tokens, teams or menu rights', () => {
     const { cash: _cash, teams: _teams, ...older } = json
     const accounts = EventAccounts.parse({ ...older, permissions: { edit: true, reopen: false } })
-    expect(accounts.cash).toEqual({ tokensEnabled: false, tokens: [], cashFloat: '0.00' })
+    expect(accounts.cash).toEqual({ tokensEnabled: false, tokens: [], cashFloat: '0.00', frozen: false })
     expect(accounts.teams).toEqual({ accueil: [], bar: [], cuisine: [] })
     expect(accounts.mayEditMenu).toBe(false)
   })

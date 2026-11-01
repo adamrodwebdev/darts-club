@@ -20,6 +20,23 @@
   --badge-gold: #e3b341;
   --badge-teal: #3cc6b8;
   --badge-blue: #6cb2ff;
+  /* Jetons de l'accueil : couleurs des vrais jetons, anneau assez contrasté sur le fond du thème */
+  --token-vert: #2fb36b;
+  --token-vert-ring: #7be3a6;
+  --token-jaune: #f2c230;
+  --token-jaune-ring: #ffe28a;
+  --token-rouge: #e5484d;
+  --token-rouge-ring: #ff9592;
+  --token-bleu: #3e8ef7;
+  --token-bleu-ring: #93c2ff;
+  --token-violet: #8e4ec6;
+  --token-violet-ring: #c9a7ef;
+  --token-orange: #f76b15;
+  --token-orange-ring: #ffb381;
+  --token-blanc: #f5f5f5;
+  --token-blanc-ring: #b4b4bd;
+  --token-noir: #1b1b1f;
+  --token-noir-ring: #8e8e99;
   --radius: 0.6rem;
   --gutter: 1rem;
   --max-width: 72rem;
@@ -69,6 +86,14 @@
   --badge-gold: #8a6100;
   --badge-teal: #096b62;
   --badge-blue: #1f5fbf;
+  --token-vert-ring: #1d7a3e;
+  --token-jaune-ring: #8a6100;
+  --token-rouge-ring: #a12c2f;
+  --token-bleu-ring: #1f5fbf;
+  --token-violet-ring: #5b2a86;
+  --token-orange-ring: #a44b0c;
+  --token-blanc-ring: #8e8e99;
+  --token-noir-ring: #15151a;
   --wire: linear-gradient(90deg, transparent, #9a9aa6 6%, #2c2c34 50%, #9a9aa6 94%, transparent);
   color-scheme: light;
 }

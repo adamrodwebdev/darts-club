@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { formatEuro, formatInputNumber } from '@/i18n/format'
+import TokenSwatch from '@/components/evening/TokenSwatch.vue'
 import type { EventAccounts } from '@/models/EventAccounts'
 import type { CashDraft } from '@/services/EventAccountsService'
 
@@ -31,7 +32,7 @@ function changeFloat(event: Event): void {
     <h2 id="cash-title">{{ t('events.accounts.cash.title') }}</h2>
 
     <label class="check">
-      <input type="checkbox" :checked="accounts.cash.tokensEnabled" :disabled="!accounts.menuEditable || pending" @change="toggle" />
+      <input type="checkbox" :checked="accounts.cash.tokensEnabled" :disabled="!accounts.menuEditable || accounts.cash.frozen || pending" @change="toggle" />
       <span class="check__text">
         <strong>{{ t('events.accounts.cash.tokens') }}</strong>
         <span class="muted">{{ accounts.cash.tokensEnabled ? t('events.accounts.cash.tokensHint') : t('events.accounts.cash.direct') }}</span>
@@ -43,13 +44,7 @@ function changeFloat(event: Event): void {
       <p v-if="!accounts.cash.tokens.length" class="muted">{{ t('events.accounts.cash.noTokens') }}</p>
       <ul v-else class="token-list">
         <li v-for="(token, index) in accounts.cash.tokens" :key="token.name" class="token">
-          <svg v-if="token.bag" class="token__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <path d="M6 8h12l-1 12H7L6 8zM9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg v-else class="token__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-            <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2" />
-            <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5" />
-          </svg>
+          <TokenSwatch :token="token" />
           <span class="token__name">{{ token.name }}</span>
           <strong class="token__value">{{ formatEuro(token.value) }}</strong>
           <button
@@ -65,7 +60,8 @@ function changeFloat(event: Event): void {
           </button>
         </li>
       </ul>
-      <button v-if="accounts.menuEditable && accounts.cash.tokens.length < TOKENS_MAX" type="button" class="add-button no-print" @click="emit('addToken')">
+      <p v-if="accounts.cash.frozen" class="muted frozen">{{ t('events.accounts.cash.frozen') }}</p>
+      <button v-else-if="accounts.menuEditable && accounts.cash.tokens.length < TOKENS_MAX" type="button" class="add-button no-print" @click="emit('addToken')">
         {{ t('events.accounts.cash.add') }}
       </button>
     </div>
@@ -128,6 +124,11 @@ function changeFloat(event: Event): void {
   gap: 0.5rem;
 }
 
+.frozen {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
 .subtitle {
   margin: 0;
   font-size: 0.9rem;
@@ -150,11 +151,6 @@ function changeFloat(event: Event): void {
   padding-inline-start: 0.75rem;
   border-radius: var(--radius);
   background: var(--color-surface-2);
-}
-
-.token__icon {
-  flex: none;
-  color: var(--color-muted);
 }
 
 .token__name {

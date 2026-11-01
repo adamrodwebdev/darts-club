@@ -41,7 +41,8 @@
     "eventAccounts": "Evening accounts",
     "eventDocuments": "Evening paperwork",
     "eventDocument": "Evening document",
-    "associationProfile": "Association details"
+    "associationProfile": "Association details",
+    "eveningEntrance": "Evening entrance"
   },
   "app": {
     "twoFactorBanner": "Administrator: {link} to access the club tools.",
@@ -422,6 +423,9 @@
       "association": {
         "update": "Association details edited",
         "insurance": "Insurance certificate filed"
+      },
+      "entrance": {
+        "sale_cancel": "Entrance sale cancelled"
       }
     }
   },
