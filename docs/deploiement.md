@@ -207,5 +207,6 @@ Journaux : `dc logs -f php worker` (rotation automatique, 50 Mo max par service)
 - [ ] Lighthouse mobile ≥ 95 sur l'accueil
 - [ ] Inscription → email reçu (mail-tester ≥ 9/10) → connexion
 - [ ] Notifications push : activées depuis Mon compte › Notifications, reçues sur un téléphone
+- [ ] Temps réel : `dc exec php bin/console app:realtime:check` répond « abonnement accepté, publication reçue ». Sinon, il donne la raison du refus, et `dc logs mercure` la détaille (émetteur, audience, expiration). Puis, connecté dans deux navigateurs, une notification envoyée à l'un apparaît sans recharger la page.
 - [ ] Mentions légales et confidentialité complétées par le bureau (hébergeur : nom, adresse, téléphone)
 - [ ] Première sauvegarde présente dans `/var/backups/skull-darts-71`, restauration testée

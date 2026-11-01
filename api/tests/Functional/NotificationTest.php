@@ -143,7 +143,7 @@ final class NotificationTest extends ApiTestCase
 
     public function testRealtimeAuthorizationSetsHttpOnlyCookie(): void
     {
-        $this->createUser('alice@example.com');
+        $alice = $this->createUser('alice@example.com');
         $this->login('alice@example.com', self::PASSWORD);
 
         $this->client->request('POST', '/api/realtime/authorization', server: ['HTTP_ORIGIN' => self::FRONT_ORIGIN]);
@@ -153,12 +153,39 @@ final class NotificationTest extends ApiTestCase
         $cookies = $this->client->getResponse()->headers->getCookies();
         self::assertCount(1, $cookies);
         self::assertTrue($cookies[0]->isHttpOnly());
+        // Hub 1.x : cookie sans préfixe __Secure- en HTTP (debug), « __Secure-mercure_access_token » en production
+        self::assertSame('mercure_access_token', $cookies[0]->getName());
+
+        // Jeton d'accès RFC 9068 : émetteur reconnu par le hub, audience = URL publique du hub,
+        // abonnement limité aux topics de l'adhérent (motif d'URL)
+        $claims = self::jwtClaims((string) $cookies[0]->getValue());
+        self::assertSame(['darts-club-api', 'http://localhost/.well-known/mercure'], [$claims['iss'] ?? null, $claims['aud'] ?? null]);
+        self::assertArrayHasKey('exp', $claims);
+        self::assertSame([[
+            'type' => 'https://mercure.rocks/authorization-detail',
+            'actions' => ['subscribe'],
+            'topics' => [['match' => 'https://darts-club.app/users/'.$alice->getId()->toRfc4122().'/*', 'match_type' => 'urlpattern']],
+        ]], $claims['authorization_details'] ?? null);
     }
 
     public function testNotificationContentRejectsExternalLinks(): void
     {
         $this->expectException(\InvalidArgumentException::class);
         new NotificationContent(Category::Event, 'Titre', 'Corps', '//evil.example');
+    }
+
+    /**
+     * Revendications d'un JWT (charge utile en base64url, signature non vérifiée : c'est le rôle du hub).
+     *
+     * @return array<mixed>
+     */
+    private static function jwtClaims(string $jwt): array
+    {
+        $payload = explode('.', $jwt)[1] ?? '';
+        $claims = json_decode(base64_decode(strtr($payload, '-_', '+/')), true, flags: \JSON_THROW_ON_ERROR);
+        self::assertIsArray($claims);
+
+        return $claims;
     }
 
     private function notifier(): MemberNotifier
