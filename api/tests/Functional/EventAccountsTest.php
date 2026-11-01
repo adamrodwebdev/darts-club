@@ -291,12 +291,14 @@ final class EventAccountsTest extends ApiTestCase
         $this->postJson($teams, ['userId' => $alice->getId()->toRfc4122(), 'team' => 'bar']);
         self::assertResponseStatusCodeSame(201);
         $this->postJson($teams, ['userId' => $alice->getId()->toRfc4122(), 'team' => 'bar']);
+        self::assertResponseIsSuccessful();
         $this->postJson($teams, ['userId' => $alice->getId()->toRfc4122(), 'team' => 'cuisine']);
         self::assertCount(1, (array) $this->dig($this->json(), 'teams', 'bar'));
         self::assertSame('alice', $this->dig($this->json(), 'teams', 'cuisine', 0, 'displayName'));
+        $atTheBar = $this->digString($this->json(), 'teams', 'bar', 0, 'assignmentId');
         $this->postJson($teams, ['userId' => $newcomer->getId()->toRfc4122(), 'team' => 'accueil']);
         self::assertResponseStatusCodeSame(422);
-        $this->request('DELETE', '/api/evening-team-members/'.$this->digString($this->json(), 'teams', 'bar', 0, 'assignmentId'));
+        $this->request('DELETE', '/api/evening-team-members/'.$atTheBar);
         self::assertResponseIsSuccessful();
         self::assertSame([], $this->dig($this->json(), 'teams', 'bar'));
         self::assertSame(['accounts.cash', 'team.assign', 'team.assign', 'team.remove'], array_column($this->auditTrail(), 'action'));
