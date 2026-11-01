@@ -21,6 +21,9 @@ final class ImageProcessor
      */
     private const MAX_PIXELS = 25_000_000;
     private const ALLOWED_TYPES = [\IMAGETYPE_JPEG, \IMAGETYPE_PNG, \IMAGETYPE_WEBP];
+    /** AVIF : qualité visuelle proche du WebP à 82, vitesse moyenne (encodé dans le worker) */
+    private const AVIF_QUALITY = 55;
+    private const AVIF_SPEED = 6;
 
     /** Avatar : recadrage carré centré. */
     public function avatar(string $sourcePath): string
@@ -70,6 +73,31 @@ final class ImageProcessor
             'width' => imagesx($large),
             'height' => imagesy($large),
         ];
+    }
+
+    /**
+     * Version AVIF d'une image que l'on a soi-même produite en WebP (jamais d'un fichier envoyé) :
+     * même image, 20 à 40 % plus légère. Null si GD n'encode pas l'AVIF, si l'encodage échoue,
+     * ou si le résultat n'est pas plus léger que le WebP.
+     */
+    public function avif(string $webpPath): ?string
+    {
+        if (!\function_exists('imageavif')) {
+            return null;
+        }
+
+        $image = @imagecreatefromwebp($webpPath);
+        if (false === $image) {
+            return null;
+        }
+        imagesavealpha($image, true);
+
+        ob_start();
+        $encoded = @imageavif($image, null, self::AVIF_QUALITY, self::AVIF_SPEED);
+        $binary = (string) ob_get_clean();
+        $webpSize = filesize($webpPath);
+
+        return $encoded && '' !== $binary && false !== $webpSize && \strlen($binary) < $webpSize ? $binary : null;
     }
 
     /** Justificatif (ticket, facture) : plus de définition qu'une photo, pour garder les petits caractères lisibles */

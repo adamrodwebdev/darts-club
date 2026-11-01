@@ -1,5 +1,6 @@
 import { inject, type InjectionKey } from 'vue'
 import { ApiClient } from '@/api/ApiClient'
+import { BrowserMediaProbe } from '@/media/MediaProbe'
 import { systemClock, type Clock } from '@/time/Clock'
 import { AdminService } from './AdminService'
 import { AssociationProfileService } from './AssociationProfileService'
@@ -15,6 +16,7 @@ import { PublicEventService } from './PublicEventService'
 import { PushService } from './PushService'
 import { RealtimeClient } from './RealtimeClient'
 import { TreasuryService } from './TreasuryService'
+import { VideoUploadService } from './VideoUploadService'
 
 /** Dépendances remplaçables (tests) : client HTTP et horloge */
 export interface ServiceDependencies {
@@ -44,6 +46,8 @@ export function createServices({ api = new ApiClient(), clock = systemClock }: S
     eventDocuments: new EventDocumentsService(api),
     associationProfile: new AssociationProfileService(api),
     publicEvents: new PublicEventService(api),
+    videoUploads: new VideoUploadService(api),
+    media: new BrowserMediaProbe(),
   }
 }
 

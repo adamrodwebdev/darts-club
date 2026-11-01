@@ -1,6 +1,7 @@
 import type { ApiClient } from '@/api/ApiClient'
 import { EventSummary, parseEventDetail, type Attendance, type EventDetail } from '@/models/ClubEvent'
 import { parseEventAudience, type EventAudience } from '@/models/EventAudience'
+import type { MediaKind } from '@/models/Gallery'
 import { bool, list, obj, str } from '@/models/guards'
 
 export interface EventDraft {
@@ -21,6 +22,19 @@ export interface EventQuery {
   period: 'upcoming' | 'past'
   season?: string
   q?: string
+}
+
+/** Photo ou vidéo de galerie, désignée pour une action (retrait, remise en ligne) */
+export interface MediaRef {
+  kind: MediaKind
+  id: string
+}
+
+/** Adresse de chaque sorte de média dans l'API */
+const MEDIA_PATHS: Record<MediaKind, string> = { photo: '/api/event-photos', video: '/api/event-videos' }
+
+function mediaPath(media: MediaRef): string {
+  return `${MEDIA_PATHS[media.kind]}/${encodeURIComponent(media.id)}`
 }
 
 /** Calendrier, inscriptions, archives et abonnement iCal. */
@@ -106,6 +120,21 @@ export class EventService {
 
   async deletePhoto(photoId: string): Promise<void> {
     await this.api.delete(`/api/event-photos/${encodeURIComponent(photoId)}`)
+  }
+
+  /** Photo ou vidéo : retirée par son auteur ou un organisateur */
+  async deleteMedia(media: MediaRef): Promise<void> {
+    await this.api.delete(mediaPath(media))
+  }
+
+  /** Droit à l'image : masquée tout de suite, la présidence décide */
+  async requestRemoval(media: MediaRef): Promise<void> {
+    await this.api.post(`${mediaPath(media)}/removal-request`, {})
+  }
+
+  /** La présidence remet en ligne une photo ou une vidéo masquée */
+  async restoreMedia(media: MediaRef): Promise<void> {
+    await this.api.post(`${mediaPath(media)}/restore`, {})
   }
 
   async addPost(id: string, body: string): Promise<void> {

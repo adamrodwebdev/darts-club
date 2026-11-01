@@ -9,6 +9,9 @@ services:
 
     App\Notification\Push\PushSender: '@App\Tests\Double\FakePushSender'
 
+    # Pas de ffmpeg dans la CI : conversion simulée, mêmes règles de durée et de dimensions
+    App\Media\VideoTranscoder: '@App\Tests\Double\FakeVideoTranscoder'
+
     # Pas encore utilisé par un contrôleur (diffusions du président : étape 7)
     App\Notification\MemberNotifier: ~
 

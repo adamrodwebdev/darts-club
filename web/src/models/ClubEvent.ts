@@ -1,5 +1,6 @@
 import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import { parseMember, type Member } from './Conversation'
+import { GalleryVideo, parseGalleryRights, type GalleryRights } from './Gallery'
 import { bool, InvalidResponseError, list, num, obj, optStr, str, type Json } from './guards'
 
 /** Affiche d'un événement (WebP) : version carte pour le calendrier, grande version pour la page */
@@ -126,6 +127,7 @@ export class EventSummary {
   }
 }
 
+/** Photo de galerie ; l'API sert l'AVIF plus léger aux navigateurs qui l'annoncent, le WebP sinon */
 export interface EventPhoto {
   id: string
   thumbUrl: string
@@ -134,7 +136,11 @@ export interface EventPhoto {
   height: number
   caption: string | null
   uploader: string
+  uploadedAt: Date
   mine: boolean
+  /** Masquée après une demande de retrait (visible de la présidence et de son auteur) */
+  hidden: boolean
+  hiddenBy: string | null
 }
 
 export interface EventPost {
@@ -165,6 +171,8 @@ export interface EventDetail {
   report: string | null
   canManage: boolean
   photos: EventPhoto[]
+  videos: GalleryVideo[]
+  gallery: GalleryRights
   posts: EventPost[]
   participants: Participant[] | null
   guests: Guest[] | null
@@ -188,9 +196,15 @@ export function parseEventDetail(value: unknown): EventDetail {
         height: num(x.height),
         caption: optStr(x.caption),
         uploader: str(x.uploader),
+        uploadedAt: new Date(str(x.uploadedAt)),
         mine: bool(x.mine),
+        hidden: x.hidden === true,
+        hiddenBy: optStr(x.hiddenBy),
       }
     }),
+    // API plus ancienne : ni vidéos ni droits de publication
+    videos: d.videos === undefined ? [] : list(d.videos, (v) => GalleryVideo.parse(v)),
+    gallery: parseGalleryRights(d.gallery),
     posts: list(d.posts, (p) => {
       const x = obj(p, 'post')
       return { id: str(x.id), body: str(x.body), at: new Date(str(x.at)), mine: bool(x.mine), author: parseMember(x.author) }

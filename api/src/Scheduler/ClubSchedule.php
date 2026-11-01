@@ -6,6 +6,7 @@ use App\ClubEvent\PurgeAudience;
 use App\ClubEvent\PurgeGuestResponses;
 use App\ClubEvent\SendEventReminders;
 use App\EventAccounts\PurgeOldReceipts;
+use App\Gallery\PurgeStaleVideoUploads;
 use App\Membership\SendMembershipReminders;
 use App\Security\PurgeUnverifiedAccounts;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
@@ -42,6 +43,8 @@ final class ClubSchedule implements ScheduleProviderInterface
                 RecurringMessage::cron('40 4 * * *', new PurgeUnverifiedAccounts()),
                 // Justificatifs des bilans : 6 ans après la soirée (4 h 50)
                 RecurringMessage::cron('50 4 * * *', new PurgeOldReceipts()),
+                // Vidéos : envois abandonnés, conversions bloquées, vieux échecs (5 h)
+                RecurringMessage::cron('0 5 * * *', new PurgeStaleVideoUploads()),
             );
     }
 }

@@ -17,3 +17,6 @@
 'message.body': '%preview%'
 'member.pending.title': 'New account to approve: %name%'
 'member.pending.body': '%email% confirmed their address. Approve the account from Administration › Members.'
+'gallery.removal.title': 'Removal request: %event%'
+'gallery.removal.body.photo': '%name% asked for a photo to be removed. It is hidden until you decide.'
+'gallery.removal.body.video': '%name% asked for a video to be removed. It is hidden until you decide.'

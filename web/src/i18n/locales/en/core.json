@@ -382,7 +382,14 @@
         "cancel": "Event cancelled"
       },
       "photo": {
-        "delete": "Photo removed (moderation)"
+        "delete": "Photo removed (moderation)",
+        "hide": "Photo hidden (removal request)",
+        "restore": "Photo put back online"
+      },
+      "video": {
+        "delete": "Video removed (moderation)",
+        "hide": "Video hidden (removal request)",
+        "restore": "Video put back online"
       },
       "post": {
         "delete": "Post removed (moderation)"
