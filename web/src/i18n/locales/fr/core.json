@@ -401,7 +401,12 @@
         "receipt_add": "Justificatif ajouté",
         "receipt_remove": "Justificatif retiré",
         "close": "Bilan clôturé",
-        "reopen": "Bilan rouvert"
+        "reopen": "Bilan rouvert",
+        "cash": "Encaissement de la soirée modifié"
+      },
+      "team": {
+        "assign": "Membre placé dans une équipe de la soirée",
+        "remove": "Membre retiré d’une équipe de la soirée"
       },
       "procedure": {
         "save": "Document de démarche enregistré",

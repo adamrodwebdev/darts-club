@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, useId, useTemplateRef } from 'vue'
 
-defineProps<{ title: string }>()
+/** `wide` : formulaire en plusieurs colonnes (article de la carte) */
+withDefaults(defineProps<{ title: string; wide?: boolean }>(), { wide: false })
 const emit = defineEmits<{ close: [] }>()
 
 const id = useId()
@@ -14,7 +15,7 @@ defineExpose({ close: () => dialog.value?.close() })
 </script>
 
 <template>
-  <dialog ref="dialog" class="dialog" :aria-labelledby="id" @close="emit('close')">
+  <dialog ref="dialog" class="dialog" :class="{ 'dialog--wide': wide }" :aria-labelledby="id" @close="emit('close')">
     <h2 :id="id">{{ title }}</h2>
     <slot />
   </dialog>
@@ -29,6 +30,10 @@ defineExpose({ close: () => dialog.value?.close() })
   border-radius: calc(var(--radius) * 1.5);
   background: var(--color-surface);
   color: var(--color-text);
+}
+
+.dialog--wide {
+  width: min(42rem, calc(100% - 2rem));
 }
 
 .dialog::backdrop {

@@ -1,21 +1,74 @@
-import { bool, list, num, obj, optStr, str } from './guards'
+import { parseMember, type Member } from './Conversation'
+import { bool, list, num, obj, optStr, str, strList } from './guards'
 
-/** Article de la buvette, avec ses montants calculés par l'API (seule source des totaux) */
+/** Qui sert un article : les boissons restent au bar, les plats partent en cuisine */
+export type Station = 'bar' | 'cuisine'
+
+/** Unité de stock : litre (compté en centilitres), unité, portion */
+export type StockUnit = 'litre' | 'unite' | 'portion'
+
+/** Format vendu : verre, pichet, bouteille, portion ; contenance facultative, en unité de stock */
+export interface SaleFormat {
+  name: string
+  /** Centilitres pour un article au litre, 1 pour une unité ou une portion ; null si inconnue */
+  volume: number | null
+  /** Montant décimal « 2.00 » */
+  price: string
+  sold: number
+}
+
+/** Article de la carte, avec ses montants calculés par l'API (seule source des totaux) */
 export interface BarItem {
   id: string
   label: string
+  station: Station
+  unit: StockUnit
+  garnishes: readonly string[]
+  alcoholic: boolean
+  /** Contenant acheté (fût, pack) et sa contenance en unité de stock (3000 cl pour 30 L) */
+  container: { name: string | null; size: number }
+  /** En contenants */
   planned: number
   bought: number
   /** Retourné au fournisseur, remboursé */
   returned: number
-  sold: number
-  /** Gardé pour une autre soirée, ou offert */
-  left: number
-  /** Montants décimaux « 0.95 » */
+  /** Prix d'un contenant, décimal « 95.00 » */
   purchasePrice: string
-  salePrice: string
+  formats: readonly SaleFormat[]
+  /** Stock en unités de stock (centilitres, unités, portions) */
+  stock: number
+  /** Servi en unités de stock ; null tant qu'une contenance de format manque */
+  served: number | null
+  /** Ventes, tous formats confondus */
+  soldCount: number
+  /** Reste en unités de stock ; null tant qu'une contenance de format manque */
+  left: number | null
   cost: string
   income: string
+}
+
+/** Jeton ou sachet vendu à l'accueil */
+export interface TokenKind {
+  name: string
+  /** Montant décimal « 0.50 » */
+  value: string
+  bag: boolean
+}
+
+export interface CashSettings {
+  tokensEnabled: boolean
+  tokens: readonly TokenKind[]
+  /** Fond de caisse de l'accueil, décimal */
+  cashFloat: string
+}
+
+export type Team = 'accueil' | 'bar' | 'cuisine'
+
+export const TEAMS: readonly Team[] = ['accueil', 'bar', 'cuisine']
+
+/** Membre placé dans une équipe de la soirée */
+export interface TeamMember extends Member {
+  assignmentId: string
 }
 
 export type EntryKind = 'depense' | 'recette'
@@ -71,29 +124,72 @@ export interface EventAccountsData {
   entries: readonly AccountsEntry[]
   receipts: readonly Receipt[]
   totals: AccountsTotals
+  cash: CashSettings
+  teams: Readonly<Record<Team, readonly TeamMember[]>>
   year: number
   temporaryBars: YearCounter
   taxExemptEvents: YearCounter
   /** Ce que la personne connectée peut faire (l'API reste juge) */
   mayEdit: boolean
+  /** Carte, encaissement et équipes : tout le bureau et l'administrateur */
+  mayEditMenu: boolean
   mayReopen: boolean
+}
+
+const STATIONS: readonly Station[] = ['bar', 'cuisine']
+const UNITS: readonly StockUnit[] = ['litre', 'unite', 'portion']
+
+function parseFormat(value: unknown): SaleFormat {
+  const d = obj(value, 'format')
+  return { name: str(d.name), volume: d.volume === null ? null : num(d.volume), price: str(d.price), sold: num(d.sold) }
 }
 
 function parseItem(value: unknown): BarItem {
   const d = obj(value, 'article')
+  const container = obj(d.container, 'contenant')
+  const station = str(d.station)
+  const unit = str(d.unit)
   return {
     id: str(d.id),
     label: str(d.label),
+    station: STATIONS.find((s) => s === station) ?? 'bar',
+    unit: UNITS.find((u) => u === unit) ?? 'unite',
+    garnishes: strList(d.garnishes),
+    alcoholic: bool(d.alcoholic),
+    container: { name: optStr(container.name), size: num(container.size) },
     planned: num(d.planned),
     bought: num(d.bought),
     returned: num(d.returned),
-    sold: num(d.sold),
-    left: num(d.left),
     purchasePrice: str(d.purchasePrice),
-    salePrice: str(d.salePrice),
+    formats: list(d.formats, parseFormat),
+    stock: num(d.stock),
+    served: d.served === null ? null : num(d.served),
+    soldCount: num(d.soldCount),
+    left: d.left === null ? null : num(d.left),
     cost: str(d.cost),
     income: str(d.income),
   }
+}
+
+/** API plus ancienne, sans jetons ni équipes : encaissement direct, aucune équipe */
+function parseCash(value: unknown): CashSettings {
+  if (value === undefined) return { tokensEnabled: false, tokens: [], cashFloat: '0.00' }
+  const d = obj(value, 'encaissement')
+  return {
+    tokensEnabled: bool(d.tokensEnabled),
+    tokens: list(d.tokens, (t) => {
+      const x = obj(t, 'jeton')
+      return { name: str(x.name), value: str(x.value), bag: bool(x.bag) }
+    }),
+    cashFloat: str(d.cashFloat),
+  }
+}
+
+function parseTeams(value: unknown): Record<Team, TeamMember[]> {
+  const d = value === undefined ? {} : obj(value, 'équipes')
+  const members = (team: Team): TeamMember[] =>
+    d[team] === undefined ? [] : list(d[team], (m) => ({ ...parseMember(m), assignmentId: str(obj(m).assignmentId) }))
+  return { accueil: members('accueil'), bar: members('bar'), cuisine: members('cuisine') }
 }
 
 function parseEntry(value: unknown): AccountsEntry {
@@ -154,10 +250,13 @@ export class EventAccounts {
   declare readonly entries: readonly AccountsEntry[]
   declare readonly receipts: readonly Receipt[]
   declare readonly totals: AccountsTotals
+  declare readonly cash: CashSettings
+  declare readonly teams: Readonly<Record<Team, readonly TeamMember[]>>
   declare readonly year: number
   declare readonly temporaryBars: YearCounter
   declare readonly taxExemptEvents: YearCounter
   declare readonly mayEdit: boolean
+  declare readonly mayEditMenu: boolean
   declare readonly mayReopen: boolean
 
   constructor(data: EventAccountsData) {
@@ -184,10 +283,13 @@ export class EventAccounts {
       entries: list(d.entries, parseEntry),
       receipts: list(d.receipts, parseReceipt),
       totals: parseTotals(d.totals),
+      cash: parseCash(d.cash),
+      teams: parseTeams(d.teams),
       year: num(counters.year),
       temporaryBars: parseCounter(counters.temporaryBars),
       taxExemptEvents: parseCounter(counters.taxExempt),
       mayEdit: bool(permissions.edit),
+      mayEditMenu: permissions.editMenu === true,
       mayReopen: bool(permissions.reopen),
     })
   }
@@ -195,6 +297,11 @@ export class EventAccounts {
   /** Saisie possible : droit de modifier et bilan ouvert */
   get editable(): boolean {
     return this.mayEdit && !this.closed
+  }
+
+  /** Carte et encaissement modifiables : tout le bureau, bilan ouvert */
+  get menuEditable(): boolean {
+    return this.mayEditMenu && !this.closed
   }
 
   get expenses(): AccountsEntry[] {

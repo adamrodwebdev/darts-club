@@ -45,6 +45,12 @@ export function formatNumber(value: number): string {
   return cached('number', {}, (locale) => new Intl.NumberFormat(locale)).format(value)
 }
 
+/** Nombre repris dans un champ de saisie : sans séparateur de milliers (« 1500,5 », « 2,00 ») */
+export function formatInputNumber(value: number, fractionDigits = 0): string {
+  const options = { useGrouping: false, minimumFractionDigits: fractionDigits, maximumFractionDigits: Math.max(fractionDigits, 2) } as const
+  return cached('number', options, (locale) => new Intl.NumberFormat(locale, options)).format(value)
+}
+
 /** « il y a 3 heures », « dans 2 jours » par rapport à `now` (horloge injectée) ; null sous la minute. */
 export function formatRelative(date: Date, now: Date): string | null {
   const seconds = Math.round((date.getTime() - now.getTime()) / 1000)
