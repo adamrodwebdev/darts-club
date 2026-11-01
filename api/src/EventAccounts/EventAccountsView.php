@@ -97,7 +97,7 @@ final class EventAccountsView
     {
         return [
             'tokensEnabled' => $cash->tokensEnabled,
-            'tokens' => array_map(static fn (TokenKind $token): array => ['name' => $token->name, 'value' => $token->value->toDecimal(), 'bag' => $token->bag], $cash->tokens),
+            'tokens' => array_map(static fn (TokenKind $token): array => ['name' => $token->name, 'value' => $token->value->toDecimal(), 'bag' => $token->bag, 'color' => $token->color?->value], $cash->tokens),
             'cashFloat' => $cash->cashFloat->toDecimal(),
         ];
     }

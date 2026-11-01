@@ -40,9 +40,37 @@ final readonly class CashSettings
     public static function clubDefaults(): self
     {
         return new self(true, [
-            new TokenKind('Jeton vert', Money::cents(100)),
-            new TokenKind('Jeton jaune', Money::cents(50)),
+            new TokenKind('Jeton vert', Money::cents(100), color: TokenColor::Green),
+            new TokenKind('Jeton jaune', Money::cents(50), color: TokenColor::Yellow),
             new TokenKind('Sachet', Money::cents(1000), bag: true),
         ], Money::zero());
+    }
+
+    /** Le jeton ou le sachet de ce nom, s'il est vendu ce soir */
+    public function token(string $name): ?TokenKind
+    {
+        foreach ($this->tokens as $token) {
+            if (mb_strtolower($token->name) === mb_strtolower(trim($name))) {
+                return $token;
+            }
+        }
+
+        return null;
+    }
+
+    /** Mêmes jetons vendus (noms, valeurs, sachets), dans le même mode : ce qui se fige à la première vente */
+    public function sellsTheSameAs(self $other): bool
+    {
+        if ($this->tokensEnabled !== $other->tokensEnabled || \count($this->tokens) !== \count($other->tokens)) {
+            return false;
+        }
+        foreach ($this->tokens as $token) {
+            $same = $other->token($token->name);
+            if (null === $same || !$token->sameAs($same)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

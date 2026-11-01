@@ -3,6 +3,7 @@
 namespace App\Dto;
 
 use App\EventAccounts\CashSettings;
+use App\EventAccounts\TokenColor;
 use App\EventAccounts\TokenKind;
 use App\Membership\Money;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -27,10 +28,13 @@ final class CashSettingsInput
             array_map(static function (mixed $token): TokenKind {
                 $token = \is_array($token) ? $token : [];
 
+                $color = $token['color'] ?? null;
+
                 return new TokenKind(
                     \is_string($token['name'] ?? null) ? $token['name'] : '',
                     Money::fromDecimal(\is_string($token['value'] ?? null) ? $token['value'] : ''),
-                    true === ($token['bag'] ?? false),
+                    bag: true === ($token['bag'] ?? false),
+                    color: \is_string($color) ? TokenColor::tryFrom($color) : null,
                 );
             }, $this->tokens),
             Money::fromDecimal($this->cashFloat),

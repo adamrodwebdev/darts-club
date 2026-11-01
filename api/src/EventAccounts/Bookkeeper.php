@@ -12,6 +12,7 @@ use App\Entity\EventAccounts;
 use App\Entity\Receipt;
 use App\Entity\User;
 use App\Repository\EventAccountsRepository;
+use App\Repository\TokenSaleRepository;
 use Symfony\Component\Clock\ClockInterface;
 
 /**
@@ -24,6 +25,7 @@ final class Bookkeeper
         private readonly EventAccountsRepository $books,
         private readonly AuditTrail $audit,
         private readonly ClockInterface $clock,
+        private readonly TokenSaleRepository $sales,
     ) {
     }
 
@@ -52,6 +54,10 @@ final class Bookkeeper
     public function configureCash(User $actor, ClubEvent $event, CashSettings $settings): void
     {
         $accounts = $this->accountsOf($event);
+        // Jetons figés à la première vente de l'accueil : seuls le fond de caisse et les couleurs changent encore
+        if (!$settings->sellsTheSameAs($accounts->cash()) && $this->sales->existsFor($event)) {
+            throw new AccountsException('Jetons figés : l’accueil a déjà vendu, seuls le fond de caisse et les couleurs changent encore.');
+        }
         $accounts->configureCash($settings);
         $this->save($actor, $accounts, self::entry($accounts, 'accounts.cash', ['tokens' => $settings->tokensEnabled ? \count($settings->tokens) : 0]));
     }
