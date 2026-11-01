@@ -37,7 +37,7 @@ final class GalleryNotifications
             new TranslatedNotification(
                 category: Category::Event,
                 title: new TranslatableMessage('gallery.removal.title', ['%event%' => $event->getTitle()], 'notifications'),
-                body: new TranslatableMessage('gallery.removal.body.'.$request->kind->value, ['%name%' => $request->requesterName], 'notifications'),
+                body: new TranslatableMessage($request->kind->removalNoticeKey(), ['%name%' => $request->requesterName], 'notifications'),
                 link: '/evenements/'.$event->getId()->toRfc4122(),
             ),
             Recipients::users(...$moderators),

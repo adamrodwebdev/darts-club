@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional;
 
+use App\Entity\EventVideo;
 use App\Entity\Notification;
 use App\Enum\Role;
 use App\Tests\ApiTestCase;
@@ -77,10 +78,14 @@ final class EventGalleryTest extends ApiTestCase
         $this->client->request('GET', "/api/event-videos/{$id}/file/av1");
         self::assertResponseIsSuccessful();
 
-        // Aperçu : AVIF au navigateur qui l'annonce (si GD sait l'encoder), WebP sinon
+        // Aperçu : AVIF au navigateur qui l'annonce quand il existe (gardé seulement s'il est plus
+        // léger que le WebP : l'aperçu minuscule du double de test ne l'est pas toujours), WebP sinon
+        $this->entityManager()->clear();
+        $stored = $this->entityManager()->getRepository(EventVideo::class)->find($id);
+        self::assertNotNull($stored);
         $this->client->request('GET', "/api/event-videos/{$id}/poster", server: ['HTTP_ACCEPT' => 'image/avif,image/webp,*/*']);
         self::assertResponseIsSuccessful();
-        self::assertResponseHeaderSame('Content-Type', \function_exists('imageavif') ? 'image/avif' : 'image/webp');
+        self::assertResponseHeaderSame('Content-Type', null === $stored->posterAvifId() ? 'image/webp' : 'image/avif');
         self::assertStringContainsString('Accept', (string) $this->client->getResponse()->headers->get('Vary'));
         $this->client->request('GET', "/api/event-videos/{$id}/poster", server: ['HTTP_ACCEPT' => 'image/webp,*/*']);
         self::assertResponseHeaderSame('Content-Type', 'image/webp');
