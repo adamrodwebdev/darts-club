@@ -382,7 +382,14 @@
         "cancel": "Événement annulé"
       },
       "photo": {
-        "delete": "Photo retirée (modération)"
+        "delete": "Photo retirée (modération)",
+        "hide": "Photo masquée (demande de retrait)",
+        "restore": "Photo remise en ligne"
+      },
+      "video": {
+        "delete": "Vidéo retirée (modération)",
+        "hide": "Vidéo masquée (demande de retrait)",
+        "restore": "Vidéo remise en ligne"
       },
       "post": {
         "delete": "Message retiré (modération)"

@@ -2,7 +2,8 @@ import { i18n } from '@/i18n'
 import { typographyFor } from '@/i18n/typography'
 import { ApiError } from './ApiError'
 
-type Body = Record<string, unknown> | FormData | undefined
+/** JSON, formulaire (fichiers) ou octets bruts (morceau d'un envoi de vidéo) */
+type Body = Record<string, unknown> | FormData | Blob | undefined
 
 /**
  * Client HTTP de l'API. Session par cookie (même origine via le proxy),
@@ -41,6 +42,9 @@ export class ApiClient {
     let payload: BodyInit | undefined
 
     if (body instanceof FormData) {
+      payload = body
+    } else if (body instanceof Blob) {
+      headers['Content-Type'] = 'application/octet-stream'
       payload = body
     } else if (body !== undefined) {
       headers['Content-Type'] = 'application/json'
