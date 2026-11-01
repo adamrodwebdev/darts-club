@@ -48,6 +48,14 @@ final class Bookkeeper
         $this->save($actor, $accounts, self::entry($accounts, 'accounts.item_remove', ['item' => $item->label()]));
     }
 
+    /** Jetons, sachets et fond de caisse de l'accueil */
+    public function configureCash(User $actor, ClubEvent $event, CashSettings $settings): void
+    {
+        $accounts = $this->accountsOf($event);
+        $accounts->configureCash($settings);
+        $this->save($actor, $accounts, self::entry($accounts, 'accounts.cash', ['tokens' => $settings->tokensEnabled ? \count($settings->tokens) : 0]));
+    }
+
     public function addEntry(User $actor, ClubEvent $event, EntryDraft $draft): void
     {
         $accounts = $this->accountsOf($event);

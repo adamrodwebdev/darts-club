@@ -8,13 +8,21 @@ use App\Entity\BarItem;
 use App\Entity\ClubEvent;
 use App\Entity\EventAccounts;
 use App\Entity\Receipt;
+use App\Evening\Team;
+use App\Messaging\MessagingView;
+use App\Repository\EveningTeamMemberRepository;
 use App\Repository\EventAccountsRepository;
 
-/** Bilan d'une soirée pour le bureau : lignes, totaux calculés ici (seule source), compteurs de l'année. */
+/**
+ * Bilan d'une soirée pour le bureau : carte et stock, encaissement, équipes, lignes, totaux calculés
+ * ici (seule source), compteurs de l'année.
+ */
 final class EventAccountsView
 {
     public function __construct(
         private readonly EventAccountsRepository $books,
+        private readonly EveningTeamMemberRepository $teams,
+        private readonly MessagingView $members,
     ) {
     }
 
@@ -36,6 +44,8 @@ final class EventAccountsView
             'closedBy' => $accounts?->closedBy()?->displayName()->value,
             'flags' => ['temporaryBar' => $flags->temporaryBar, 'taxExempt' => $flags->taxExempt],
             'items' => array_map(self::item(...), $accounts?->items() ?? []),
+            'cash' => self::cash($accounts?->cash() ?? CashSettings::clubDefaults()),
+            'teams' => $this->teams($event),
             'entries' => array_map(self::entry(...), $accounts?->entries() ?? []),
             'receipts' => array_map(static fn (Receipt $receipt): array => $receipt->toArray(), $accounts?->receipts() ?? []),
             'totals' => null === $accounts ? self::noTotals() : self::totals($accounts),
@@ -44,30 +54,61 @@ final class EventAccountsView
                 'temporaryBars' => ['used' => $this->books->temporaryBarsIn($year), 'limit' => AccountsFlags::TEMPORARY_BARS_PER_YEAR],
                 'taxExempt' => ['used' => $this->books->taxExemptEventsIn($year), 'limit' => AccountsFlags::TAX_EXEMPT_EVENTS_PER_YEAR],
             ],
-            'permissions' => ['edit' => $permissions->edit, 'reopen' => $permissions->reopen],
+            'permissions' => ['edit' => $permissions->edit, 'editMenu' => $permissions->editMenu, 'reopen' => $permissions->reopen],
         ];
     }
 
     /** @return array<string, mixed> */
     private static function item(BarItem $item): array
     {
-        $quantities = $item->quantities();
-        $prices = $item->prices();
+        $serving = $item->serving();
+        $stock = $item->stock();
 
         return [
             'id' => $item->getId()->toRfc4122(),
             'position' => $item->position(),
             'label' => $item->label(),
-            'planned' => $quantities->planned,
-            'bought' => $quantities->bought,
-            'returned' => $quantities->returned,
-            'sold' => $quantities->sold,
-            'left' => $quantities->left(),
-            'purchasePrice' => $prices->purchase->toDecimal(),
-            'salePrice' => $prices->sale->toDecimal(),
+            'station' => $serving->station->value,
+            'unit' => $serving->unit->value,
+            'garnishes' => $serving->garnishes,
+            'alcoholic' => $serving->alcoholic,
+            'container' => ['name' => $stock->container->name, 'size' => $stock->container->size],
+            'planned' => $stock->quantities->planned,
+            'bought' => $stock->quantities->bought,
+            'returned' => $stock->quantities->returned,
+            'purchasePrice' => $stock->containerPrice->toDecimal(),
+            'formats' => array_map(static fn (SaleFormat $format): array => [
+                'name' => $format->name,
+                'volume' => $format->volume,
+                'price' => $format->price->toDecimal(),
+                'sold' => $format->sold,
+            ], $item->formats()->all),
+            'stock' => $stock->units(),
+            'left' => $item->left(),
             'cost' => $item->cost()->toDecimal(),
             'income' => $item->income()->toDecimal(),
         ];
+    }
+
+    /** @return array<string, mixed> */
+    private static function cash(CashSettings $cash): array
+    {
+        return [
+            'tokensEnabled' => $cash->tokensEnabled,
+            'tokens' => array_map(static fn (TokenKind $token): array => ['name' => $token->name, 'value' => $token->value->toDecimal(), 'bag' => $token->bag], $cash->tokens),
+            'cashFloat' => $cash->cashFloat->toDecimal(),
+        ];
+    }
+
+    /** @return array<string, list<array<string, mixed>>> */
+    private function teams(ClubEvent $event): array
+    {
+        $teams = array_fill_keys(array_map(static fn (Team $team): string => $team->value, Team::cases()), []);
+        foreach ($this->teams->forEvent($event) as $member) {
+            $teams[$member->team()->value][] = ['assignmentId' => $member->getId()->toRfc4122(), 'assignedAt' => $member->assignedAt()->format(\DATE_ATOM)] + $this->members->member($member->user());
+        }
+
+        return $teams;
     }
 
     /** @return array<string, mixed> */
