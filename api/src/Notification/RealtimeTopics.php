@@ -15,12 +15,13 @@ final class RealtimeTopics
     }
 
     /**
-     * Tous les topics privés d'un adhérent.
+     * Tous les topics privés d'un adhérent, en motif d'URL (protocole Mercure 1.0 : « urlpattern »,
+     * les gabarits d'URI de la version 0.x n'existent plus).
      *
-     * @return list<string>
+     * @return array{urlpattern: list<string>}
      */
     public static function privateTopicsOf(User $user): array
     {
-        return [self::BASE.'/users/'.$user->getId()->toRfc4122().'/{+rest}'];
+        return ['urlpattern' => [self::BASE.'/users/'.$user->getId()->toRfc4122().'/*']];
     }
 }

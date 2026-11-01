@@ -72,14 +72,19 @@ services:
 
   # Hub temps réel, seul service exposé à Internet avec php : sur son propre réseau, il
   # n'atteint ni la base ni Redis
+  # Protocole Mercure 1.0 : jetons d'accès (RFC 9068) émis par l'API (« iss » darts-club-api),
+  # audience fixée sur l'URL publique du hub (derrière Caddy, il ne voit que http://mercure)
   mercure:
-    image: dunglas/mercure:v0.21
+    image: dunglas/mercure:v1.1
     restart: unless-stopped
     networks: [realtime]
     environment:
       SERVER_NAME: ":80"
+      MERCURE_TRUSTED_ISSUERS: darts-club-api
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_EXTRA_DIRECTIVES: |
+        resource_identifier https://${SERVER_NAME:-localhost}/.well-known/mercure
     volumes:
       - mercure_data:/data
       - mercure_config:/config

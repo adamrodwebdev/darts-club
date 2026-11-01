@@ -3,6 +3,9 @@ mercure:
         default:
             url: '%env(MERCURE_URL)%'
             public_url: '%env(MERCURE_PUBLIC_URL)%'
+            # Hub 1.x : jetons d'accès RFC 9068 (« aud » = public_url), cookie __Secure-mercure_access_token,
+            # abonnements par « match » ; le hub fait confiance à l'émetteur darts-club-api (compose.yaml)
+            protocol_version: '1.0'
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'
                 publish: ['*']
