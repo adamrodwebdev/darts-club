@@ -235,7 +235,7 @@ final class EventAccountsTest extends ApiTestCase
         $this->postJson($uri.'/items', $beer);
         self::assertResponseStatusCodeSame(201);
         $item = (array) $this->dig($this->json(), 'items', 0);
-        self::assertSame(['stock' => 6000, 'left' => 1550, 'cost' => '190.00', 'income' => '338.00'], array_intersect_key($item, array_flip(['stock', 'left', 'cost', 'income'])));
+        self::assertSame(['stock' => 6000, 'served' => 4450, 'soldCount' => 133, 'left' => 1550, 'cost' => '190.00', 'income' => '338.00'], array_intersect_key($item, array_flip(['stock', 'served', 'soldCount', 'left', 'cost', 'income'])));
         self::assertSame(['name' => 'Fût', 'size' => 3000], $item['container']);
         self::assertSame('480.00', $this->dig($this->json(), 'totals', 'plannedIncome'), 'Prévu : 240 verres de 25 cl à 2 €');
 
@@ -244,6 +244,8 @@ final class EventAccountsTest extends ApiTestCase
         $this->request('PUT', '/api/event-accounts/items/'.$this->digString($this->json(), 'items', 0, 'id'), $beer);
         self::assertResponseIsSuccessful();
         self::assertNull($this->dig($this->json(), 'items', 0, 'left'));
+        self::assertNull($this->dig($this->json(), 'items', 0, 'served'));
+        self::assertSame(124, $this->dig($this->json(), 'items', 0, 'soldCount'));
 
         // Plat de la cuisine : garnitures sans doublon, jamais d'alcool
         $hotdog = ['label' => 'Hot dog', 'station' => 'cuisine', 'unit' => 'portion', 'garnishes' => ['Ketchup', 'Mayonnaise', 'ketchup'], 'containerSize' => 1,

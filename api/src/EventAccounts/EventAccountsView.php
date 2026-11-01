@@ -84,6 +84,8 @@ final class EventAccountsView
                 'sold' => $format->sold,
             ], $item->formats()->all),
             'stock' => $stock->units(),
+            'served' => $item->formats()->served(),
+            'soldCount' => $item->formats()->soldCount(),
             'left' => $item->left(),
             'cost' => $item->cost()->toDecimal(),
             'income' => $item->income()->toDecimal(),
