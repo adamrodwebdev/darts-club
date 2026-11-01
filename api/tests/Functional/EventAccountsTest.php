@@ -277,6 +277,7 @@ final class EventAccountsTest extends ApiTestCase
             'tokensEnabled' => true,
             'tokens' => [['name' => 'Jeton vert', 'value' => '1.00', 'bag' => false, 'color' => 'vert'], ['name' => 'Jeton jaune', 'value' => '0.50', 'bag' => false, 'color' => 'jaune'], ['name' => 'Sachet', 'value' => '10.00', 'bag' => true, 'color' => null]],
             'cashFloat' => '0.00',
+            'frozen' => false,
         ], $this->json()['cash']);
 
         $this->request('PUT', $uri.'/cash', ['tokensEnabled' => true, 'tokens' => [['name' => 'Jeton vert', 'value' => '1', 'bag' => false], ['name' => 'Sachet', 'value' => '20', 'bag' => true]], 'cashFloat' => '100']);

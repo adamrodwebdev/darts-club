@@ -90,6 +90,9 @@ final class EveningEntranceTest extends ApiTestCase
         $this->client->request('GET', $this->entranceUri($tonight));
         self::assertResponseIsSuccessful();
         self::assertSame(['Jeton vert', 'Jeton jaune', 'Sachet'], array_column((array) $this->json()['tokens'], 'name'));
+        // La page de la soirée propose son écran, et seulement le sien
+        $this->client->request('GET', '/api/events/'.$tonight->getId()->toRfc4122());
+        self::assertSame(['entrance' => true, 'bar' => false, 'kitchen' => false], $this->json()['service']);
         $this->client->request('GET', $this->entranceUri($nextMonth));
         self::assertResponseStatusCodeSame(403, 'Pas avant le jour de la soirée');
         $this->client->request('GET', $this->entranceUri($lastNight));
@@ -126,7 +129,7 @@ final class EveningEntranceTest extends ApiTestCase
         $tokens[1]['color'] = 'orange';
         $this->request('PUT', $this->accountsUri($event).'/cash', ['tokensEnabled' => true, 'tokens' => $tokens, 'cashFloat' => '80']);
         self::assertResponseIsSuccessful();
-        self::assertSame(['80.00', 'orange'], [$this->dig($this->json(), 'cash', 'cashFloat'), $this->dig($this->json(), 'cash', 'tokens', 1, 'color')]);
+        self::assertSame(['80.00', 'orange', true], [$this->dig($this->json(), 'cash', 'cashFloat'), $this->dig($this->json(), 'cash', 'tokens', 1, 'color'), $this->dig($this->json(), 'cash', 'frozen')]);
     }
 
     public function testSalesReachTheEveningScreensInRealTime(): void

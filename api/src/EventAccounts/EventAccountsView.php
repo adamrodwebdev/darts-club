@@ -12,6 +12,7 @@ use App\Evening\Team;
 use App\Messaging\MessagingView;
 use App\Repository\EveningTeamMemberRepository;
 use App\Repository\EventAccountsRepository;
+use App\Repository\TokenSaleRepository;
 
 /**
  * Bilan d'une soirée pour le bureau : carte et stock, encaissement, équipes, lignes, totaux calculés
@@ -23,6 +24,7 @@ final class EventAccountsView
         private readonly EventAccountsRepository $books,
         private readonly EveningTeamMemberRepository $teams,
         private readonly MessagingView $members,
+        private readonly TokenSaleRepository $sales,
     ) {
     }
 
@@ -44,7 +46,7 @@ final class EventAccountsView
             'closedBy' => $accounts?->closedBy()?->displayName()->value,
             'flags' => ['temporaryBar' => $flags->temporaryBar, 'taxExempt' => $flags->taxExempt],
             'items' => array_map(self::item(...), $accounts?->items() ?? []),
-            'cash' => self::cash($accounts?->cash() ?? CashSettings::clubDefaults()),
+            'cash' => self::cash($accounts?->cash() ?? CashSettings::clubDefaults()) + ['frozen' => $this->sales->existsFor($event)],
             'teams' => $this->teams($event),
             'entries' => array_map(self::entry(...), $accounts?->entries() ?? []),
             'receipts' => array_map(static fn (Receipt $receipt): array => $receipt->toArray(), $accounts?->receipts() ?? []),
