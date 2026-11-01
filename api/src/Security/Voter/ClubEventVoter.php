@@ -5,6 +5,7 @@ namespace App\Security\Voter;
 use App\Entity\ClubEvent;
 use App\Entity\EventPhoto;
 use App\Entity\EventPost;
+use App\Entity\EventVideo;
 use App\Entity\User;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
@@ -13,7 +14,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
  * Organisation des événements : secrétaire (et président / admin par hiérarchie).
- * Photos et posts : supprimables par leur auteur ou un organisateur.
+ * Photos, vidéos et posts : supprimables par leur auteur ou un organisateur.
  *
  * @extends Voter<string, mixed>
  */
@@ -30,7 +31,7 @@ final class ClubEventVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return (self::MANAGE === $attribute && (null === $subject || $subject instanceof ClubEvent))
-            || (self::DELETE_CONTENT === $attribute && ($subject instanceof EventPhoto || $subject instanceof EventPost));
+            || (self::DELETE_CONTENT === $attribute && ($subject instanceof EventPhoto || $subject instanceof EventVideo || $subject instanceof EventPost));
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
@@ -44,7 +45,7 @@ final class ClubEventVoter extends Voter
 
         return match (true) {
             self::MANAGE === $attribute => $organizer,
-            $subject instanceof EventPhoto => $organizer || $subject->isUploadedBy($user),
+            $subject instanceof EventPhoto, $subject instanceof EventVideo => $organizer || $subject->isUploadedBy($user),
             $subject instanceof EventPost => $organizer || $subject->isWrittenBy($user),
             default => false,
         };

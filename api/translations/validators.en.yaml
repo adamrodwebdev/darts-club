@@ -7,3 +7,4 @@
 'Le mot de passe doit contenir au moins un chiffre.': 'The password must contain at least one number.'
 'Le mot de passe doit contenir au moins un caractère spécial (! ? @ # …).': 'The password must contain at least one special character (! ? @ # …).'
 'Ce mot de passe figure dans des fuites de données publiques : choisis-en un autre.': 'This password appears in public data leaks: please choose another one.'
+'Format non pris en charge : envoie une vidéo MP4, MOV ou WebM.': 'Unsupported format: send an MP4, MOV or WebM video.'

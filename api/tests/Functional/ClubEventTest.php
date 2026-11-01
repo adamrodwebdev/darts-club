@@ -166,7 +166,7 @@ final class ClubEventTest extends ApiTestCase
 
         $this->switchTo('alice@example.com');
         $this->uploadPhotos($future, 1);
-        self::assertResponseStatusCodeSame(422, 'Pas de photos avant l\'événement');
+        self::assertResponseStatusCodeSame(403, 'Un membre attend le début de l\'événement (la présidence publie avant)');
 
         $this->uploadPhotos($pastId, 2);
         self::assertResponseStatusCodeSame(201);

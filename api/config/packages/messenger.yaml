@@ -19,6 +19,10 @@ framework:
             App\Message\SendPasskeyNotice: async
             App\Message\Notify: async
             App\Message\DeliverNotification: async
+            # Conversions de la galerie : dans le worker, jamais pendant une requête du site
+            App\Message\TranscodeVideo: async
+            App\Message\CompressVideo: async
+            App\Message\OptimizeEventPhotos: async
 
 when@test:
     framework:
