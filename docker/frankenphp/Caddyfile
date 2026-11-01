@@ -7,8 +7,10 @@
 }
 
 {$SERVER_NAME:localhost} {
-	# Compression : zstd et Brotli si le navigateur les accepte, sinon gzip
-	encode zstd br gzip
+	# Compression : zstd et Brotli si le navigateur les accepte, sinon gzip ; jamais le flux
+	# temps réel (Server-Sent Events), que la compression retarderait
+	@compressible not path /.well-known/mercure*
+	encode @compressible zstd br gzip
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"

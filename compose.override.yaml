@@ -23,11 +23,14 @@ services:
       - ./api:/app
     environment: *dev-env
 
-  # Dev : front servi par Vite (localhost:5173), hub exposé sur le port 3000
+  # Dev : front servi par Vite (localhost:5173), hub exposé sur le port 3000 en HTTP ; « playground »
+  # prend le cookie sans préfixe __Secure- (mercure_access_token), comme l'API en mode debug
   mercure:
     environment:
       MERCURE_EXTRA_DIRECTIVES: |
+        playground
         cors_origins http://localhost:5173
+        resource_identifier http://localhost:3000/.well-known/mercure
     ports:
       - "127.0.0.1:3000:80"
 

@@ -3,12 +3,23 @@ import { obj, str, strList } from '@/models/guards'
 
 type Listener = (data: unknown) => void
 
+/** `EventSource.CLOSED` : connexion abandonnée par le navigateur (refus du hub, jeton expiré) */
+const CLOSED = 2
+/** Reconnexion de plus en plus espacée, jamais plus d'une demi-minute d'attente */
+const FIRST_RETRY_MS = 1000
+const MAX_RETRY_MS = 30_000
+
 /**
- * Connexion Mercure (Server-Sent Events). L'API pose un cookie d'autorisation
- * HttpOnly limité aux topics privés de l'adhérent ; aucun jeton côté JS.
+ * Connexion Mercure (Server-Sent Events, protocole 1.0 : abonnement par « match »). L'API pose un
+ * cookie d'autorisation HttpOnly limité aux topics privés de l'adhérent ; aucun jeton côté JS.
+ * Le jeton du cookie expire : quand le hub refuse la connexion, un nouveau cookie est demandé
+ * avant de se reconnecter (les écrans d'une soirée restent ouverts des heures).
  */
 export class RealtimeClient {
   private source: EventSource | null = null
+  private listener: Listener | null = null
+  private retries = 0
+  private timer: ReturnType<typeof setTimeout> | undefined
 
   constructor(
     private readonly api: ApiClient,
@@ -22,23 +33,47 @@ export class RealtimeClient {
   async connect(onMessage: Listener): Promise<void> {
     this.disconnect()
     if (typeof EventSource === 'undefined') return
+    this.listener = onMessage
+    await this.open()
+  }
 
+  disconnect(): void {
+    clearTimeout(this.timer)
+    this.listener = null
+    this.retries = 0
+    this.source?.close()
+    this.source = null
+  }
+
+  private async open(): Promise<void> {
     const auth = obj(await this.api.post('/api/realtime/authorization'))
+    if (this.listener === null) return
     const url = new URL(str(auth.hub), window.location.origin)
-    for (const topic of strList(auth.topics)) url.searchParams.append('topic', topic)
+    for (const topic of strList(auth.topics)) url.searchParams.append('match', topic)
 
-    this.source = this.createSource(url.toString())
-    this.source.onmessage = (event: MessageEvent<string>) => {
+    const source = this.createSource(url.toString())
+    source.onopen = () => {
+      this.retries = 0
+    }
+    source.onmessage = (event: MessageEvent<string>) => {
       try {
-        onMessage(JSON.parse(event.data))
+        this.listener?.(JSON.parse(event.data))
       } catch {
         // Message illisible : ignoré
       }
     }
+    // Coupure réseau : le navigateur se reconnecte seul ; refus du hub : nouveau cookie d'abord
+    source.onerror = () => {
+      if (source.readyState === CLOSED && this.source === source) this.retry()
+    }
+    this.source = source
   }
 
-  disconnect(): void {
-    this.source?.close()
+  private retry(): void {
     this.source = null
+    const delay = Math.min(MAX_RETRY_MS, FIRST_RETRY_MS * 2 ** this.retries++)
+    this.timer = setTimeout(() => {
+      if (this.listener !== null) this.open().catch(() => this.retry())
+    }, delay)
   }
 }

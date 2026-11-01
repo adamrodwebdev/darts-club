@@ -129,6 +129,30 @@ jobs:
         run: docker run --rm skull-darts-71:ci frankenphp validate --config /etc/frankenphp/Caddyfile
       - name: Conteneur Symfony valide en production
         run: docker run --rm -e APP_SECRET=ci-check skull-darts-71:ci php bin/console lint:container
+      # Hub lancé avec la configuration Compose de production (émetteur de confiance, audience) : les
+      # jetons de l'API doivent y être acceptés et une publication privée reçue par un abonné
+      - name: Hub Mercure accepte les jetons de l'API
+        env:
+          SERVER_NAME: ci.example
+          APP_SECRET: ci
+          POSTGRES_PASSWORD: ci
+          MERCURE_JWT_SECRET: ci-mercure-secret-key-of-at-least-32-bytes
+          TWO_FACTOR_ENCRYPTION_KEY: ci
+          MAILER_DSN: null://null
+          MAILER_FROM: ci@example.com
+        run: |
+          compose="docker compose -f compose.yaml -f compose.prod.yaml"
+          $compose up -d mercure
+          network=$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}}{{end}}' "$($compose ps -q mercure)")
+          check() {
+            docker run --rm --network "$network" -e APP_SECRET=ci-check -e MERCURE_JWT_SECRET \
+              -e MERCURE_URL=http://mercure/.well-known/mercure -e MERCURE_PUBLIC_URL=https://ci.example/.well-known/mercure \
+              skull-darts-71:ci php bin/console app:realtime:check
+          }
+          # Le hub met quelques secondes à écouter : jusqu'à cinq essais
+          for attempt in 1 2 3 4 5; do check && ok=1 && break; sleep 3; done
+          $compose logs mercure | tail -n 30
+          test "${ok:-0}" = 1
       - name: Aucun fichier local ni secret dans l'image
         run: |
           docker run --rm skull-darts-71:ci sh -c 'ls -a /app; test ! -e /app/.env.local && test ! -e /app/.env.dev.local && test -f /app/web/index.html'
