@@ -1,9 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
 import { auditBothThemes } from './a11y'
 
-const EVENT = '01a1b2c3-0000-7000-8000-0000000000g1'
-const VIDEO = '01a1b2c3-0000-7000-8000-0000000000v1'
-const PHOTO = '01a1b2c3-0000-7000-8000-0000000000p1'
+const EVENT = '01a1b2c3-0000-7000-8000-0000000000a7'
+const VIDEO = '01a1b2c3-0000-7000-8000-0000000000b7'
+const PHOTO = '01a1b2c3-0000-7000-8000-0000000000c7'
 
 // PNG 1×1 : vignettes et aperçus de l'API simulée
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
