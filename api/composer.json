@@ -116,7 +116,7 @@
         "friendsofphp/php-cs-fixer": "^3.95.27",
         "phpstan/phpstan": "^2.3.1",
         "phpstan/phpstan-symfony": "^2.1",
-        "phpunit/phpunit": "^13.4.1",
+        "phpunit/phpunit": "^13.4.5",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*"
     }
