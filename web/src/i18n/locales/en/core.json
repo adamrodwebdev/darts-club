@@ -41,7 +41,8 @@
     "eventAccounts": "Evening accounts",
     "eventDocuments": "Evening paperwork",
     "eventDocument": "Evening document",
-    "associationProfile": "Association details"
+    "associationProfile": "Association details",
+    "eveningEntrance": "Evening entrance"
   },
   "app": {
     "twoFactorBanner": "Administrator: {link} to access the club tools.",
@@ -408,7 +409,12 @@
         "receipt_add": "Receipt added",
         "receipt_remove": "Receipt removed",
         "close": "Accounts closed",
-        "reopen": "Accounts reopened"
+        "reopen": "Accounts reopened",
+        "cash": "Evening payment settings changed"
+      },
+      "team": {
+        "assign": "Member added to an evening team",
+        "remove": "Member removed from an evening team"
       },
       "procedure": {
         "save": "Paperwork document saved",
@@ -417,6 +423,9 @@
       "association": {
         "update": "Association details edited",
         "insurance": "Insurance certificate filed"
+      },
+      "entrance": {
+        "sale_cancel": "Entrance sale cancelled"
       }
     }
   },

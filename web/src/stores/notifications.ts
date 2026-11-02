@@ -32,14 +32,21 @@ export const useNotificationStore = defineStore('notifications', () => {
     await services.notifications.markAllRead()
   }
 
+  /** Les écrans de soirée partagent la connexion : seuls les messages de notification sont lus ici */
+  let stopListening: (() => void) | null = null
+
+  function onRealtime(data: unknown): void {
+    if (typeof data !== 'object' || data === null || !('notification' in data)) return
+    const { notification, unread: count } = parseRealtimeNotification(data)
+    items.value = [notification, ...items.value.filter((n) => n.id !== notification.id)].slice(0, 50)
+    unread.value = count
+    listeners.forEach((listener) => listener(notification))
+  }
+
   async function connectRealtime(): Promise<void> {
+    stopListening ??= services.realtime.listen(onRealtime)
     try {
-      await services.realtime.connect((data) => {
-        const { notification, unread: count } = parseRealtimeNotification(data)
-        items.value = [notification, ...items.value.filter((n) => n.id !== notification.id)].slice(0, 50)
-        unread.value = count
-        listeners.forEach((listener) => listener(notification))
-      })
+      await services.realtime.connect()
     } catch {
       // Temps réel indisponible : le centre reste utilisable au rechargement
     }
@@ -52,6 +59,8 @@ export const useNotificationStore = defineStore('notifications', () => {
 
   function reset(): void {
     services.realtime.disconnect()
+    stopListening?.()
+    stopListening = null
     items.value = []
     unread.value = 0
     loaded.value = false

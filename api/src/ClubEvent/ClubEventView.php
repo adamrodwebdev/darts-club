@@ -14,6 +14,7 @@ use App\Messaging\MessagingView;
 use App\Repository\EventPhotoRepository;
 use App\Repository\EventPostRepository;
 use App\Repository\EventVideoRepository;
+use App\Security\Voter\EveningServiceVoter;
 use App\Security\Voter\EventGalleryVoter;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -88,6 +89,12 @@ final class ClubEventView
                 'canAddPhotos' => $this->authorization->isGranted(EventGalleryVoter::ADD_PHOTOS, $event),
                 'canAddVideos' => $this->authorization->isGranted(EventGalleryVoter::ADD_VIDEOS, $event),
                 'canModerate' => $this->authorization->isGranted('ROLE_PRESIDENT'),
+            ],
+            // Écrans de la soirée que la personne ouvre maintenant (son équipe le jour même, le bureau toujours)
+            'service' => [
+                'entrance' => $this->authorization->isGranted(EveningServiceVoter::ENTRANCE, $event),
+                'bar' => $this->authorization->isGranted(EveningServiceVoter::BAR, $event),
+                'kitchen' => $this->authorization->isGranted(EveningServiceVoter::KITCHEN, $event),
             ],
             'posts' => array_map(fn (EventPost $p): array => [
                 'id' => $p->getId()->toRfc4122(),

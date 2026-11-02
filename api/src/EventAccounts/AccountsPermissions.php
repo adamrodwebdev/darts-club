@@ -8,6 +8,8 @@ final readonly class AccountsPermissions
     public function __construct(
         public bool $edit,
         public bool $reopen,
+        /** Carte, encaissement et équipes : tout le bureau et l'administrateur */
+        public bool $editMenu = false,
     ) {
     }
 }

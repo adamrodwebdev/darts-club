@@ -28,12 +28,13 @@ final class AccountsCsvExporter
         self::row($out, array_map($label, self::HEADER));
 
         foreach ($accounts->items() as $item) {
-            $quantities = $item->quantities();
-            $prices = $item->prices();
+            $stock = $item->stock();
+            $formats = $item->formats();
             self::row($out, [
                 $label('bar'), $item->label(),
-                (string) $quantities->planned, (string) $quantities->bought, (string) $quantities->returned, (string) $quantities->sold, (string) $quantities->left(),
-                $prices->purchase->toDecimal(), $prices->sale->toDecimal(),
+                (string) $stock->quantities->planned, (string) $stock->quantities->bought, (string) $stock->quantities->returned,
+                (string) $formats->soldCount(), (string) ($item->left() ?? ''),
+                $stock->containerPrice->toDecimal(), self::salePrices($formats),
                 $item->plannedCost()->toDecimal(), $item->cost()->toDecimal(), $item->plannedIncome()->toDecimal(), $item->income()->toDecimal(),
             ]);
         }
@@ -60,6 +61,16 @@ final class AccountsCsvExporter
         fclose($out);
 
         return $csv;
+    }
+
+    /** Un seul format : son prix ; plusieurs : « Verre 2.00 / Pichet 10.00 » */
+    private static function salePrices(SaleFormats $formats): string
+    {
+        if (1 === \count($formats->all)) {
+            return $formats->first()->price->toDecimal();
+        }
+
+        return implode(' / ', array_map(static fn (SaleFormat $format): string => $format->name.' '.$format->price->toDecimal(), $formats->all));
     }
 
     /**
