@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import AppFooter from '@/components/AppFooter.vue'
@@ -20,6 +20,11 @@ const router = useRouter()
 useDocumentHead()
 /** Pied de page rendu une tâche après la première page : sous la ligne de flottaison, il n'alourdit pas son rendu */
 const footer = useStages(1, { all: false, after: router.isReady() })
+/**
+ * Fondu entre les pages, à partir de la deuxième : la première est cachée par l'écran titre, et sans
+ * fondu Vue n'a ni classes à poser ni styles à relire (une mise en page forcée de moins au démarrage).
+ */
+const pageFade = ref(false)
 
 // Cycle de vie de la session : centre de notifications + temps réel
 watch(
@@ -66,7 +71,7 @@ watch(
   <main id="main" tabindex="-1">
     <!-- Fondu entre les pages (désactivé avec les animations, voir main.css) -->
     <RouterView v-slot="{ Component, route: current }">
-      <Transition name="page" mode="out-in">
+      <Transition name="page" mode="out-in" :css="pageFade" @after-enter="pageFade = true">
         <!-- v-if : avant la première navigation, aucune page (sinon la transition de sortie ne se termine jamais) -->
         <component :is="Component" v-if="Component" :key="current.matched[0]?.path ?? current.path" />
       </Transition>

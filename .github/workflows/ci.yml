@@ -182,15 +182,20 @@ jobs:
           timeout 60 bash -c 'until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done'
         env:
           VITE_API_PROXY: http://127.0.0.1:8787
-      # Premier passage sur une machine neuve (Chrome, Node et disque froids) : toujours bien plus lent
-      # que les suivants (0,71 à 0,80 contre 0,99 à 1 sur la même page, quatre CI de suite). Il prépare la
-      # machine et n'est pas compté ; les trois passages de chaque page qui suivent le sont, le pire décide.
+      # Premiers passages sur une machine neuve (Chrome, Node et disque froids) : bien plus lents que les
+      # suivants (0,71 à 0,80 contre 0,99 à 1 sur la même page, quatre CI de suite), et la lenteur dure
+      # parfois trois passages (accueil à 220, 120, 90 puis 30 ms de blocage, contre 10 ms à chaque passage
+      # sur le même code deux heures plus tôt). Ils préparent la machine et ne sont pas comptés ; les trois
+      # passages de chaque page qui suivent le sont, le pire décide. Ils mesurent aussi la vitesse de la
+      # machine, sur laquelle le ralentissement du processeur est calé (web/lighthouse/calibrate.mjs).
       - name: Préchauffage (non compté)
         run: |
-          npx --yes @lhci/cli@0.15.x collect --url=http://localhost:4173/ --numberOfRuns=1
+          npx --yes @lhci/cli@0.15.x collect --url=http://localhost:4173/ --numberOfRuns=3
           node web/lighthouse/summary.mjs
+          node web/lighthouse/calibrate.mjs >> "$GITHUB_ENV"
           rm -rf .lighthouseci
-      - run: npx --yes @lhci/cli@0.15.x autorun
+      # Toujours le même téléphone simulé, quelle que soit la machine tirée
+      - run: npx --yes @lhci/cli@0.15.x autorun --collect.settings.throttling.cpuSlowdownMultiplier="$LIGHTHOUSE_CPU_SLOWDOWN"
       - name: Résumé de chaque passage
         if: always()
         run: node web/lighthouse/summary.mjs

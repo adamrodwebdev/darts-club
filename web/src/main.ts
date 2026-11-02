@@ -10,6 +10,11 @@ import { createPreferenceControllers, PREFERENCES } from './preferences'
 import { createAppRouter } from './router'
 import { createServices, SERVICES } from './services'
 import { afterNextFrame } from './time/afterNextFrame'
+import { nextTask } from './time/nextTask'
+
+// Démarrage en tâches courtes (Lighthouse : temps de blocage) : les modules sont évalués seuls,
+// puis viennent les services et le routeur, les extensions, l'en-tête, enfin la page.
+await nextTask()
 
 // Racine de composition : chaque dépendance est créée ici une fois, puis fournie à l'application
 const services = createServices()
@@ -43,6 +48,8 @@ const firstPage = router.beforeResolve(async () => {
 })
 app.use(router)
 
+// La navigation initiale a commencé (gardes, session lue) : l'en-tête est rendu dans sa propre tâche
+await nextTask()
 app.mount('#app')
 
 // Première page affichée : l'écran titre de index.html laisse la place
