@@ -225,13 +225,15 @@ async function saveSummary(): Promise<void> {
         </form>
       </section>
 
-      <section v-if="detail.service.entrance" class="card board" aria-labelledby="screens-title">
+      <section v-if="detail.service.entrance || detail.service.bar || detail.service.kitchen" class="card board" aria-labelledby="screens-title">
         <div>
           <h2 id="screens-title">{{ t('evening.screens.title') }}</h2>
           <p class="muted">{{ t('evening.screens.text') }}</p>
         </div>
         <div class="board__links">
-          <RouterLink :to="{ name: 'evening-entrance', params: { id: event.id } }" class="link-button">{{ t('evening.screens.entrance') }}</RouterLink>
+          <RouterLink v-if="detail.service.entrance" :to="{ name: 'evening-entrance', params: { id: event.id } }" class="link-button">{{ t('evening.screens.entrance') }}</RouterLink>
+          <RouterLink v-if="detail.service.bar" :to="{ name: 'evening-bar', params: { id: event.id } }" class="link-button">{{ t('evening.screens.bar') }}</RouterLink>
+          <RouterLink v-if="detail.service.kitchen" :to="{ name: 'evening-kitchen', params: { id: event.id } }" class="link-button">{{ t('evening.screens.kitchen') }}</RouterLink>
         </div>
       </section>
 

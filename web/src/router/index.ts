@@ -150,6 +150,20 @@ const ROUTES: RouteRecordRaw[] = [
     meta: { titleKey: 'eveningEntrance', requiresAuth: true },
   },
   {
+    path: '/evenements/:id([0-9a-f-]{36})/bar',
+    name: 'evening-bar',
+    component: () => import('../views/evening/BarView.vue'),
+    props: true,
+    meta: { titleKey: 'eveningBar', requiresAuth: true },
+  },
+  {
+    path: '/evenements/:id([0-9a-f-]{36})/cuisine',
+    name: 'evening-kitchen',
+    component: () => import('../views/evening/KitchenView.vue'),
+    props: true,
+    meta: { titleKey: 'eveningKitchen', requiresAuth: true },
+  },
+  {
     path: '/evenements/:id([0-9a-f-]{36})/demarches',
     name: 'event-documents',
     component: () => import('../views/events/EventDocumentsView.vue'),

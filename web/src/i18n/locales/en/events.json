@@ -664,7 +664,9 @@
     "screens": {
       "title": "Evening screens",
       "text": "Open to their team on the day of the evening; the board can open them at any time.",
-      "entrance": "Entrance"
+      "entrance": "Entrance",
+      "bar": "Bar",
+      "kitchen": "Kitchen"
     },
     "entrance": {
       "title": "Entrance",
@@ -697,6 +699,80 @@
       "drawer": "Entrance cash tonight",
       "float": "Cash float",
       "noTokens": "Tokens are not sold for this evening: the bar and the kitchen take payment themselves."
+    },
+    "order": {
+      "number": "Order #{number}",
+      "noNote": "No marker",
+      "line": "{count} × {label}",
+      "wait": "waiting for {n} min"
+    },
+    "bar": {
+      "title": "Bar",
+      "tabs": {
+        "label": "Bar sections",
+        "order": "Order",
+        "ready": "Ready · {n}",
+        "kitchen": "In the kitchen · {n}"
+      },
+      "drinks": "Drinks served at the bar",
+      "noDrinks": "No drinks on the menu.",
+      "food": "Kitchen",
+      "foodHint": "sent to the kitchen",
+      "noFood": "No food on the menu.",
+      "soldOut": "sold out",
+      "left": "{n} left",
+      "leftServings": "≈ {n} × {format} left",
+      "remove": "Remove: {name}",
+      "add": "Add: {name}",
+      "garnishes": "Toppings: {name}",
+      "garnishOut": "{name} · sold out",
+      "addWith": "+ {name} ({garnishes}) · {price}",
+      "plain": "plain",
+      "empty": "Add drinks or food.",
+      "rest": "Tokens do not cover {amount}: take it another way.",
+      "removeLine": "One less: {name}",
+      "note": "Customer marker",
+      "noteHint": "Optional: table, name, clothes…",
+      "validate": "Confirm the order",
+      "pending": "Waiting to be sent",
+      "queued": "Order kept on this device: it will be sent as soon as the network is back.",
+      "sentToKitchen": "Order {number} confirmed: no food | Order {number} confirmed: {n} dish goes to the kitchen. | Order {number} confirmed: {n} dishes go to the kitchen.",
+      "drinksOnly": "Order confirmed: drinks to serve.",
+      "readyHint": "Ready food arrives here with a sound. Tap “Handed over” when you give it: the order locks and can’t be served twice.",
+      "noReady": "No order ready yet.",
+      "readySince": "ready for {n} min",
+      "deliver": "Handed over",
+      "delivered": "Order {number} handed over: it is locked.",
+      "deliveredTitle": "Already handed over",
+      "deliveredAt": "handed over at {time} by {name}",
+      "locked": "Locked",
+      "kitchenHint": "In the kitchen, oldest first. You will hear as soon as an order is ready.",
+      "noWaiting": "Nothing in the kitchen yet.",
+      "cancel": "Cancel",
+      "cancelled": "Order {number} cancelled: the food goes back to the stock."
+    },
+    "kitchen": {
+      "title": "Kitchen",
+      "soundOn": "Sound on",
+      "soundOff": "Sound off",
+      "awakeOn": "Screen kept on",
+      "awakeOff": "Normal sleep",
+      "pending": "Waiting · {n}",
+      "oldestFirst": "oldest first",
+      "none": "Nothing waiting. New orders arrive here with a sound.",
+      "late": "Late",
+      "ready": "Ready",
+      "readyToast": "Order {number} ready: the bar knows. It is locked here.",
+      "sent": "Sent to the bar",
+      "noneSent": "None yet.",
+      "readyAt": "ready at {time} · waiting to be handed over",
+      "deliveredAt": "handed over at {time}",
+      "stock": "Kitchen stock",
+      "hidden": "sold out, hidden from the bar",
+      "out": "Sold out",
+      "back": "Back on",
+      "outLabel": "Mark as sold out: {name}",
+      "backLabel": "Back on the menu: {name}"
     }
   }
 }

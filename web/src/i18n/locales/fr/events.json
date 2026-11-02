@@ -664,7 +664,9 @@
     "screens": {
       "title": "Écrans de la soirée",
       "text": "Ouverts à leur équipe le jour de la soirée ; le bureau y a accès à tout moment.",
-      "entrance": "Accueil"
+      "entrance": "Accueil",
+      "bar": "Bar",
+      "kitchen": "Cuisine"
     },
     "entrance": {
       "title": "Accueil",
@@ -697,6 +699,80 @@
       "drawer": "Caisse de l’accueil ce soir",
       "float": "Fond de caisse",
       "noTokens": "Les jetons ne sont pas vendus pour cette soirée : le bar et la cuisine encaissent eux-mêmes."
+    },
+    "order": {
+      "number": "Commande n° {number}",
+      "noNote": "Sans repère",
+      "line": "{count} × {label}",
+      "wait": "attend depuis {n} min"
+    },
+    "bar": {
+      "title": "Bar",
+      "tabs": {
+        "label": "Parties du bar",
+        "order": "Commande",
+        "ready": "Prêtes · {n}",
+        "kitchen": "En cuisine · {n}"
+      },
+      "drinks": "Boissons servies au bar",
+      "noDrinks": "Aucune boisson à la carte.",
+      "food": "Cuisine",
+      "foodHint": "envoyé en cuisine",
+      "noFood": "Aucun plat à la carte.",
+      "soldOut": "épuisé",
+      "left": "reste {n}",
+      "leftServings": "reste ≈ {n} × {format}",
+      "remove": "Retirer : {name}",
+      "add": "Ajouter : {name}",
+      "garnishes": "Garnitures : {name}",
+      "garnishOut": "{name} · épuisée",
+      "addWith": "+ {name} ({garnishes}) · {price}",
+      "plain": "sans garniture",
+      "empty": "Ajoute des boissons ou des plats.",
+      "rest": "Les jetons ne couvrent pas {amount} : à régler autrement.",
+      "removeLine": "Un de moins : {name}",
+      "note": "Repère du client",
+      "noteHint": "Facultatif : table, prénom, tenue…",
+      "validate": "Valider la commande",
+      "pending": "En attente d’envoi",
+      "queued": "Commande gardée sur l’appareil : elle partira dès le retour du réseau.",
+      "sentToKitchen": "Commande {number} validée : aucun plat | Commande {number} validée : {n} plat part en cuisine. | Commande {number} validée : {n} plats partent en cuisine.",
+      "drinksOnly": "Commande validée : boissons à servir.",
+      "readyHint": "Les plats prêts arrivent ici avec un son. Touche « Remise » en les donnant : la commande se verrouille et ne peut plus être servie une deuxième fois.",
+      "noReady": "Aucune commande prête pour l’instant.",
+      "readySince": "prête depuis {n} min",
+      "deliver": "Remise au client",
+      "delivered": "Commande {number} remise : elle est verrouillée.",
+      "deliveredTitle": "Déjà remises",
+      "deliveredAt": "remise à {time} par {name}",
+      "locked": "Verrouillée",
+      "kitchenHint": "En cuisine, de la plus ancienne à la plus récente. Tu seras prévenu dès qu’une commande est prête.",
+      "noWaiting": "Rien en cuisine pour l’instant.",
+      "cancel": "Annuler",
+      "cancelled": "Commande {number} annulée : les plats reviennent au stock."
+    },
+    "kitchen": {
+      "title": "Cuisine",
+      "soundOn": "Son activé",
+      "soundOff": "Son coupé",
+      "awakeOn": "Écran allumé",
+      "awakeOff": "Veille normale",
+      "pending": "En attente · {n}",
+      "oldestFirst": "la plus ancienne en premier",
+      "none": "Rien en attente. Les nouvelles commandes arrivent ici avec un son.",
+      "late": "En retard",
+      "ready": "Prête",
+      "readyToast": "Commande {number} prête : le bar est prévenu. Elle est verrouillée ici.",
+      "sent": "Envoyées au bar",
+      "noneSent": "Aucune pour l’instant.",
+      "readyAt": "prête à {time} · attend la remise",
+      "deliveredAt": "remise à {time}",
+      "stock": "Stock de la cuisine",
+      "hidden": "épuisé, caché au bar",
+      "out": "Épuisé",
+      "back": "Remettre",
+      "outLabel": "Marquer comme épuisé : {name}",
+      "backLabel": "Remettre à la carte : {name}"
     }
   }
 }
