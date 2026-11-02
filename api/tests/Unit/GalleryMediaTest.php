@@ -28,10 +28,32 @@ final class GalleryMediaTest extends TestCase
         $commands = new FfmpegCommands('ffmpeg', 'ffprobe');
         $source = new VideoSource('/var/storage/video-uploads/a.part', VideoContainer::IsoMedia);
 
-        foreach ([$commands->probe($source), $commands->h264($source, '/tmp/out.mp4'), $commands->av1($source, '/tmp/out.mp4', 'libsvtav1')] as $command) {
+        $decoding = [
+            $commands->probe($source),
+            $commands->h264($source, '/tmp/out.mp4'),
+            $commands->av1($source, '/tmp/out.mp4', 'libsvtav1'),
+            $commands->poster('/tmp/out.mp4', '/tmp/out.webp', 1.0),
+        ];
+        foreach ($decoding as $command) {
+            $input = array_search('-i', $command, true);
             self::assertSame('mov', $command[array_search('-f', $command, true) + 1]);
             self::assertSame('file', $command[array_search('-protocol_whitelist', $command, true) + 1]);
-            self::assertLessThan(array_search('-i', $command, true), array_search('-f', $command, true), 'Démultiplexeur imposé avant l\'entrée');
+            self::assertSame(FfmpegCommands::DECODERS, $command[array_search('-codec_whitelist', $command, true) + 1]);
+            self::assertLessThan($input, array_search('-f', $command, true), 'Démultiplexeur imposé avant l\'entrée');
+            self::assertLessThan($input, array_search('-codec_whitelist', $command, true), 'Décodeurs limités avant l\'entrée');
+        }
+    }
+
+    public function testOnlyTheDecodersOfPhonesAndCamerasAreAllowed(): void
+    {
+        $decoders = explode(',', FfmpegCommands::DECODERS);
+
+        foreach (['h264', 'hevc', 'vp9', 'av1', 'libdav1d', 'aac', 'opus'] as $phone) {
+            self::assertContains($phone, $decoders);
+        }
+        // Décodeurs rares ou anciens, d'où viennent la plupart des failles de ffmpeg : refusés
+        foreach (['mpeg4', 'h263', 'msmpeg4v3', 'cinepak', 'smackvid', 'dxa', 'mov_text', 'ass'] as $rare) {
+            self::assertNotContains($rare, $decoders);
         }
     }
 

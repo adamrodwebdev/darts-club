@@ -131,6 +131,10 @@ jobs:
         run: docker run --rm skull-darts-71:ci frankenphp validate --config /etc/frankenphp/Caddyfile
       - name: Conteneur Symfony valide en production
         run: docker run --rm -e APP_SECRET=ci-check skull-darts-71:ci php bin/console lint:container
+      # Le ffmpeg de l'image convertit chaque format de téléphone et refuse un décodeur hors de la liste
+      # (vidéos d'essai fabriquées sur place, conversion par le vrai code du worker)
+      - name: Galerie vidéo (formats des téléphones, décodeurs limités)
+        run: docker run --rm -e APP_SECRET=ci-check skull-darts-71:ci php bin/console app:media:check
       # Réglages lus par le vrai serveur web de l'image (sonde montée à la place de index.php) : aucune
       # fonction qui lance un programme, valeurs PHP de production. Le worker, en ligne de commande, garde
       # proc_open pour ffmpeg
