@@ -24,19 +24,19 @@ const video = (overrides: Record<string, unknown> = {}) => ({
   failure: null, hidden: false, hiddenBy: null, uploader: 'Présidente', uploaderId: 'p1', uploadedAt: '2026-10-10T20:30:00+02:00', mine: true, ...overrides,
 })
 
-const detail = (videos: unknown[], gallery: Record<string, boolean>) => ({
+const detail = (videos: unknown[], gallery: Record<string, boolean>, photos: unknown[]) => ({
   id: EVENT, title: 'Soirée fléchettes', location: 'Salle des fêtes, Bellevesvre', startsAt: '2026-10-10T18:00:00+00:00', endsAt: '2026-10-10T22:00:00+00:00',
   season: '2026-2027', status: 'prevu', cancelReason: null, capacity: null, registered: 12, maybe: 0, isRegistered: false, myAnswer: null,
   full: false, started: true, past: true, hasSummary: false, poster: null, public: false, city: null, publicPath: null,
-  description: '', organizer: 'Alice', summary: null, canManage: false, photos: [photo], videos, gallery, posts: [], participants: null, guests: null,
+  description: '', organizer: 'Alice', summary: null, canManage: false, photos, videos, gallery, posts: [], participants: null, guests: null,
 })
 
-async function openEvent(page: Page, roles: string[], videos: unknown[], gallery: Record<string, boolean>): Promise<void> {
+async function openEvent(page: Page, roles: string[], videos: unknown[], gallery: Record<string, boolean>, photos: unknown[] = [photo]): Promise<void> {
   await page.route('**/api/auth/login', (route) => route.fulfill({ json: profile(roles) }))
   await page.route('**/api/notifications', (route) => route.fulfill({ json: { items: [], unread: 0 } }))
   await page.route('**/api/realtime/authorization', (route) => route.fulfill({ status: 503, json: {} }))
   await page.route(`**/api/events/${EVENT}/view`, (route) => route.fulfill({ status: 204, body: '' }))
-  await page.route(`**/api/events/${EVENT}`, (route) => route.fulfill({ json: detail(videos, gallery) }))
+  await page.route(`**/api/events/${EVENT}`, (route) => route.fulfill({ json: detail(videos, gallery, photos) }))
   await page.route('**/api/event-photos/*/thumb', (route) => route.fulfill({ body: png, contentType: 'image/png' }))
   await page.route('**/api/event-photos/*/large', (route) => route.fulfill({ body: png, contentType: 'image/png' }))
   await page.route('**/api/event-videos/*/poster', (route) => route.fulfill({ body: png, contentType: 'image/png' }))
@@ -85,6 +85,21 @@ test('a member asks for a photo to be removed', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Demander le retrait' }).last().click()
 
   await expect.poll(() => requests).toEqual(['POST'])
+})
+
+// Signalé le 2 novembre 2026 : au doigt, sans touche Échap, la visionneuse ne se refermait plus
+test('the viewer closes with its own button, a removal request pending', async ({ page }) => {
+  await openEvent(page, ['ROLE_PRESIDENT', 'ROLE_MEMBER'], [], { canAddPhotos: true, canAddVideos: false, canModerate: true }, [
+    { ...photo, hidden: true, hiddenBy: 'Bob' },
+  ])
+
+  await page.getByRole('button', { name: 'Agrandir la photo 1 sur 1' }).click()
+  const viewer = page.getByRole('dialog')
+  await expect(viewer.getByRole('button', { name: 'Remettre en ligne' })).toBeVisible()
+  await viewer.getByRole('button', { name: 'Fermer la fenêtre' }).click()
+
+  await expect(viewer).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Agrandir la photo 1 sur 1' })).toBeVisible()
 })
 
 test('a video is sent in chunks with its progress', async ({ page }) => {
