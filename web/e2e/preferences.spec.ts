@@ -105,6 +105,8 @@ test.describe('language', () => {
     await page.goto('/')
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
 
+    // Le nom accessible commence par le texte affiché (WCAG 2.5.3, commande vocale)
+    await expect(page.getByRole('button', { name: 'EN, Switch to English', exact: true })).toHaveText('EN')
     await page.getByRole('button', { name: 'Switch to English' }).click()
     await expect(page).toHaveURL(/\/en$/)
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
