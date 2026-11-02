@@ -5,8 +5,22 @@ import { describe, it, expect } from 'vitest'
 
 // Fichiers lus bruts : l'import JSON passe par la précompilation des messages
 const LOCALES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'locales')
+/** Fusion profonde : board.json complète « events » sans écraser events.json */
+function merge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+  for (const [key, value] of Object.entries(source)) {
+    const existing = target[key]
+    target[key] =
+      existing !== null && typeof existing === 'object' && value !== null && typeof value === 'object'
+        ? merge({ ...(existing as Record<string, unknown>) }, value as Record<string, unknown>)
+        : value
+  }
+  return target
+}
 const read = (locale: string): unknown =>
-  Object.assign({}, ...readdirSync(join(LOCALES_DIR, locale)).filter((file) => file.endsWith('.json')).map((file) => JSON.parse(readFileSync(join(LOCALES_DIR, locale, file), 'utf8'))))
+  readdirSync(join(LOCALES_DIR, locale))
+    .filter((file) => file.endsWith('.json'))
+    .map((file) => JSON.parse(readFileSync(join(LOCALES_DIR, locale, file), 'utf8')) as Record<string, unknown>)
+    .reduce(merge, {})
 const fr = read('fr')
 const en = read('en')
 

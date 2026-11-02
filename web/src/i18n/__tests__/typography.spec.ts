@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { i18n, loadLocaleMessages } from '..'
+import { i18n, loadBoardMessages, loadLocaleMessages } from '..'
 import { frenchTypography, typographyFor } from '../typography'
 
 const NBSP = ' '
@@ -32,6 +32,9 @@ describe('translated text', () => {
   it('carries french non-breaking spaces, english stays as written', async () => {
     await loadLocaleMessages('fr')
     await loadLocaleMessages('en')
+    // Texte des démarches : catalogue du bureau, chargé à la demande
+    await loadBoardMessages('fr')
+    await loadBoardMessages('en')
     i18n.global.locale.value = 'fr'
     expect(i18n.global.t('events.documents.recipient', { name: 'Mairie' })).toBe(`Destinataire${NBSP}: Mairie`)
     i18n.global.locale.value = 'en'

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw, START_LOCATION } from 'vue-router'
-import type { MessageSchema } from '@/i18n'
+import { loadBoardMessages, type MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
 import { DOCUMENT_TYPES } from '@/models/EventDocuments'
 import type { Services } from '@/services'
@@ -21,6 +21,8 @@ declare module 'vue-router' {
     guestOnly?: boolean
     /** Ouverte à un compte en attente de validation par le bureau (son profil, sa sécurité) */
     pendingAllowed?: boolean
+    /** Textes du bureau et des équipes, chargés avant la page (jamais par une page publique) */
+    boardTexts?: boolean
   }
 }
 
@@ -100,7 +102,7 @@ const ROUTES: RouteRecordRaw[] = [
   {
     path: '/admin',
     component: () => import('../views/admin/AdminLayout.vue'),
-    meta: { requiresAuth: true, requiresPresident: true },
+    meta: { requiresAuth: true, requiresPresident: true, boardTexts: true },
     children: [
       { path: '', name: 'admin', component: () => import('../views/admin/AdminMembersView.vue'), meta: { titleKey: 'adminMembers' } },
       { path: 'diffusion', name: 'admin-broadcast', component: () => import('../views/admin/BroadcastView.vue'), meta: { titleKey: 'adminBroadcast' } },
@@ -119,7 +121,7 @@ const ROUTES: RouteRecordRaw[] = [
     path: '/evenements/affiche',
     name: 'event-poster',
     component: () => import('../views/events/EventPosterView.vue'),
-    meta: { titleKey: 'eventPoster', requiresAuth: true, requiresOrganizer: true },
+    meta: { titleKey: 'eventPoster', requiresAuth: true, requiresOrganizer: true, boardTexts: true },
   },
   {
     path: '/evenements/nouveau',
@@ -139,7 +141,7 @@ const ROUTES: RouteRecordRaw[] = [
     name: 'event-accounts',
     component: () => import('../views/events/EventAccountsView.vue'),
     props: true,
-    meta: { titleKey: 'eventAccounts', requiresAuth: true, requiresBoard: true },
+    meta: { titleKey: 'eventAccounts', requiresAuth: true, requiresBoard: true, boardTexts: true },
   },
   {
     // Écran de l'accueil : son équipe le jour de la soirée, le bureau à tout moment (l'API décide)
@@ -147,41 +149,41 @@ const ROUTES: RouteRecordRaw[] = [
     name: 'evening-entrance',
     component: () => import('../views/evening/EntranceView.vue'),
     props: true,
-    meta: { titleKey: 'eveningEntrance', requiresAuth: true },
+    meta: { titleKey: 'eveningEntrance', requiresAuth: true, boardTexts: true },
   },
   {
     path: '/evenements/:id([0-9a-f-]{36})/bar',
     name: 'evening-bar',
     component: () => import('../views/evening/BarView.vue'),
     props: true,
-    meta: { titleKey: 'eveningBar', requiresAuth: true },
+    meta: { titleKey: 'eveningBar', requiresAuth: true, boardTexts: true },
   },
   {
     path: '/evenements/:id([0-9a-f-]{36})/cuisine',
     name: 'evening-kitchen',
     component: () => import('../views/evening/KitchenView.vue'),
     props: true,
-    meta: { titleKey: 'eveningKitchen', requiresAuth: true },
+    meta: { titleKey: 'eveningKitchen', requiresAuth: true, boardTexts: true },
   },
   {
     path: '/evenements/:id([0-9a-f-]{36})/demarches',
     name: 'event-documents',
     component: () => import('../views/events/EventDocumentsView.vue'),
     props: true,
-    meta: { titleKey: 'eventDocuments', requiresAuth: true, requiresBoard: true },
+    meta: { titleKey: 'eventDocuments', requiresAuth: true, requiresBoard: true, boardTexts: true },
   },
   {
     path: `/evenements/:id([0-9a-f-]{36})/demarches/:type(${DOCUMENT_TYPES.join('|')})`,
     name: 'event-document',
     component: () => import('../views/events/EventDocumentView.vue'),
     props: true,
-    meta: { titleKey: 'eventDocument', requiresAuth: true, requiresBoard: true },
+    meta: { titleKey: 'eventDocument', requiresAuth: true, requiresBoard: true, boardTexts: true },
   },
   {
     path: '/association',
     name: 'association-profile',
     component: () => import('../views/association/AssociationProfileView.vue'),
-    meta: { titleKey: 'associationProfile', requiresAuth: true, requiresBoard: true },
+    meta: { titleKey: 'associationProfile', requiresAuth: true, requiresBoard: true, boardTexts: true },
   },
   {
     path: '/evenements/:id([0-9a-f-]{36})/modifier',
@@ -296,6 +298,7 @@ export function createAppRouter(services: Services): Router {
     ) {
       return { name: 'account' }
     }
+    if (to.meta.boardTexts) await loadBoardMessages(preferences.locale)
     if (to.meta.guestOnly && auth.isAuthenticated) {
       return { name: 'account' }
     }
