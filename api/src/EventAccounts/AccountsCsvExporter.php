@@ -3,11 +3,14 @@
 namespace App\EventAccounts;
 
 use App\Entity\EventAccounts;
+use App\Export\SpreadsheetCsv;
+use App\Membership\Money;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Bilan d'une soirée en CSV (tableur), dans la langue de la personne qui l'exporte : articles de la
- * buvette, autres lignes, totaux et résultat. Montants décimaux « 30.50 ».
+ * buvette, autres lignes, totaux et résultat. Montants décimaux « 30.50 ». Une soirée à jetons compte
+ * l'argent de l'accueil à la place des ventes de la buvette : une ligne le dit.
  */
 final class AccountsCsvExporter
 {
@@ -19,24 +22,25 @@ final class AccountsCsvExporter
     ) {
     }
 
-    public function export(EventAccounts $accounts, string $locale = 'fr'): string
+    /** @param ?Money $entrance argent encaissé à l'accueil, null si la soirée s'est passée de jetons */
+    public function export(EventAccounts $accounts, ?Money $entrance, string $locale = 'fr'): string
     {
-        $out = fopen('php://temp', 'r+');
-        \assert(false !== $out);
-        fwrite($out, "\u{FEFF}");
         $label = fn (string $key): string => $this->translator->trans('accounts_csv.'.$key, [], 'exports', $locale);
-        self::row($out, array_map($label, self::HEADER));
+        $rows = [array_map($label, self::HEADER)];
 
         foreach ($accounts->items() as $item) {
             $stock = $item->stock();
             $formats = $item->formats();
-            self::row($out, [
+            $rows[] = [
                 $label('bar'), $item->label(),
                 (string) $stock->quantities->planned, (string) $stock->quantities->bought, (string) $stock->quantities->returned,
                 (string) $formats->soldCount(), (string) ($item->left() ?? ''),
                 $stock->containerPrice->toDecimal(), self::salePrices($formats),
                 $item->plannedCost()->toDecimal(), $item->cost()->toDecimal(), $item->plannedIncome()->toDecimal(), $item->income()->toDecimal(),
-            ]);
+            ];
+        }
+        if (null !== $entrance) {
+            $rows[] = [$label('entrance'), $label('entrance_instead'), '', '', '', '', '', '', '', '', '', '', $entrance->toDecimal()];
         }
 
         foreach ($accounts->entries() as $entry) {
@@ -44,23 +48,19 @@ final class AccountsCsvExporter
             $planned = $amounts->planned->toDecimal();
             $actual = $amounts->actual?->toDecimal() ?? '';
             $expense = EntryKind::Expense === $entry->kind();
-            self::row($out, [
+            $rows[] = [
                 $label($expense ? 'expense' : 'income_line'), $entry->label(), '', '', '', '', '', '', '',
                 $expense ? $planned : '', $expense ? $actual : '', $expense ? '' : $planned, $expense ? '' : $actual,
-            ]);
+            ];
         }
 
-        self::row($out, [
+        $rows[] = [
             $label('total'), '', '', '', '', '', '', '', '',
-            $accounts->plannedCosts()->toDecimal(), $accounts->costs()->toDecimal(), $accounts->plannedIncome()->toDecimal(), $accounts->income()->toDecimal(),
-        ]);
-        self::row($out, [$label('result'), '', '', '', '', '', '', '', '', '', '', $accounts->plannedResult()->toDecimal(), $accounts->result()->toDecimal()]);
+            $accounts->plannedCosts()->toDecimal(), $accounts->costs()->toDecimal(), $accounts->plannedIncome()->toDecimal(), $accounts->income($entrance)->toDecimal(),
+        ];
+        $rows[] = [$label('result'), '', '', '', '', '', '', '', '', '', '', $accounts->plannedResult()->toDecimal(), $accounts->result($entrance)->toDecimal()];
 
-        rewind($out);
-        $csv = (string) stream_get_contents($out);
-        fclose($out);
-
-        return $csv;
+        return SpreadsheetCsv::of($rows);
     }
 
     /** Un seul format : son prix ; plusieurs : « Verre 2.00 / Pichet 10.00 » */
@@ -71,22 +71,5 @@ final class AccountsCsvExporter
         }
 
         return implode(' / ', array_map(static fn (SaleFormat $format): string => $format->name.' '.$format->price->toDecimal(), $formats->all));
-    }
-
-    /**
-     * @param resource     $out
-     * @param list<string> $cells
-     */
-    private static function row($out, array $cells): void
-    {
-        fputcsv($out, array_map(self::cell(...), $cells), ';', escape: '');
-    }
-
-    /** Neutralise l'injection de formules dans le tableur (=, +, -, @, tabulation). */
-    private static function cell(string $value): string
-    {
-        return '' !== $value && \in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true) && !is_numeric($value)
-            ? "'".$value
-            : $value;
     }
 }

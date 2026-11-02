@@ -50,7 +50,7 @@ function accountsJson(overrides: Record<string, unknown> = {}) {
       { id: 'n2', position: 2, kind: 'recette', label: 'Participation aux frais', planned: '100.00', actual: '96.00' },
     ],
     receipts: [{ id: 'r1', label: 'Facture brasserie', amount: '136.80', credit: false, type: 'pdf', uploadedBy: 'Nina', uploadedAt: '2026-11-15T10:00:00+00:00' }],
-    totals: { barCosts: '298.00', barIncome: '521.00', costs: '378.00', income: '617.00', result: '239.00', plannedCosts: '378.00', plannedIncome: '700.00', plannedResult: '322.00' },
+    totals: { barCosts: '298.00', barIncome: '521.00', barIncomeSource: 'menu', barSales: '521.00', costs: '378.00', income: '617.00', result: '239.00', plannedCosts: '378.00', plannedIncome: '700.00', plannedResult: '322.00' },
     counters: { year: 2026, temporaryBars: { used: 2, limit: 5 }, taxExempt: { used: 2, limit: 6 } },
     permissions: { edit: true, editMenu: true, reopen: false },
     ...overrides,

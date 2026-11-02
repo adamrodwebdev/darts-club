@@ -45,7 +45,7 @@ const json = {
     { id: 'n2', position: 2, kind: 'recette', label: 'Dons', planned: '0.00', actual: '20.00' },
   ],
   receipts: [{ id: 'r1', label: 'Avoir', amount: '1.90', credit: true, type: 'pdf', uploadedBy: null, uploadedAt: '2026-11-15T10:00:00+00:00' }],
-  totals: { barCosts: '9.50', barIncome: '27.00', costs: '9.50', income: '47.00', result: '37.50', plannedCosts: '89.50', plannedIncome: '30.00', plannedResult: '-59.50' },
+  totals: { barCosts: '9.50', barIncome: '27.00', barIncomeSource: 'menu', barSales: '27.00', costs: '9.50', income: '47.00', result: '37.50', plannedCosts: '89.50', plannedIncome: '30.00', plannedResult: '-59.50' },
   counters: { year: 2026, temporaryBars: { used: 1, limit: 5 }, taxExempt: { used: 0, limit: 6 } },
   permissions: { edit: true, editMenu: true, reopen: false },
 }

@@ -62,6 +62,12 @@ class EveningOrderRepository extends ServiceEntityRepository
         return $orders;
     }
 
+    /** @return list<EveningOrder> toutes les commandes de la soirée, dans l'ordre de leurs numéros */
+    public function forEvent(ClubEvent $event): array
+    {
+        return $this->findBy(['event' => $event], ['number' => 'ASC']);
+    }
+
     /** @return list<EveningOrder> les plus récentes d'abord, toutes étapes confondues */
     public function latestFor(ClubEvent $event, int $limit): array
     {

@@ -97,6 +97,16 @@ test('a ready order is handed over once, then locked', async ({ page }) => {
   await expect(page.getByText('Verrouillée', { exact: true })).toBeVisible()
 })
 
+test('a cancelled order tells the bar which tokens to give back', async ({ page }) => {
+  const waiting = order('01a1b2c3-0000-7000-8000-00000000c005', 5, 'en_attente')
+  await page.route(`**/api/events/${EVENT}/service/bar`, (route) => route.fulfill({ json: barJson({ orders: { waiting: [waiting], ready: [], delivered: [] } }) }))
+  await open(page, 'bar', 'Bar')
+  await page.route(`**/api/evening-orders/${waiting.id}/cancel`, (route) => route.fulfill({ json: barJson() }))
+  await page.getByRole('button', { name: 'En cuisine · 1' }).click()
+  await page.getByRole('button', { name: 'Annuler', exact: true }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Commande 5 annulée' })).toContainText('rendez 3 × Jeton vert (3,00 €) au client')
+})
+
 test('the kitchen marks an order ready and a topping sold out', async ({ page }) => {
   await page.route(`**/api/events/${EVENT}/service/kitchen`, (route) => route.fulfill({ json: kitchenJson() }))
   await open(page, 'cuisine', 'Cuisine')

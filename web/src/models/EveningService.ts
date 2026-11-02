@@ -72,7 +72,7 @@ const optDate = (value: unknown): Date | null => {
   return text === null ? null : new Date(text)
 }
 
-function parseEvent(value: unknown): ScreenEvent {
+export function parseScreenEvent(value: unknown): ScreenEvent {
   const d = obj(value, 'soirée')
   return { id: str(d.id), title: str(d.title), startsAt: new Date(str(d.startsAt)) }
 }
@@ -151,7 +151,7 @@ export class BarScreen {
     const d = obj(value, 'bar')
     const orders = obj(d.orders, 'commandes')
     return new BarScreen({
-      event: parseEvent(d.event),
+      event: parseScreenEvent(d.event),
       nextNumber: num(d.nextNumber),
       tokensEnabled: bool(d.tokensEnabled),
       tokens: list(d.tokens, (t) => {
@@ -192,6 +192,6 @@ export class KitchenScreen {
 
   static parse(value: unknown): KitchenScreen {
     const d = obj(value, 'cuisine')
-    return new KitchenScreen({ event: parseEvent(d.event), pending: list(d.pending, parseEveningOrder), sent: list(d.sent, parseEveningOrder), stock: list(d.stock, parseServiceItem) })
+    return new KitchenScreen({ event: parseScreenEvent(d.event), pending: list(d.pending, parseEveningOrder), sent: list(d.sent, parseEveningOrder), stock: list(d.stock, parseServiceItem) })
   }
 }

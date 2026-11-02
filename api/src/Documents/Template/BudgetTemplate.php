@@ -13,9 +13,11 @@ use App\Documents\FieldValues;
 use App\Documents\LetterParts;
 use App\Documents\OfficialLink;
 use App\Entity\AccountsEntry;
+use App\Entity\BarItem;
 use App\Entity\EventAccounts;
 use App\EventAccounts\EntryKind;
 use App\Membership\Money;
+use App\Repository\TokenSaleRepository;
 
 /**
  * Budget de la soirée, prévu et réel, tiré de son bilan : à joindre à un dossier (mairie, demande de
@@ -23,6 +25,11 @@ use App\Membership\Money;
  */
 final class BudgetTemplate implements DocumentTemplate
 {
+    public function __construct(
+        private readonly TokenSaleRepository $sales,
+    ) {
+    }
+
     public function type(): DocumentType
     {
         return DocumentType::Budget;
@@ -61,15 +68,17 @@ final class BudgetTemplate implements DocumentTemplate
             return new DocumentSheet([...$intro, LetterParts::note('empty', 'Le bilan de la soirée est vide : ce budget se remplit avec lui.')]);
         }
 
+        $entrance = $this->sales->entranceMoney($event);
+
         return new DocumentSheet([
             ...$intro,
             new DocumentBlock('costs-heading', BlockKind::Heading, 'Dépenses'),
             ...$this->costLines($accounts),
             self::line('costs', 'Total des dépenses', self::amounts($accounts->plannedCosts(), $accounts->costs())),
             new DocumentBlock('income-heading', BlockKind::Heading, 'Recettes'),
-            ...$this->incomeLines($accounts),
-            self::line('income', 'Total des recettes', self::amounts($accounts->plannedIncome(), $accounts->income())),
-            self::line('result', 'Résultat', 'prévu '.EventPhrases::signed($accounts->plannedResult()).' · réel '.EventPhrases::signed($accounts->result())),
+            ...$this->incomeLines($accounts, $entrance),
+            self::line('income', 'Total des recettes', self::amounts($accounts->plannedIncome(), $accounts->income($entrance))),
+            self::line('result', 'Résultat', 'prévu '.EventPhrases::signed($accounts->plannedResult()).' · réel '.EventPhrases::signed($accounts->result($entrance))),
             LetterParts::note('subsidy', 'Pour une demande de subvention, le formulaire officiel est le Cerfa 12156*06 (budget du projet).'),
         ], [new OfficialLink('Demande de subvention (Cerfa 12156*06)', 'https://www.service-public.gouv.fr/associations/vosdroits/R1271')]);
     }
@@ -85,12 +94,22 @@ final class BudgetTemplate implements DocumentTemplate
         return [...$lines, ...$this->entryLines($accounts, EntryKind::Expense)];
     }
 
-    /** @return list<DocumentBlock> */
-    private function incomeLines(EventAccounts $accounts): array
+    /**
+     * Soirée à jetons : la buvette rapporte l'argent encaissé à l'accueil, une seule ligne ; sinon les
+     * ventes de chaque article.
+     *
+     * @return list<DocumentBlock>
+     */
+    private function incomeLines(EventAccounts $accounts, ?Money $entrance): array
     {
         $lines = [];
-        foreach ($accounts->items() as $item) {
-            $lines[] = self::line('bar-income-'.$item->getId(), 'Ventes buvette · '.$item->label(), self::amounts($item->plannedIncome(), $item->income()));
+        if (null !== $entrance) {
+            $planned = array_reduce($accounts->items(), static fn (Money $sum, BarItem $item): Money => $sum->add($item->plannedIncome()), Money::zero());
+            $lines[] = self::line('bar-income-entrance', 'Buvette · jetons vendus à l’accueil', self::amounts($planned, $entrance));
+        } else {
+            foreach ($accounts->items() as $item) {
+                $lines[] = self::line('bar-income-'.$item->getId(), 'Ventes buvette · '.$item->label(), self::amounts($item->plannedIncome(), $item->income()));
+            }
         }
 
         return [...$lines, ...$this->entryLines($accounts, EntryKind::Income)];

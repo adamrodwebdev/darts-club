@@ -43,8 +43,9 @@ final class EventAccountsTest extends ApiTestCase
             self::assertResponseStatusCodeSame(201);
         }
 
+        // Sans vente à l'accueil (pas de jetons), la buvette compte les ventes de la carte
         self::assertSame([
-            'barCosts' => '254.40', 'barIncome' => '699.00', 'costs' => '412.60', 'income' => '815.00', 'result' => '402.40',
+            'barCosts' => '254.40', 'barIncome' => '699.00', 'barIncomeSource' => 'menu', 'barSales' => '699.00', 'costs' => '412.60', 'income' => '815.00', 'result' => '402.40',
             'plannedCosts' => '409.60', 'plannedIncome' => '878.00', 'plannedResult' => '468.40',
         ], $this->json()['totals']);
         self::assertSame(['label' => 'Bière 33 cl', 'left' => 8, 'cost' => '114.00', 'income' => '336.00'], array_intersect_key((array) $this->dig($this->json(), 'items', 0), array_flip(['label', 'left', 'cost', 'income'])));

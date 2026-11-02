@@ -17,6 +17,7 @@
         "label": "Parts of the accounts",
         "menu": "Menu and stock",
         "books": "Costs and income",
+        "live": "Live income",
         "receipts": "Receipts"
       },
       "cash": {
@@ -145,6 +146,7 @@
       "income": "Income",
       "result": "Result",
       "planned": "planned {amount}",
+      "incomeFromEntrance": "including {amount} taken at the entrance",
       "editLabel": "Edit {name}",
       "edit": "Edit",
       "fields": {
@@ -187,7 +189,49 @@
       "overLimit": "Limit exceeded",
       "typePdf": "PDF",
       "typeImage": "Photo",
-      "back": "← {title}"
+      "back": "← {title}",
+      "live": {
+        "status": "Live · updated at {time}",
+        "stale": "Offline · updated at {time}",
+        "loading": "Working out the income…",
+        "export": "Export income (CSV)",
+        "entrance": "Entrance · taken",
+        "cash": "Cash",
+        "card": "Card",
+        "tokenLine": "{count} × {name} at {value}",
+        "noSales": "No sales yet.",
+        "expectedCash": "Expected in the till: {amount} (float {float} + cash). Card: compare with the terminal’s receipt.",
+        "bar": "Bar · drinks",
+        "kitchen": "Kitchen · food",
+        "paidInTokens": "paid in tokens",
+        "sold": "sold",
+        "preparing": "none being prepared | {n} being prepared | {n} being prepared",
+        "nothingServed": "Nothing served yet.",
+        "circulation": "Tokens in circulation",
+        "circulationCaption": "in tokens not spent yet",
+        "circulationDetail": "{sold} sold at the entrance − {spent} spent at the bar and in the kitchen.",
+        "explainTokens": "The entrance counts the money actually taken. The bar and the kitchen count the value of the tokens spent, at the price frozen in each order; a cancelled order gives its food back to the customer. The accounts’ result starts from the entrance money.",
+        "explainNoTokens": "No tokens tonight: the bar and the kitchen count the value of what they sold, at each order’s price.",
+        "perItem": "Sales per item",
+        "orders": "no orders | {n} order | {n} orders",
+        "inKitchen": "none in the kitchen | {n} in the kitchen | {n} in the kitchen",
+        "ready": "none ready | {n} ready | {n} ready",
+        "cancelled": "none cancelled | {n} cancelled | {n} cancelled",
+        "soldLabel": "Sold",
+        "amountLabel": "Income",
+        "leftLabel": "Left",
+        "nothingSold": "nothing yet",
+        "formatLine": "{count} × {name}",
+        "soldTotal": "{lines} = {total}",
+        "servings": "≈ {count} × {name}",
+        "leftUnknown": "size to set",
+        "removed": "removed from the menu",
+        "totalBar": "Bar",
+        "totalKitchen": "Kitchen",
+        "totalSpent": "Total spent in tokens",
+        "totalSold": "Total sold",
+        "emptyMenu": "The menu is empty: add items under “Menu and stock”."
+      }
     },
     "documents": {
       "title": "Paperwork",
@@ -502,7 +546,8 @@
       "kitchenHint": "In the kitchen, oldest first. You will hear as soon as an order is ready.",
       "noWaiting": "Nothing in the kitchen yet.",
       "cancel": "Cancel",
-      "cancelled": "Order {number} cancelled: the food goes back to the stock."
+      "cancelledTokens": "Order {number} cancelled: give {tokens} ({amount}) back to the customer. The food goes back to the stock.",
+      "cancelledAmount": "Order {number} cancelled: give {amount} back to the customer. The food goes back to the stock."
     },
     "kitchen": {
       "title": "Kitchen",

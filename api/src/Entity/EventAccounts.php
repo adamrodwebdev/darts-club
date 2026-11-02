@@ -264,9 +264,15 @@ class EventAccounts
         return $this->barCosts()->add($this->entriesTotal(EntryKind::Expense, planned: false));
     }
 
-    public function income(): Money
+    /**
+     * Recettes réelles. Une soirée à jetons compte l'argent encaissé à l'accueil à la place des
+     * ventes de la buvette : les jetons vendus et pas encore dépensés sont déjà dans la caisse.
+     *
+     * @param ?Money $entrance argent de l'accueil ; null si la soirée s'est passée de jetons
+     */
+    public function income(?Money $entrance = null): Money
     {
-        return $this->barIncome()->add($this->entriesTotal(EntryKind::Income, planned: false));
+        return ($entrance ?? $this->barIncome())->add($this->entriesTotal(EntryKind::Income, planned: false));
     }
 
     public function plannedCosts(): Money
@@ -283,9 +289,10 @@ class EventAccounts
         return $bar->add($this->entriesTotal(EntryKind::Income, planned: true));
     }
 
-    public function result(): SignedAmount
+    /** @param ?Money $entrance argent de l'accueil ; null si la soirée s'est passée de jetons */
+    public function result(?Money $entrance = null): SignedAmount
     {
-        return SignedAmount::difference($this->income(), $this->costs());
+        return SignedAmount::difference($this->income($entrance), $this->costs());
     }
 
     public function plannedResult(): SignedAmount

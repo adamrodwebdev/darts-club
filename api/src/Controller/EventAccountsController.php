@@ -27,6 +27,7 @@ use App\EventAccounts\ReceiptDetails;
 use App\EventAccounts\ReceiptUpload;
 use App\Membership\Money;
 use App\Repository\EventAccountsRepository;
+use App\Repository\TokenSaleRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\EventAccountsVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -221,11 +222,11 @@ final class EventAccountsController extends AbstractController
 
     #[Route('/api/events/{id}/accounts/export.csv', name: 'accounts_export', requirements: ['id' => self::UUID], methods: ['GET'])]
     #[IsGranted(EventAccountsVoter::VIEW, subject: 'event')]
-    public function export(ClubEvent $event, Request $request, EventAccountsRepository $books, AccountsCsvExporter $exporter): Response
+    public function export(ClubEvent $event, Request $request, EventAccountsRepository $books, TokenSaleRepository $sales, AccountsCsvExporter $exporter): Response
     {
         $accounts = $books->findForEvent($event) ?? throw new NotFoundHttpException();
 
-        return new Response($exporter->export($accounts, $request->getLocale()), Response::HTTP_OK, [
+        return new Response($exporter->export($accounts, $sales->entranceMoney($event), $request->getLocale()), Response::HTTP_OK, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="bilan-'.$event->getStartsAt()->format('Y-m-d').'.csv"',
             'Cache-Control' => 'private, no-store',
