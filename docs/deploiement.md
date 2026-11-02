@@ -70,6 +70,12 @@ docker run --rm $img php -r 'echo "POSTGRES_PASSWORD=", bin2hex(random_bytes(24)
   `ssh deploy@SERVEUR /opt/skull-darts-71/deploy/set-vapid.sh`
   (sans effet si des clés existent déjà ; `--force` les remplace, mais chaque appareil devra se réabonner).
 
+- `REDIS_PASSWORD` : créé par `deploy.sh` au premier déploiement qui en a besoin (64 caractères hexadécimaux
+  tirés sur le serveur, jamais affichés). Redis garde les sessions et la file des messages, que l'API relit
+  par `unserialize()` : pouvoir y écrire suffirait à exécuter du code, d'où le mot de passe même sur un réseau interne.
+- Plafonds de mémoire (facultatif, selon la taille du serveur) : `WEB_MEMORY_LIMIT` (site, `2g` par défaut) et
+  `WORKER_MEMORY_LIMIT` (worker, conversions ffmpeg comprises, `1536m` par défaut). Le conteneur qui les
+  dépasse redémarre seul ; PostgreSQL, lui, n'est jamais tué faute de mémoire par un autre.
 - Ces clés de **production** sont distinctes de celles de développement (`api/.env.local`).
 - `TWO_FACTOR_ENCRYPTION_KEY` chiffre les secrets de double authentification : **ne jamais la changer**
   (sinon chaque membre du bureau doit reconfigurer sa 2FA). La garder aussi dans le gestionnaire de mots de passe du bureau.
