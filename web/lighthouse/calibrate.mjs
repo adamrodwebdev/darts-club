@@ -15,8 +15,10 @@ const indexes = existsSync(DIR)
       .map((name) => JSON.parse(readFileSync(join(DIR, name), 'utf8')).environment?.benchmarkIndex)
       .filter((value) => Number.isFinite(value))
   : []
-// Le passage le plus rapide (machine chaude) : le calage le plus strict, jamais plus indulgent
-const index = Math.max(...indexes)
+// Valeur médiane, comme la référence (indice habituel de la machine lente, pas son pic) : le plus
+// rapide des passages de préchauffage calait 6 % plus sévère que le même téléphone (6,87× au lieu de 6,5×)
+const sorted = indexes.toSorted((a, b) => a - b)
+const index = sorted.length ? sorted[Math.floor(sorted.length / 2)] : Number.NaN
 const slowdown = Number.isFinite(index) ? Math.max(1, (REFERENCE_SLOWDOWN * index) / REFERENCE_INDEX) : REFERENCE_SLOWDOWN
 console.error(`Indice de la machine : ${indexes.map(Math.round).join(', ') || 'inconnu'} → ralentissement ${slowdown.toFixed(2)}×`)
 console.log(`LIGHTHOUSE_CPU_SLOWDOWN=${slowdown.toFixed(2)}`)
