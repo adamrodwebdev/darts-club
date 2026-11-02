@@ -70,6 +70,12 @@ inconnu, Mercure anonyme) : rien d'exposé au-delà de SSH, HTTP et HTTPS ; TLS 
 | Faible | Moteur Docker (runc, containerd) hors des mises à jour automatiques ; noyau corrigé sans redémarrage | Dépôt Docker dans unattended-upgrades ; redémarrage la nuit quand il est nécessaire | — |
 | Faible | Le guide conseillait un enregistrement AAAA : le proxy IPv6 de Docker aurait montré tous les visiteurs IPv6 sous une seule adresse (limites d'essais partagées, journal faussé) | Guide corrigé : AAAA seulement après activation d'IPv6 dans Docker | — |
 | Faible | Agent SSH et affichage graphique relayables par SSH | Coupés dans la configuration SSH du serveur | — |
+| Moyenne | Redis sans mot de passe : il garde les sessions et la file des messages, que l'API et le worker relisent par `unserialize()` ; y écrire (depuis un autre conteneur, une requête détournée) suffisait à exécuter du code | Mot de passe tiré sur le serveur par `deploy.sh` | Pile de production en CI : Redis répond `NOAUTH` sans lui |
+| Moyenne | Aucun plafond par conteneur : une conversion ffmpeg ou une rafale d'envois pouvait épuiser la mémoire et pousser le noyau à tuer PostgreSQL | Plafonds de mémoire (site, worker, hub) et de processus (tous) | Pile de production en CI |
+| Moyenne | Une faille d'exécution de code PHP dans le site aurait pu lancer un shell ou n'importe quel programme | Le serveur web désactive `exec`, `system`, `proc_open`, `popen`, `shell_exec`, `passthru`, ainsi que `mail` et `putenv` (contournement par `LD_PRELOAD`) ; le worker, en ligne de commande, garde `proc_open` pour ffmpeg | Sonde montée dans l'image en CI |
+| Faible | Base, Redis et hub Mercure avaient accès à Internet : un conteneur compromis pouvait télécharger des outils ou exfiltrer des données | Réseaux internes `data` et `hub` ; seuls le site et le worker sortent | Pile de production en CI : 1.1.1.1 injoignable depuis ces réseaux |
+| Faible | Conteneurs avec toutes les capacités Linux par défaut et gain de privilèges possible (programmes setuid) | `no-new-privileges` partout ; site, worker et hub sans aucune capacité (sauf écouter un port bas) | Pile de production en CI |
+| Faible | Image sans `php.ini` de production : traces d'exception avec la valeur des arguments (mots de passe) dans les journaux, `register_argc_argv` actif, identifiants de session inconnus acceptés | `zend.exception_ignore_args`, `register_argc_argv = Off`, `session.use_strict_mode`, erreurs de démarrage masquées | Sonde en CI |
 
 ## Contrôles vérifiés
 

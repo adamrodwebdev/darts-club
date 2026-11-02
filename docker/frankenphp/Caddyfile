@@ -3,6 +3,10 @@
 
 	frankenphp {
 		{$FRANKENPHP_CONFIG}
+		# Le site ne lance jamais de programme (ffmpeg tourne dans le worker, en ligne de commande, où ce
+		# réglage ne s'applique pas) : une faille d'exécution de code PHP ne peut ni ouvrir un shell, ni
+		# lancer un programme (mail() et putenv() servent à contourner cette liste par LD_PRELOAD)
+		php_ini disable_functions exec,passthru,shell_exec,system,proc_open,popen,pcntl_exec,mail,mb_send_mail,putenv
 	}
 }
 

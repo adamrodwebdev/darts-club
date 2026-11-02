@@ -112,16 +112,18 @@ jobs:
   docker:
     name: Image de production (Docker)
     runs-on: ubuntu-latest
+    # Secrets factices pour la configuration Compose de production (jamais ceux du serveur)
+    env:
+      APP_SECRET: ci
+      POSTGRES_PASSWORD: ci
+      MERCURE_JWT_SECRET: ci-mercure-secret-key-of-at-least-32-bytes
+      TWO_FACTOR_ENCRYPTION_KEY: ci
+      MAILER_DSN: null://null
+      MAILER_FROM: ci@example.com
+      REDIS_PASSWORD: ci-redis-password
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Configuration Compose de production valide
-        env:
-          APP_SECRET: ci
-          POSTGRES_PASSWORD: ci
-          MERCURE_JWT_SECRET: ci
-          TWO_FACTOR_ENCRYPTION_KEY: ci
-          MAILER_DSN: null://null
-          MAILER_FROM: ci@example.com
         run: docker compose -f compose.yaml -f compose.prod.yaml config --quiet
       - name: Construction de l'image (front Vite + API Symfony + FrankenPHP)
         run: docker build --target prod -f docker/php/Dockerfile -t skull-darts-71:ci .
@@ -129,17 +131,26 @@ jobs:
         run: docker run --rm skull-darts-71:ci frankenphp validate --config /etc/frankenphp/Caddyfile
       - name: Conteneur Symfony valide en production
         run: docker run --rm -e APP_SECRET=ci-check skull-darts-71:ci php bin/console lint:container
+      # Réglages lus par le vrai serveur web de l'image (sonde montée à la place de index.php) : aucune
+      # fonction qui lance un programme, valeurs PHP de production. Le worker, en ligne de commande, garde
+      # proc_open pour ffmpeg
+      - name: Réglages PHP du site et du worker
+        run: |
+          docker run -d --name web-probe -e SERVER_NAME=localhost -e APP_SECRET=ci-check -p 8443:443 \
+            -v "$PWD/.github/ci/php-web-probe.php:/app/public/index.php:ro" skull-darts-71:ci
+          for attempt in $(seq 1 30); do probe=$(curl -fsSk https://localhost:8443/api/probe) && break; sleep 1; done
+          docker logs web-probe 2>&1 | tail -n 15
+          docker rm -f web-probe > /dev/null
+          echo "${probe:-aucune réponse}"
+          echo "$probe" | jq -e '.sapi == "frankenphp" and .enabled == [] and .exception_ignore_args == "1"
+            and (.register_argc_argv == "" or .register_argc_argv == "0") and .use_strict_mode == "1"
+            and (.display_errors == "" or .display_errors == "0")'
+          docker run --rm skull-darts-71:ci php -r 'exit(function_exists("proc_open") ? 0 : 1);'
       # Hub lancé avec la configuration Compose de production (émetteur de confiance, audience) : les
       # jetons de l'API doivent y être acceptés et une publication privée reçue par un abonné
       - name: Hub Mercure accepte les jetons de l'API
         env:
           SERVER_NAME: ci.example
-          APP_SECRET: ci
-          POSTGRES_PASSWORD: ci
-          MERCURE_JWT_SECRET: ci-mercure-secret-key-of-at-least-32-bytes
-          TWO_FACTOR_ENCRYPTION_KEY: ci
-          MAILER_DSN: null://null
-          MAILER_FROM: ci@example.com
         run: |
           compose="docker compose -f compose.yaml -f compose.prod.yaml"
           $compose up -d mercure
@@ -153,6 +164,42 @@ jobs:
           for attempt in 1 2 3 4 5; do check && ok=1 && break; sleep 3; done
           $compose logs mercure | tail -n 30
           test "${ok:-0}" = 1
+      # La pile entière telle que le serveur la lance (deploy.sh) : réseaux internes, Redis à mot de passe,
+      # capacités retirées, aucun gain de privilège, plafonds de mémoire. Le durcissement ne doit rien casser
+      - name: Pile de production complète et durcie
+        env:
+          IMAGE: skull-darts-71
+          IMAGE_TAG: ci
+          SERVER_NAME: localhost
+        run: |
+          export TWO_FACTOR_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+          compose="docker compose -f compose.yaml -f compose.prod.yaml"
+          networks() { docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}' "$($compose ps -q "$1")"; }
+          $compose up -d --wait database redis mercure
+          $compose run --rm --no-deps php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+          $compose up -d php worker
+          for attempt in $(seq 1 30); do body=$(curl -fsSk https://localhost/api/health) && break; sleep 2; done
+          $compose ps
+          $compose logs --tail 20 php worker
+          test "$body" = '{"status":"ok"}'
+          # Le site joint Redis avec le mot de passe ; sans lui, Redis refuse tout
+          $compose exec -T php php bin/console cache:pool:clear cache.app
+          $compose exec -T redis redis-cli ping | grep -q NOAUTH
+          # Base, Redis et hub sans accès à Internet ; le site, lui, l'a (emails, notifications)
+          for service in database redis mercure; do
+            for network in $(networks "$service"); do
+              if docker run --rm --network "$network" --entrypoint curl skull-darts-71:ci -sS -m 5 -o /dev/null http://1.1.1.1; then
+                echo "::error::$service : le réseau $network atteint Internet"; exit 1
+              fi
+            done
+          done
+          docker run --rm --network "$(networks php | tr ' ' '\n' | grep '_default$')" --entrypoint curl skull-darts-71:ci -sS -m 10 -o /dev/null http://1.1.1.1
+          # Aucun conteneur ne peut regagner de privilèges ; le worker tient (file Redis lue avec le mot de passe)
+          for service in php worker database redis mercure; do
+            docker inspect -f '{{.HostConfig.SecurityOpt}}' "$($compose ps -q "$service")" | grep -q no-new-privileges
+          done
+          sleep 5
+          test "$(docker inspect -f '{{.RestartCount}} {{.State.Running}}' "$($compose ps -q worker)")" = "0 true"
       - name: Aucun fichier local ni secret dans l'image
         run: |
           docker run --rm skull-darts-71:ci sh -c 'ls -a /app; test ! -e /app/.env.local && test ! -e /app/.env.dev.local && test -f /app/web/index.html'

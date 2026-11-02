@@ -12,6 +12,14 @@ if grep -q '^MAILER_DSN=smtp://[^?[:space:]]*$' .env; then
   echo "→ Emails : TLS désormais exigé vers le relais SMTP"
 fi
 
+# Redis : mot de passe tiré ici, sur le serveur, la première fois (jamais affiché ni copié ailleurs)
+if ! grep -q '^REDIS_PASSWORD=.' .env; then
+  umask 077
+  [ -z "$(tail -c 1 .env)" ] || echo >> .env
+  printf 'REDIS_PASSWORD=%s\n' "$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')" >> .env
+  echo "→ Redis : mot de passe créé dans .env"
+fi
+
 set -a
 . ./.env
 set +a
