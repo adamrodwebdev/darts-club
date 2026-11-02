@@ -56,6 +56,21 @@ Nouvelle revue complète après la mise en ligne et l'alerte PHP2Shell du 20 oct
 | Moyenne | Tout compte à l'adresse confirmée devenait membre : un inconnu voyait l'annuaire, les lieux des soirées, les photos, et écrivait aux adhérents | Validation par le président ou l'administrateur (Administration › Membres, « Valider ») ; en attendant, son compte seulement ; la présidence est prévenue, le membre reçoit un email ; comptes existants validés d'office | `MemberApprovalTest`, `UserTest` |
 | Moyenne | Bureau : code à 6 chiffres contraignant (application à ouvrir à chaque connexion) et rejouable depuis un faux site relais pendant sa minute de validité | Clés d'accès (passkeys) pour le président, le trésorier et le secrétaire : empreinte, visage ou code de l'appareil, liés au site (inutilisables ailleurs) ; l'administrateur garde son code TOTP ; ajout ou retrait dans les 10 minutes qui suivent une connexion, email à chaque ajout ; appareil perdu : réinitialisation par l'administrateur (clés retirées, sessions fermées, journal) | `PasskeyTest`, `TwoFactorTest` |
 
+## Revue de novembre 2026 (infrastructure)
+
+Revue de l'infrastructure par un regard d'attaquant : serveur, conteneurs, chaîne de déploiement, réglages
+GitHub, traitement des fichiers envoyés. Contrôles passifs de la production (ports, TLS, en-têtes, hôte
+inconnu, Mercure anonyme) : rien d'exposé au-delà de SSH, HTTP et HTTPS ; TLS 1.2 et 1.3 seulement.
+
+| Gravité | Problème | Correction | Test |
+|---|---|---|---|
+| Élevée | La clé SSH de GitHub Actions ouvrait une session complète sur le compte `deploy`, qui pilote Docker, donc tout le serveur ; elle était rangée en secret du dépôt, lisible par un workflow de n'importe quelle branche, et l'environnement `production` n'était limité à aucune branche | Commande imposée [`deploy/ssh-gate.sh`](../deploy/ssh-gate.sh) : la clé ne peut que lancer `deploy <tag>` (tag vérifié), les fichiers de déploiement viennent de l'image construite depuis `main` ; clé posée par [`deploy/authorize-github-key.sh`](../deploy/authorize-github-key.sh), secrets dans l'environnement `production` limité à `main` | Image : fichiers présents et exécutables (CI) |
+| Moyenne | La reconstruction de sécurité du lundi réutilisait le cache : tant que l'image de base ne changeait pas, ffmpeg (qui lit les vidéos envoyées), OpenSSL et les autres paquets Alpine restaient à leur ancienne version | `apk upgrade` à la construction ; reconstruction du lundi sans cache | — (construction) |
+| Faible | Actions GitHub officielles épinglées par étiquette, qu'un attaquant de la chaîne d'approvisionnement peut déplacer | Toutes épinglées par empreinte de commit (Dependabot les met à jour) | — |
+| Faible | Moteur Docker (runc, containerd) hors des mises à jour automatiques ; noyau corrigé sans redémarrage | Dépôt Docker dans unattended-upgrades ; redémarrage la nuit quand il est nécessaire | — |
+| Faible | Le guide conseillait un enregistrement AAAA : le proxy IPv6 de Docker aurait montré tous les visiteurs IPv6 sous une seule adresse (limites d'essais partagées, journal faussé) | Guide corrigé : AAAA seulement après activation d'IPv6 dans Docker | — |
+| Faible | Agent SSH et affichage graphique relayables par SSH | Coupés dans la configuration SSH du serveur | — |
+
 ## Contrôles vérifiés
 
 - **Pare-feu** : seules la connexion (mot de passe ou clé d'accès), l'inscription, la confirmation d'email (lien et mot de passe), le mot de passe oublié, OAuth, la sonde `/api/health`, le flux iCal à jeton et la déconnexion sont publics ; le reste exige une connexion complète (2FA comprise).
