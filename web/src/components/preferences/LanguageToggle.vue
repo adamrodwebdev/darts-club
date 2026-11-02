@@ -11,6 +11,11 @@ const router = useRouter()
 
 const targets = computed(() => LOCALES.filter((code) => code !== preferences.locale))
 
+/** Le nom commence par le texte affiché (« EN, Switch to English ») : « EN » se dit aussi à la commande vocale (WCAG 2.5.3) */
+function accessibleName(code: Locale): string {
+  return `${code.toUpperCase()}, ${SWITCH_LABELS[code]}`
+}
+
 async function switchTo(locale: Locale): Promise<void> {
   await preferences.setLocale(locale)
   if (route.meta.homeLocale) await router.push({ path: HOME_PATHS[locale], hash: route.hash })
@@ -24,7 +29,7 @@ async function switchTo(locale: Locale): Promise<void> {
     type="button"
     class="lang-btn"
     :lang="code"
-    :aria-label="SWITCH_LABELS[code]"
+    :aria-label="accessibleName(code)"
     :title="SWITCH_LABELS[code]"
     @click="switchTo(code)"
   >

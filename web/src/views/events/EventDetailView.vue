@@ -196,6 +196,8 @@ async function saveSummary(): Promise<void> {
       <EventGallery
         v-if="!event.cancelled && (event.started || detail.photos.length || detail.videos.length || detail.gallery.canAddPhotos)"
         :event-id="event.id"
+        :event-title="event.title"
+        :event-date="event.startsAt"
         :photos="detail.photos"
         :videos="detail.videos"
         :rights="detail.gallery"

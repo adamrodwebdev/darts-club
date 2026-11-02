@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import GalleryUploadList from '@/components/events/GalleryUploadList.vue'
 import MediaViewer from '@/components/events/MediaViewer.vue'
 import { useGalleryUpload } from '@/composables/useGalleryUpload'
+import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import type { EventPhoto } from '@/models/ClubEvent'
 import { galleryItems, type GalleryItem, type GalleryRights, type GalleryVideo } from '@/models/Gallery'
 import { VideoUploadService } from '@/services/VideoUploadService'
@@ -23,7 +24,15 @@ interface Tile {
 
 const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
 
-const props = defineProps<{ eventId: string; photos: EventPhoto[]; videos: GalleryVideo[]; rights: GalleryRights; canManage: boolean }>()
+const props = defineProps<{
+  eventId: string
+  eventTitle: string
+  eventDate: Date
+  photos: EventPhoto[]
+  videos: GalleryVideo[]
+  rights: GalleryRights
+  canManage: boolean
+}>()
 const emit = defineEmits<{ changed: [] }>()
 const { t } = useI18n()
 
@@ -76,6 +85,17 @@ function tile(item: GalleryItem, index: number, total: number): Tile {
 }
 
 const tiles = computed(() => visible.value.map((item, index) => tile(item, index, visible.value.length)))
+
+/**
+ * Texte d'une photo ou d'une vidéo pour les lecteurs d'écran et les moteurs (alt) : la légende de son
+ * auteur, sinon une légende tirée de la soirée (« Photo de « Soirée fléchettes », le 10 octobre 2026,
+ * ajoutée par Bob »). Jamais vide, quoi que l'adhérent ait envoyé.
+ */
+function describe(item: GalleryItem): string {
+  const date = formatDate(props.eventDate, { dateStyle: 'long', timeZone: CLUB_TIME_ZONE })
+  if (item.kind === 'photo') return item.photo.caption ?? t('events.gallery.photoFrom', { event: props.eventTitle, date, name: item.photo.uploader })
+  return t('events.gallery.videoFrom', { event: props.eventTitle, date, name: item.video.uploader })
+}
 
 function onFiles(event: Event): void {
   const input = event.target as HTMLInputElement
@@ -155,6 +175,7 @@ function onMediaChanged(): void {
     <MediaViewer
       v-if="current"
       :item="current"
+      :description="describe(current)"
       :index="openIndex"
       :total="visible.length"
       :rights="rights"
