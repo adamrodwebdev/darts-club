@@ -1,38 +1,57 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import AccountsEntries from '@/components/accounts/AccountsEntries.vue'
 import AccountsSummary from '@/components/accounts/AccountsSummary.vue'
-import BarItemDialog from '@/components/accounts/BarItemDialog.vue'
-import BarItemsList from '@/components/accounts/BarItemsList.vue'
+import CashSettingsCard from '@/components/accounts/CashSettingsCard.vue'
 import EntryDialog from '@/components/accounts/EntryDialog.vue'
+import EveningTeamsCard from '@/components/accounts/EveningTeamsCard.vue'
+import MenuItemDialog from '@/components/accounts/MenuItemDialog.vue'
+import MenuItemsList from '@/components/accounts/MenuItemsList.vue'
 import ReceiptDialog from '@/components/accounts/ReceiptDialog.vue'
 import ReceiptsPanel from '@/components/accounts/ReceiptsPanel.vue'
+import TeamMemberDialog from '@/components/accounts/TeamMemberDialog.vue'
+import TokenDialog from '@/components/accounts/TokenDialog.vue'
 import YearCounters from '@/components/accounts/YearCounters.vue'
 import BaseButton from '@/components/BaseButton.vue'
 import BaseDialog from '@/components/BaseDialog.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
-import type { AccountsEntry, BarItem, EntryKind, EventAccounts, Receipt } from '@/models/EventAccounts'
+import type { AccountsEntry, BarItem, EntryKind, EventAccounts, Receipt, Team, TeamMember } from '@/models/EventAccounts'
 import { printOnly } from '@/print/printOnly'
 import { useServices } from '@/services'
-import type { BarItemDraft, EntryDraft, ReceiptDraft } from '@/services/EventAccountsService'
+import type { BarItemDraft, CashDraft, EntryDraft, ReceiptDraft, TokenDraft } from '@/services/EventAccountsService'
 
 const props = defineProps<{ id: string }>()
 const services = useServices()
 const { t } = useI18n()
+const route = useRoute()
+
+/** Parties du bilan, choisies par l'adresse (?partie=…) : la carte d'abord */
+const PARTS = ['carte', 'comptes', 'justificatifs'] as const
+type Part = (typeof PARTS)[number]
+const PART_LABELS = {
+  carte: 'events.accounts.parts.menu',
+  comptes: 'events.accounts.parts.books',
+  justificatifs: 'events.accounts.parts.receipts',
+} as const
+const part = computed<Part>(() => PARTS.find((p) => p === route.query.partie) ?? 'carte')
 
 const accounts = ref<EventAccounts | null>(null)
 const load = useAsyncAction()
 const action = useAsyncAction()
 
-/** Fenêtres ouvertes : article, ligne (dépense ou recette), justificatif, clôture */
+/** Fenêtres ouvertes : article, jeton, équipe, ligne (dépense ou recette), justificatif, clôture */
 const itemDialog = ref<{ item: BarItem | null } | null>(null)
+const tokenDialog = ref<{ index: number | null } | null>(null)
+const teamDialog = ref<{ team: Team } | null>(null)
 const entryDialog = ref<{ entry: AccountsEntry | null; kind: EntryKind } | null>(null)
 const receiptDialog = ref(false)
 const closing = ref(false)
-const dialogOpen = computed(() => itemDialog.value !== null || entryDialog.value !== null || receiptDialog.value || closing.value)
+const dialogOpen = computed(
+  () => itemDialog.value !== null || tokenDialog.value !== null || teamDialog.value !== null || entryDialog.value !== null || receiptDialog.value || closing.value,
+)
 
 onMounted(async () => {
   const loaded = await load.run(() => services.eventAccounts.get(props.id))
@@ -62,6 +81,31 @@ async function saveItem(draft: BarItemDraft): Promise<void> {
 async function removeItem(): Promise<void> {
   const item = itemDialog.value?.item
   if (item && (await apply(() => services.eventAccounts.removeItem(item.id)))) itemDialog.value = null
+}
+
+async function saveCash(draft: CashDraft): Promise<boolean> {
+  return apply(() => services.eventAccounts.saveCash(props.id, draft))
+}
+
+/** Jeton ajouté, remplacé ou retiré : l'encaissement part en entier */
+async function saveToken(token: TokenDraft | null): Promise<void> {
+  const cash = accounts.value?.cash
+  const index = tokenDialog.value?.index ?? null
+  if (!cash) return
+  const tokens = cash.tokens.map((kind) => ({ ...kind }))
+  if (index === null && token) tokens.push(token)
+  else if (index !== null && token) tokens.splice(index, 1, token)
+  else if (index !== null) tokens.splice(index, 1)
+  if (await saveCash({ tokensEnabled: cash.tokensEnabled, tokens, cashFloat: cash.cashFloat })) tokenDialog.value = null
+}
+
+async function addTeamMember(userId: string): Promise<void> {
+  const team = teamDialog.value?.team
+  if (team && (await apply(() => services.eventAccounts.addTeamMember(props.id, { userId, team })))) teamDialog.value = null
+}
+
+async function removeTeamMember(member: TeamMember): Promise<void> {
+  await apply(() => services.eventAccounts.removeTeamMember(member.assignmentId))
 }
 
 async function saveEntry(draft: EntryDraft): Promise<void> {
@@ -126,7 +170,7 @@ const status = computed(() => {
         <div class="head__title">
           <p class="eyebrow">{{ accounts.eventTitle }} · {{ formatDate(accounts.eventStartsAt, { dateStyle: 'long', timeZone: CLUB_TIME_ZONE }) }}</p>
           <h1>{{ t('events.accounts.title') }}</h1>
-          <p class="muted rights">{{ accounts.mayEdit ? t('events.accounts.rights') : t('events.accounts.readOnly') }}</p>
+          <p class="muted rights">{{ accounts.mayEdit ? t('events.accounts.rights') : t('events.accounts.menuRights') }}</p>
         </div>
         <div class="head__actions">
           <span class="pill" :class="{ 'pill--closed': accounts.closed }">{{ status }}</span>
@@ -139,12 +183,39 @@ const status = computed(() => {
         </div>
       </div>
 
+      <nav class="parts no-print" :aria-label="t('events.accounts.parts.label')">
+        <RouterLink
+          v-for="p in PARTS"
+          :key="p"
+          class="part-link"
+          :to="{ query: { ...route.query, partie: p } }"
+          replace
+          :aria-current="part === p ? 'page' : undefined"
+        >
+          {{ t(PART_LABELS[p]) }}
+        </RouterLink>
+      </nav>
+
       <p v-if="action.error.value && !dialogOpen" class="notice notice--error" role="alert">{{ action.error.value }}</p>
 
-      <AccountsSummary :accounts="accounts" />
-      <BarItemsList :accounts="accounts" @add="openDialog(() => (itemDialog = { item: null }))" @edit="(item) => openDialog(() => (itemDialog = { item }))" />
+      <!-- Toutes les parties restent dans la page : l'impression les montre ensemble -->
+      <div v-show="part === 'carte'" class="part stack">
+        <div class="columns">
+          <CashSettingsCard
+            :accounts="accounts"
+            :pending="action.pending.value"
+            @save="saveCash"
+            @add-token="openDialog(() => (tokenDialog = { index: null }))"
+            @edit-token="(index) => openDialog(() => (tokenDialog = { index }))"
+          />
+          <EveningTeamsCard :accounts="accounts" :pending="action.pending.value" @add="(team) => openDialog(() => (teamDialog = { team }))" @remove="removeTeamMember" />
+        </div>
+        <MenuItemsList :accounts="accounts" @add="openDialog(() => (itemDialog = { item: null }))" @edit="(item) => openDialog(() => (itemDialog = { item }))" />
+      </div>
 
-      <div class="columns">
+      <div v-show="part === 'comptes'" class="part stack">
+        <AccountsSummary :accounts="accounts" />
+        <div class="columns">
         <AccountsEntries
           :title="t('events.accounts.expenses')"
           :add-label="t('events.accounts.addExpense')"
@@ -163,15 +234,16 @@ const status = computed(() => {
           @add="openDialog(() => (entryDialog = { entry: null, kind: 'recette' }))"
           @edit="(entry) => openDialog(() => (entryDialog = { entry, kind: entry.kind }))"
         />
+        </div>
+        <YearCounters :accounts="accounts" :pending="action.pending.value" @change="changeFlags" />
       </div>
 
-      <div class="columns columns--wide">
+      <div v-show="part === 'justificatifs'" class="part stack">
         <ReceiptsPanel :receipts="accounts.receipts" :editable="accounts.editable" @add="openDialog(() => (receiptDialog = true))" @remove="removeReceipt" />
-        <YearCounters :accounts="accounts" :pending="action.pending.value" @change="changeFlags" />
       </div>
     </template>
 
-    <BarItemDialog
+    <MenuItemDialog
       v-if="itemDialog"
       :item="itemDialog.item"
       :pending="action.pending.value"
@@ -180,6 +252,25 @@ const status = computed(() => {
       @save="saveItem"
       @remove="removeItem"
       @close="itemDialog = null"
+    />
+    <TokenDialog
+      v-if="tokenDialog && accounts"
+      :token="tokenDialog.index === null ? null : (accounts.cash.tokens[tokenDialog.index] ?? null)"
+      :frozen="accounts.cash.frozen"
+      :pending="action.pending.value"
+      :error="action.error.value"
+      @save="saveToken"
+      @remove="saveToken(null)"
+      @close="tokenDialog = null"
+    />
+    <TeamMemberDialog
+      v-if="teamDialog && accounts"
+      :team="teamDialog.team"
+      :members="accounts.teams[teamDialog.team]"
+      :pending="action.pending.value"
+      :error="action.error.value"
+      @add="addTeamMember"
+      @close="teamDialog = null"
     />
     <EntryDialog
       v-if="entryDialog"
@@ -285,8 +376,31 @@ const status = computed(() => {
   align-items: start;
 }
 
-.columns--wide {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+.parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.part-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.part-link[aria-current='page'] {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+}
+
+.part {
+  gap: 1.5rem;
 }
 
 .dialog-text {
@@ -308,6 +422,11 @@ const status = computed(() => {
   html[data-print='accounts'] body .footer,
   html[data-print='accounts'] .accounts-page .no-print {
     display: none !important;
+  }
+
+  /* Les trois parties à la suite, quelle que soit celle affichée à l'écran */
+  html[data-print='accounts'] .accounts-page .part {
+    display: grid !important;
   }
 }
 </style>

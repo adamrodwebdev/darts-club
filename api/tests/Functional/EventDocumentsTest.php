@@ -152,7 +152,9 @@ final class EventDocumentsTest extends ApiTestCase
         $this->board(['secretary@example.com' => Role::Secretary]);
         $this->loginAs('secretary@example.com');
         $accounts = "/api/events/{$event->getId()->toRfc4122()}/accounts";
-        $this->postJson($accounts.'/items', ['label' => 'Bière', 'planned' => 10, 'bought' => 12, 'returned' => 2, 'sold' => 8, 'purchasePrice' => '1', 'salePrice' => '3']);
+        $this->postJson($accounts.'/items', ['label' => 'Bière', 'station' => 'bar', 'unit' => 'unite', 'containerSize' => 1, 'planned' => 10, 'bought' => 12, 'returned' => 2,
+            'purchasePrice' => '1', 'formats' => [['name' => 'Bouteille', 'volume' => 1, 'price' => '3', 'sold' => 8]]]);
+        self::assertResponseStatusCodeSame(201);
         $this->postJson($accounts.'/entries', ['kind' => 'depense', 'label' => 'Location de la salle', 'planned' => '80']);
         $this->postJson($accounts.'/entries', ['kind' => 'recette', 'label' => 'Dons', 'planned' => '0', 'actual' => '15']);
         $rent = $this->digString($this->json(), 'entries', 0, 'id');

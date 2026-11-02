@@ -97,6 +97,15 @@ framework:
             policy: sliding_window
             limit: 60
             interval: '1 hour'
+        # Vidéos de galerie (présidence) : 20 envois par heure, morceaux de 8 Mo (10 Go par heure au plus)
+        video_upload:
+            policy: sliding_window
+            limit: 20
+            interval: '1 hour'
+        video_chunk:
+            policy: sliding_window
+            limit: 1300
+            interval: '1 hour'
 
 when@test:
     framework:

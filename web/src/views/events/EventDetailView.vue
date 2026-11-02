@@ -9,7 +9,7 @@ import MemberBadges from '@/components/MemberBadges.vue'
 import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import AudiencePanel from '@/components/events/AudiencePanel.vue'
-import PhotoGallery from '@/components/events/PhotoGallery.vue'
+import EventGallery from '@/components/events/EventGallery.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useViewBeacon } from '@/composables/useViewBeacon'
 import { ATTENDANCE_LABELS, formatEventDate, type Attendance, type EventDetail, type Guest } from '@/models/ClubEvent'
@@ -192,11 +192,13 @@ async function saveSummary(): Promise<void> {
         <BaseButton v-if="detail.canManage" variant="ghost" @click="startSummary">{{ detail.report ? t('events.detail.editSummary') : t('events.detail.writeSummary') }}</BaseButton>
       </section>
 
-      <PhotoGallery
-        v-if="event.started && !event.cancelled"
+      <!-- La présidence peut publier avant la soirée : la galerie s'affiche dès qu'il y a quelque chose à voir ou à ajouter -->
+      <EventGallery
+        v-if="!event.cancelled && (event.started || detail.photos.length || detail.videos.length || detail.gallery.canAddPhotos)"
         :event-id="event.id"
         :photos="detail.photos"
-        :can-upload="true"
+        :videos="detail.videos"
+        :rights="detail.gallery"
         :can-manage="detail.canManage"
         @changed="refresh"
       />
@@ -221,6 +223,16 @@ async function saveSummary(): Promise<void> {
           <p v-if="post.error.value" class="notice notice--error" role="alert">{{ post.error.value }}</p>
           <BaseButton type="submit" :pending="post.pending.value" :disabled="!draftPost.trim()">{{ t('events.detail.publish') }}</BaseButton>
         </form>
+      </section>
+
+      <section v-if="detail.service.entrance" class="card board" aria-labelledby="screens-title">
+        <div>
+          <h2 id="screens-title">{{ t('evening.screens.title') }}</h2>
+          <p class="muted">{{ t('evening.screens.text') }}</p>
+        </div>
+        <div class="board__links">
+          <RouterLink :to="{ name: 'evening-entrance', params: { id: event.id } }" class="link-button">{{ t('evening.screens.entrance') }}</RouterLink>
+        </div>
       </section>
 
       <section v-if="auth.user?.isBoardMember" class="card board" aria-labelledby="board-title">

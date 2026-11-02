@@ -1,15 +1,46 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { EventAccounts, type EntryKind } from '@/models/EventAccounts'
+import { EventAccounts, type EntryKind, type Station, type StockUnit, type Team, type TokenColor } from '@/models/EventAccounts'
 
-/** Article de la buvette saisi dans le formulaire (prix décimaux « 0,95 ») */
+/** Format vendu saisi : contenance en unité de stock (centilitres au litre), null si inconnue */
+export interface SaleFormatDraft {
+  name: string
+  volume: number | null
+  price: string
+  sold: number
+}
+
+/**
+ * Article de la carte saisi dans le formulaire : prix décimaux « 0,95 », quantités en contenants,
+ * contenance du contenant en unité de stock.
+ */
 export interface BarItemDraft {
   label: string
+  station: Station
+  unit: StockUnit
+  garnishes: string[]
+  alcoholic: boolean
+  containerName: string | null
+  containerSize: number
   planned: number
   bought: number
   returned: number
-  sold: number
   purchasePrice: string
-  salePrice: string
+  formats: SaleFormatDraft[]
+}
+
+/** Jeton ou sachet vendu à l'accueil, valeur décimale « 0,50 » ; couleur du jeton (aucune pour un sachet) */
+export interface TokenDraft {
+  name: string
+  value: string
+  bag: boolean
+  color: TokenColor | null
+}
+
+/** Encaissement de la soirée : jetons et fond de caisse de l'accueil */
+export interface CashDraft {
+  tokensEnabled: boolean
+  tokens: TokenDraft[]
+  cashFloat: string
 }
 
 /** Dépense ou recette hors buvette ; réel vide tant qu'il n'est pas connu */
@@ -62,6 +93,19 @@ export class EventAccountsService {
 
   async removeEntry(entryId: string): Promise<EventAccounts> {
     return EventAccounts.parse(await this.api.delete(`/api/event-accounts/entries/${encodeURIComponent(entryId)}`))
+  }
+
+  async saveCash(eventId: string, draft: CashDraft): Promise<EventAccounts> {
+    return EventAccounts.parse(await this.api.put(`${this.base(eventId)}/cash`, { ...draft }))
+  }
+
+  /** Place un membre dans l'équipe de l'accueil, du bar ou de la cuisine */
+  async addTeamMember(eventId: string, assignment: { userId: string; team: Team }): Promise<EventAccounts> {
+    return EventAccounts.parse(await this.api.post(`/api/events/${encodeURIComponent(eventId)}/teams`, { ...assignment }))
+  }
+
+  async removeTeamMember(assignmentId: string): Promise<EventAccounts> {
+    return EventAccounts.parse(await this.api.delete(`/api/evening-team-members/${encodeURIComponent(assignmentId)}`))
   }
 
   async changeFlags(eventId: string, flags: { temporaryBar: boolean; taxExempt: boolean }): Promise<EventAccounts> {

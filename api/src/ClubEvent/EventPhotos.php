@@ -9,12 +9,18 @@ use App\Entity\EventPhoto;
 use App\Entity\User;
 use App\Media\ImageUpload;
 use App\Media\InvalidImageException;
+use App\Message\OptimizeEventPhotos;
 use App\Repository\EventPhotoRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Messenger\MessageBusInterface;
 
-/** Galerie de l'archive : photos ajoutées une fois l'événement commencé, jusqu'à 200 par événement. */
+/**
+ * Galerie : photos ajoutées par les membres une fois l'événement commencé, par la présidence à tout
+ * moment (EventGalleryVoter), jusqu'à 200 par événement. Le WebP est en ligne tout de suite, le
+ * worker y ajoute ensuite les versions AVIF, plus légères.
+ */
 final class EventPhotos
 {
     public const MAX_PER_EVENT = 200;
@@ -25,6 +31,7 @@ final class EventPhotos
         private readonly EventPhotoFiles $files,
         private readonly EventPhotoRepository $photos,
         private readonly AuditTrail $audit,
+        private readonly MessageBusInterface $bus,
     ) {
     }
 
@@ -39,7 +46,7 @@ final class EventPhotos
     public function add(ClubEvent $event, User $uploader, array $files): array
     {
         $now = $this->clock->now();
-        $event->assertArchiveOpen($now);
+        $event->assertGalleryOpen();
         if ($this->photos->countForEvent($event) + \count($files) > self::MAX_PER_EVENT) {
             throw new InvalidImageException('La galerie est limitée à %max% photos.', null, ['%max%' => self::MAX_PER_EVENT]);
         }
@@ -69,6 +76,8 @@ final class EventPhotos
             }
             throw $e;
         }
+
+        $this->bus->dispatch(new OptimizeEventPhotos(array_map(static fn (EventPhoto $photo): string => $photo->getId()->toRfc4122(), $added)));
 
         return $added;
     }

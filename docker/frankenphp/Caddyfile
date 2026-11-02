@@ -7,8 +7,10 @@
 }
 
 {$SERVER_NAME:localhost} {
-	# Compression : zstd et Brotli si le navigateur les accepte, sinon gzip
-	encode zstd br gzip
+	# Compression : zstd et Brotli si le navigateur les accepte, sinon gzip ; jamais le flux
+	# temps réel (Server-Sent Events), que la compression retarderait
+	@compressible not path /.well-known/mercure*
+	encode @compressible zstd br gzip
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -26,10 +28,11 @@
 	# API Symfony
 	handle /api/* {
 		# Taille des requêtes bornée avant PHP : 1 Mo, sauf les envois de fichiers
-		# (photos : 10 de 10 Mo ; affiche, avatar, justificatif d'un bilan, attestation d'assurance : 10 Mo)
+		# (photos : 10 de 10 Mo ; affiche, avatar, justificatif d'un bilan, attestation d'assurance,
+		# morceau de vidéo de 8 Mo : 10 Mo)
 		@photos path_regexp ^/api/events/[^/]+/photos$
-		@file path_regexp ^/api/(events/[^/]+/(poster|accounts/receipts)|me/avatar|association-profile/insurance)$
-		@small not path_regexp ^/api/(events/[^/]+/(photos|poster|accounts/receipts)|me/avatar|association-profile/insurance)$
+		@file path_regexp ^/api/(events/[^/]+/(poster|accounts/receipts)|me/avatar|association-profile/insurance|event-videos/[^/]+/chunks/[0-9]+)$
+		@small not path_regexp ^/api/(events/[^/]+/(photos|poster|accounts/receipts)|me/avatar|association-profile/insurance|event-videos/[^/]+/chunks/[0-9]+)$
 		request_body @photos {
 			max_size 112MB
 		}

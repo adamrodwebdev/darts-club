@@ -5,14 +5,17 @@ namespace App\Entity;
 use App\EventAccounts\AccountsException;
 use App\EventAccounts\AccountsFlags;
 use App\EventAccounts\BarItemDraft;
+use App\EventAccounts\CashSettings;
 use App\EventAccounts\EntryDraft;
 use App\EventAccounts\EntryKind;
 use App\EventAccounts\NewReceipt;
 use App\EventAccounts\SignedAmount;
+use App\EventAccounts\TokenKind;
 use App\Membership\Money;
 use App\Repository\EventAccountsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
@@ -38,6 +41,18 @@ class EventAccounts
 
     #[ORM\Column]
     private bool $taxExempt = false;
+
+    /** Consommations payées en jetons achetés à l'accueil */
+    #[ORM\Column]
+    private bool $tokensEnabled = false;
+
+    /** @var list<array{name: string, value: int, bag: bool}> */
+    #[ORM\Column(type: Types::JSON)]
+    private array $tokens = [];
+
+    /** Fond de caisse de l'accueil, en centimes */
+    #[ORM\Column]
+    private int $cashFloat = 0;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $closedAt = null;
@@ -70,10 +85,28 @@ class EventAccounts
         $this->receipts = new ArrayCollection();
     }
 
-    /** Bilan ouvert à la première saisie */
+    /** Bilan ouvert à la première saisie, avec l'encaissement habituel du club (jetons) */
     public static function open(ClubEvent $event): self
     {
-        return new self($event);
+        $accounts = new self($event);
+        $accounts->applyCash(CashSettings::clubDefaults());
+
+        return $accounts;
+    }
+
+    public function configureCash(CashSettings $settings): void
+    {
+        $this->assertOpen();
+        $this->applyCash($settings);
+    }
+
+    public function cash(): CashSettings
+    {
+        return new CashSettings(
+            $this->tokensEnabled,
+            array_map(static fn (array $token): TokenKind => TokenKind::fromArray($token), $this->tokens),
+            Money::cents($this->cashFloat),
+        );
     }
 
     public function addItem(BarItemDraft $draft): BarItem
@@ -259,6 +292,13 @@ class EventAccounts
         }
 
         return $total;
+    }
+
+    private function applyCash(CashSettings $settings): void
+    {
+        $this->tokensEnabled = $settings->tokensEnabled;
+        $this->tokens = array_map(static fn (TokenKind $token): array => $token->toArray(), $settings->tokens);
+        $this->cashFloat = $settings->cashFloat->cents;
     }
 
     private function assertOpen(): void

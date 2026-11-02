@@ -5,11 +5,17 @@ namespace App\Controller;
 use App\Dto\AccountsEntryInput;
 use App\Dto\AccountsFlagsInput;
 use App\Dto\BarItemInput;
+use App\Dto\CashSettingsInput;
+use App\Dto\TeamMemberInput;
 use App\Entity\AccountsEntry;
 use App\Entity\BarItem;
 use App\Entity\ClubEvent;
+use App\Entity\EveningTeamMember;
 use App\Entity\Receipt;
 use App\Entity\User;
+use App\Evening\EveningTeams;
+use App\Evening\Team;
+use App\Evening\TeamAssignment;
 use App\EventAccounts\AccountsCsvExporter;
 use App\EventAccounts\AccountsException;
 use App\EventAccounts\AccountsPermissions;
@@ -21,6 +27,7 @@ use App\EventAccounts\ReceiptDetails;
 use App\EventAccounts\ReceiptUpload;
 use App\Membership\Money;
 use App\Repository\EventAccountsRepository;
+use App\Repository\UserRepository;
 use App\Security\Voter\EventAccountsVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -56,7 +63,7 @@ final class EventAccountsController extends AbstractController
     }
 
     #[Route('/api/events/{id}/accounts/items', name: 'accounts_item_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
-    #[IsGranted(EventAccountsVoter::EDIT, subject: 'event')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'event')]
     public function addItem(ClubEvent $event, #[MapRequestPayload(acceptFormat: 'json')] BarItemInput $input, #[CurrentUser] User $actor, Bookkeeper $bookkeeper): JsonResponse
     {
         $bookkeeper->addItem($actor, $event, DomainCall::run($input->toDraft(...)));
@@ -65,7 +72,7 @@ final class EventAccountsController extends AbstractController
     }
 
     #[Route('/api/event-accounts/items/{id}', name: 'accounts_item_edit', requirements: ['id' => self::UUID], methods: ['PUT'], format: 'json')]
-    #[IsGranted(EventAccountsVoter::EDIT, subject: 'item')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'item')]
     public function changeItem(BarItem $item, #[MapRequestPayload(acceptFormat: 'json')] BarItemInput $input, #[CurrentUser] User $actor, Bookkeeper $bookkeeper): JsonResponse
     {
         $bookkeeper->changeItem($actor, $item, DomainCall::run($input->toDraft(...)));
@@ -74,7 +81,7 @@ final class EventAccountsController extends AbstractController
     }
 
     #[Route('/api/event-accounts/items/{id}', name: 'accounts_item_remove', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
-    #[IsGranted(EventAccountsVoter::EDIT, subject: 'item')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'item')]
     public function removeItem(BarItem $item, #[CurrentUser] User $actor, Bookkeeper $bookkeeper): JsonResponse
     {
         $event = $item->accounts()->event();
@@ -162,6 +169,38 @@ final class EventAccountsController extends AbstractController
         return $this->accounts($event);
     }
 
+    #[Route('/api/events/{id}/accounts/cash', name: 'accounts_cash', requirements: ['id' => self::UUID], methods: ['PUT'], format: 'json')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'event')]
+    public function configureCash(ClubEvent $event, #[MapRequestPayload(acceptFormat: 'json')] CashSettingsInput $input, #[CurrentUser] User $actor, Bookkeeper $bookkeeper): JsonResponse
+    {
+        $bookkeeper->configureCash($actor, $event, DomainCall::run($input->toSettings(...)));
+
+        return $this->accounts($event);
+    }
+
+    #[Route('/api/events/{id}/teams', name: 'evening_team_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'event')]
+    public function addTeamMember(ClubEvent $event, #[MapRequestPayload(acceptFormat: 'json')] TeamMemberInput $input, #[CurrentUser] User $actor, UserRepository $users, EveningTeams $teams): JsonResponse
+    {
+        $member = $users->find($input->userId);
+        if (null === $member) {
+            throw new NotFoundHttpException();
+        }
+        DomainCall::run(fn () => $teams->assign($event, new TeamAssignment($member, Team::from($input->team)), $actor));
+
+        return $this->accounts($event, Response::HTTP_CREATED);
+    }
+
+    #[Route('/api/evening-team-members/{id}', name: 'evening_team_remove', requirements: ['id' => self::UUID], methods: ['DELETE'], format: 'json')]
+    #[IsGranted(EventAccountsVoter::EDIT_MENU, subject: 'member')]
+    public function removeTeamMember(EveningTeamMember $member, #[CurrentUser] User $actor, EveningTeams $teams): JsonResponse
+    {
+        $event = $member->event();
+        $teams->remove($member, $actor);
+
+        return $this->accounts($event);
+    }
+
     #[Route('/api/events/{id}/accounts/close', name: 'accounts_close', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
     #[IsGranted(EventAccountsVoter::EDIT, subject: 'event')]
     public function close(ClubEvent $event, #[CurrentUser] User $actor, Bookkeeper $bookkeeper): JsonResponse
@@ -198,6 +237,7 @@ final class EventAccountsController extends AbstractController
         $permissions = new AccountsPermissions(
             edit: $this->isGranted(EventAccountsVoter::EDIT, $event),
             reopen: $this->isGranted(EventAccountsVoter::REOPEN, $event),
+            editMenu: $this->isGranted(EventAccountsVoter::EDIT_MENU, $event),
         );
 
         return $this->json($this->view->of($event, $permissions), $status);

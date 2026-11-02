@@ -14,10 +14,12 @@ const props = withDefaults(
     required?: boolean
     multiline?: boolean
     maxlength?: number
+    /** Clavier proposé sur mobile (« decimal » pour un montant, « numeric » pour un nombre entier) */
+    inputmode?: 'text' | 'decimal' | 'numeric'
     /** Éléments décrivant le champ en plus de l'aide (règles du mot de passe…) */
     describedby?: string
   }>(),
-  { type: 'text', autocomplete: 'off', error: undefined, hint: undefined, required: false, multiline: false, maxlength: undefined, describedby: undefined },
+  { type: 'text', autocomplete: 'off', error: undefined, hint: undefined, required: false, multiline: false, maxlength: undefined, inputmode: undefined, describedby: undefined },
 )
 
 const { t } = useI18n()
@@ -61,6 +63,7 @@ onBeforeUnmount(() => input.value?.form?.removeEventListener('submit', hide))
         :autocomplete="props.autocomplete"
         :required="props.required"
         :maxlength="props.maxlength"
+        :inputmode="props.inputmode"
         :aria-invalid="!!props.error"
         :aria-describedby="describedBy"
         :spellcheck="isPassword ? false : undefined"

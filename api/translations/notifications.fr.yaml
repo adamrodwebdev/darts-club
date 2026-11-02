@@ -17,3 +17,6 @@
 'message.body': '%preview%'
 'member.pending.title': 'Nouveau compte à valider : %name%'
 'member.pending.body': '%email% a confirmé son adresse. Valide son compte depuis Administration › Membres.'
+'gallery.removal.title': 'Demande de retrait : %event%'
+'gallery.removal.body.photo': '%name% demande le retrait d’une photo. Elle est masquée en attendant ta décision.'
+'gallery.removal.body.video': '%name% demande le retrait d’une vidéo. Elle est masquée en attendant ta décision.'

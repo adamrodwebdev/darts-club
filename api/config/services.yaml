@@ -52,3 +52,18 @@ services:
     App\Media\ImageStorage $avatarStorage: '@app.storage.avatars'
     App\Media\ImageStorage $eventPhotoStorage: '@app.storage.event_photos'
     App\Media\ImageStorage $eventPosterStorage: '@app.storage.event_posters'
+    # Versions AVIF des photos de galerie, rangées à côté de leur WebP
+    App\Media\AvifVariants $eventPhotoVariants: '@app.storage.event_photos'
+
+    # Vidéos de galerie : envois en cours (morceaux), puis fichiers convertis (MP4, aperçus)
+    App\Media\UploadParts:
+        class: App\Media\FilesystemUploadParts
+        arguments: ['%kernel.project_dir%/var/storage/video-uploads']
+    App\Media\VideoStorage:
+        class: App\Media\FilesystemVideoStorage
+        arguments: ['%kernel.project_dir%/var/storage/event-videos']
+    # Conversion par ffmpeg dans le worker ; fichiers de travail hors de la racine web
+    App\Media\VideoTranscoder:
+        class: App\Media\FfmpegVideoTranscoder
+        arguments:
+            $workDirectory: '%kernel.project_dir%/var/storage/video-work'

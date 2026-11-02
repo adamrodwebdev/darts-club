@@ -6,9 +6,12 @@ use App\Security\TokenGenerator;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 use Symfony\Component\Filesystem\Filesystem;
 
-/** Déclaré explicitement par dossier dans config/services.yaml. */
+/**
+ * Déclaré explicitement par dossier dans config/services.yaml. La version AVIF d'une image, quand
+ * elle existe, se range à côté de son WebP ({id}.avif) et disparaît avec lui.
+ */
 #[Exclude]
-final class FilesystemImageStorage implements ImageStorage
+final class FilesystemImageStorage implements ImageStorage, AvifVariants
 {
     private const ID_PATTERN = '/^[a-f0-9]{32}$/';
 
@@ -44,12 +47,30 @@ final class FilesystemImageStorage implements ImageStorage
     public function delete(string $id): void
     {
         if (1 === preg_match(self::ID_PATTERN, $id)) {
-            $this->filesystem->remove($this->file($id));
+            $this->filesystem->remove([$this->file($id), $this->file($id, 'avif')]);
         }
     }
 
-    private function file(string $id): string
+    public function storeAvif(string $id, string $avifBinary): void
     {
-        return $this->directory.'/'.$id.'.webp';
+        if (1 === preg_match(self::ID_PATTERN, $id) && is_file($this->file($id))) {
+            $this->filesystem->dumpFile($this->file($id, 'avif'), $avifBinary);
+        }
+    }
+
+    public function avifPath(string $id): ?string
+    {
+        if (1 !== preg_match(self::ID_PATTERN, $id)) {
+            return null;
+        }
+
+        $file = $this->file($id, 'avif');
+
+        return is_file($file) ? $file : null;
+    }
+
+    private function file(string $id, string $extension = 'webp'): string
+    {
+        return $this->directory.'/'.$id.'.'.$extension;
     }
 }

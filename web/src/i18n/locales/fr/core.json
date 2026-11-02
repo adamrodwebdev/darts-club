@@ -41,7 +41,8 @@
     "eventAccounts": "Bilan de la soirée",
     "eventDocuments": "Démarches de la soirée",
     "eventDocument": "Document de la soirée",
-    "associationProfile": "Fiche de l’association"
+    "associationProfile": "Fiche de l’association",
+    "eveningEntrance": "Accueil de la soirée"
   },
   "app": {
     "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
@@ -382,7 +383,14 @@
         "cancel": "Événement annulé"
       },
       "photo": {
-        "delete": "Photo retirée (modération)"
+        "delete": "Photo retirée (modération)",
+        "hide": "Photo masquée (demande de retrait)",
+        "restore": "Photo remise en ligne"
+      },
+      "video": {
+        "delete": "Vidéo retirée (modération)",
+        "hide": "Vidéo masquée (demande de retrait)",
+        "restore": "Vidéo remise en ligne"
       },
       "post": {
         "delete": "Message retiré (modération)"
@@ -401,7 +409,12 @@
         "receipt_add": "Justificatif ajouté",
         "receipt_remove": "Justificatif retiré",
         "close": "Bilan clôturé",
-        "reopen": "Bilan rouvert"
+        "reopen": "Bilan rouvert",
+        "cash": "Encaissement de la soirée modifié"
+      },
+      "team": {
+        "assign": "Membre placé dans une équipe de la soirée",
+        "remove": "Membre retiré d’une équipe de la soirée"
       },
       "procedure": {
         "save": "Document de démarche enregistré",
@@ -410,6 +423,9 @@
       "association": {
         "update": "Fiche de l’association modifiée",
         "insurance": "Attestation d’assurance rangée"
+      },
+      "entrance": {
+        "sale_cancel": "Vente de l’accueil annulée"
       }
     }
   },

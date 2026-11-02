@@ -5,13 +5,19 @@ namespace App\ClubEvent;
 use App\Entity\ClubEvent;
 use App\Entity\EventPhoto;
 use App\Entity\EventPost;
+use App\Entity\EventVideo;
 use App\Entity\GuestResponse;
 use App\Entity\Registration;
 use App\Entity\User;
+use App\Gallery\GalleryMedia;
 use App\Messaging\MessagingView;
 use App\Repository\EventPhotoRepository;
 use App\Repository\EventPostRepository;
+use App\Repository\EventVideoRepository;
+use App\Security\Voter\EveningServiceVoter;
+use App\Security\Voter\EventGalleryVoter;
 use Symfony\Component\Clock\ClockInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /** Représentations JSON du calendrier et des archives. */
 final class ClubEventView
@@ -20,7 +26,9 @@ final class ClubEventView
         private readonly MessagingView $members,
         private readonly ClockInterface $clock,
         private readonly EventPhotoRepository $photos,
+        private readonly EventVideoRepository $videos,
         private readonly EventPostRepository $posts,
+        private readonly AuthorizationCheckerInterface $authorization,
     ) {
     }
 
@@ -68,7 +76,26 @@ final class ClubEventView
             'organizer' => $event->getOrganizerName(),
             'summary' => $event->getSummary(),
             'canManage' => $canManage,
-            'photos' => array_map(static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)], $this->photos->forEvent($event)),
+            // Masquées (demande de retrait) ou en cours de conversion : seulement pour la présidence et l'auteur
+            'photos' => array_map(
+                static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)],
+                array_values(array_filter($this->photos->forEvent($event), $this->viewable(...))),
+            ),
+            'videos' => array_map(
+                static fn (EventVideo $v): array => $v->toArray() + ['mine' => $v->isUploadedBy($viewer)],
+                array_values(array_filter($this->videos->forEvent($event), $this->viewable(...))),
+            ),
+            'gallery' => [
+                'canAddPhotos' => $this->authorization->isGranted(EventGalleryVoter::ADD_PHOTOS, $event),
+                'canAddVideos' => $this->authorization->isGranted(EventGalleryVoter::ADD_VIDEOS, $event),
+                'canModerate' => $this->authorization->isGranted('ROLE_PRESIDENT'),
+            ],
+            // Écrans de la soirée que la personne ouvre maintenant (son équipe le jour même, le bureau toujours)
+            'service' => [
+                'entrance' => $this->authorization->isGranted(EveningServiceVoter::ENTRANCE, $event),
+                'bar' => $this->authorization->isGranted(EveningServiceVoter::BAR, $event),
+                'kitchen' => $this->authorization->isGranted(EveningServiceVoter::KITCHEN, $event),
+            ],
             'posts' => array_map(fn (EventPost $p): array => [
                 'id' => $p->getId()->toRfc4122(),
                 'body' => $p->getBody(),
@@ -86,5 +113,11 @@ final class ClubEventView
                 ? array_map(static fn (GuestResponse $g): array => ['id' => $g->getId()->toRfc4122(), 'name' => $g->name(), 'email' => $g->email(), 'answer' => $g->answer()?->value, 'at' => $g->createdAt()->format(\DATE_ATOM)], $event->confirmedGuests())
                 : null,
         ];
+    }
+
+    /** Même règle que pour servir le fichier (EventGalleryVoter::VIEW) */
+    private function viewable(GalleryMedia $media): bool
+    {
+        return $this->authorization->isGranted(EventGalleryVoter::VIEW, $media);
     }
 }

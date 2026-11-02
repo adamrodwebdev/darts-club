@@ -427,6 +427,14 @@ class ClubEvent implements RecordsDomainEvents
     }
 
     /** Archive (photos et posts) : ouverte une fois l'événement commencé, s'il n'a pas été annulé. */
+    /** Galerie : fermée pour un événement annulé ; qui publie et quand relève d'EventGalleryVoter */
+    public function assertGalleryOpen(): void
+    {
+        if ($this->isCancelled()) {
+            throw new RegistrationException('La galerie d\'un événement annulé est fermée.');
+        }
+    }
+
     public function assertArchiveOpen(\DateTimeImmutable $now): void
     {
         if ($this->isCancelled() || !$this->hasStarted($now)) {

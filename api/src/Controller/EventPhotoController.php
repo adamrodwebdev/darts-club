@@ -6,10 +6,14 @@ use App\ClubEvent\EventPhotos;
 use App\Entity\ClubEvent;
 use App\Entity\EventPhoto;
 use App\Entity\User;
+use App\Media\AvifVariants;
+use App\Media\ImageFiles;
 use App\Media\ImageStorage;
 use App\Media\InvalidImageException;
+use App\Media\NegotiatedImage;
 use App\Security\RequestThrottle;
 use App\Security\Voter\ClubEventVoter;
+use App\Security\Voter\EventGalleryVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -35,6 +39,7 @@ final class EventPhotoController extends AbstractController
     }
 
     #[Route('/api/events/{id}/photos', name: 'events_photos_add', requirements: ['id' => self::UUID], methods: ['POST'], format: 'json')]
+    #[IsGranted(EventGalleryVoter::ADD_PHOTOS, subject: 'event')]
     public function add(ClubEvent $event, Request $request, #[CurrentUser] User $user, RateLimiterFactoryInterface $photoUploadLimiter): JsonResponse
     {
         $files = $request->files->get('photos');
@@ -59,8 +64,10 @@ final class EventPhotoController extends AbstractController
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
+    /** AVIF aux navigateurs qui l'annoncent, une fois produite par le worker ; WebP sinon */
     #[Route('/api/event-photos/{id}/{size}', name: 'events_photos_file', requirements: ['id' => self::UUID, 'size' => 'thumb|large'], methods: ['GET'])]
-    public function photoFile(EventPhoto $photo, string $size, ImageStorage $eventPhotoStorage, Request $request): BinaryFileResponse
+    #[IsGranted(EventGalleryVoter::VIEW, subject: 'photo')]
+    public function photoFile(EventPhoto $photo, string $size, ImageStorage $eventPhotoStorage, AvifVariants $eventPhotoVariants, Request $request): BinaryFileResponse
     {
         $id = 'thumb' === $size ? $photo->thumbId() : $photo->largeId();
         $path = $eventPhotoStorage->path($id);
@@ -68,12 +75,6 @@ final class EventPhotoController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $response = new BinaryFileResponse($path, headers: ['Content-Type' => 'image/webp']);
-        $response->setPrivate();
-        $response->setMaxAge(30 * 86400);
-        $response->setEtag($id);
-        $response->isNotModified($request);
-
-        return $response;
+        return NegotiatedImage::response($request, new ImageFiles($path, $eventPhotoVariants->avifPath($id), $id));
     }
 }
