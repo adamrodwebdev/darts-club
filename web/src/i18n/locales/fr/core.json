@@ -42,7 +42,9 @@
     "eventDocuments": "Démarches de la soirée",
     "eventDocument": "Document de la soirée",
     "associationProfile": "Fiche de l’association",
-    "eveningEntrance": "Accueil de la soirée"
+    "eveningEntrance": "Accueil de la soirée",
+    "eveningBar": "Bar de la soirée",
+    "eveningKitchen": "Cuisine de la soirée"
   },
   "app": {
     "twoFactorBanner": "Administrateur : {link} pour accéder aux fonctions du club.",
@@ -426,6 +428,9 @@
       },
       "entrance": {
         "sale_cancel": "Vente de l’accueil annulée"
+      },
+      "service": {
+        "order_cancel": "Commande du bar annulée"
       }
     }
   },

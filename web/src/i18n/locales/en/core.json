@@ -42,7 +42,9 @@
     "eventDocuments": "Evening paperwork",
     "eventDocument": "Evening document",
     "associationProfile": "Association details",
-    "eveningEntrance": "Evening entrance"
+    "eveningEntrance": "Evening entrance",
+    "eveningBar": "Evening bar",
+    "eveningKitchen": "Evening kitchen"
   },
   "app": {
     "twoFactorBanner": "Administrator: {link} to access the club tools.",
@@ -426,6 +428,9 @@
       },
       "entrance": {
         "sale_cancel": "Entrance sale cancelled"
+      },
+      "service": {
+        "order_cancel": "Bar order cancelled"
       }
     }
   },

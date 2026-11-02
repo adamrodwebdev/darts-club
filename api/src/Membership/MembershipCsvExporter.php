@@ -2,6 +2,7 @@
 
 namespace App\Membership;
 
+use App\Export\SpreadsheetCsv;
 use App\Repository\MembershipRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -20,11 +21,7 @@ final class MembershipCsvExporter
     /** @param string $locale langue du trésorier (en-têtes, statuts, moyens de paiement) */
     public function export(Season $season, string $locale = 'fr'): string
     {
-        $out = fopen('php://temp', 'r+');
-        \assert(false !== $out);
-        fwrite($out, "\u{FEFF}");
-        $header = array_map(fn (string $key): string => $this->translator->trans('csv.'.$key, [], 'exports', $locale), self::HEADER);
-        fputcsv($out, $header, ';', escape: '');
+        $rows = [array_map(fn (string $key): string => $this->translator->trans('csv.'.$key, [], 'exports', $locale), self::HEADER)];
 
         foreach ($this->memberships->forSeason($season) as $m) {
             $base = [
@@ -39,32 +36,20 @@ final class MembershipCsvExporter
 
             $payments = $m->payments();
             if ([] === $payments) {
-                fputcsv($out, array_map(self::cell(...), [...$base, '', '', '', '', '']), ';', escape: '');
+                $rows[] = [...$base, '', '', '', '', ''];
             }
             foreach ($payments as $p) {
-                fputcsv($out, array_map(self::cell(...), [
+                $rows[] = [
                     ...$base,
                     $p->paidAt()->format('d/m/Y'),
                     $this->translator->trans('payment_method.'.$p->method()->value, [], 'enums', $locale),
                     $p->amount()->toDecimal(),
                     $p->reference() ?? '',
                     $p->isCancelled() ? $this->translator->trans('csv.cancelled_yes', ['%reason%' => (string) $p->cancelReason()], 'exports', $locale) : '',
-                ]), ';', escape: '');
+                ];
             }
         }
 
-        rewind($out);
-        $csv = (string) stream_get_contents($out);
-        fclose($out);
-
-        return $csv;
-    }
-
-    /** Neutralise l'injection de formules dans le tableur (=, +, -, @, tabulation). */
-    private static function cell(string $value): string
-    {
-        return '' !== $value && \in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true) && !is_numeric($value)
-            ? "'".$value
-            : $value;
+        return SpreadsheetCsv::of($rows);
     }
 }

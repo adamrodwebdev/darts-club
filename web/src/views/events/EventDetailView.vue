@@ -225,13 +225,15 @@ async function saveSummary(): Promise<void> {
         </form>
       </section>
 
-      <section v-if="detail.service.entrance" class="card board" aria-labelledby="screens-title">
+      <section v-if="detail.service.entrance || detail.service.bar || detail.service.kitchen" class="card board" aria-labelledby="screens-title">
         <div>
-          <h2 id="screens-title">{{ t('evening.screens.title') }}</h2>
-          <p class="muted">{{ t('evening.screens.text') }}</p>
+          <h2 id="screens-title">{{ t('events.detail.screens.title') }}</h2>
+          <p class="muted">{{ t('events.detail.screens.text') }}</p>
         </div>
         <div class="board__links">
-          <RouterLink :to="{ name: 'evening-entrance', params: { id: event.id } }" class="link-button">{{ t('evening.screens.entrance') }}</RouterLink>
+          <RouterLink v-if="detail.service.entrance" :to="{ name: 'evening-entrance', params: { id: event.id } }" class="link-button">{{ t('events.detail.screens.entrance') }}</RouterLink>
+          <RouterLink v-if="detail.service.bar" :to="{ name: 'evening-bar', params: { id: event.id } }" class="link-button">{{ t('events.detail.screens.bar') }}</RouterLink>
+          <RouterLink v-if="detail.service.kitchen" :to="{ name: 'evening-kitchen', params: { id: event.id } }" class="link-button">{{ t('events.detail.screens.kitchen') }}</RouterLink>
         </div>
       </section>
 
@@ -241,8 +243,8 @@ async function saveSummary(): Promise<void> {
           <p class="muted">{{ t('events.detail.boardText') }}</p>
         </div>
         <div class="board__links">
-          <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.accounts.title') }}</RouterLink>
-          <RouterLink :to="{ name: 'event-documents', params: { id: event.id } }" class="link-button">{{ t('events.documents.title') }}</RouterLink>
+          <RouterLink :to="{ name: 'event-accounts', params: { id: event.id } }" class="link-button">{{ t('events.detail.accountsLink') }}</RouterLink>
+          <RouterLink :to="{ name: 'event-documents', params: { id: event.id } }" class="link-button">{{ t('events.detail.documentsLink') }}</RouterLink>
         </div>
       </section>
 

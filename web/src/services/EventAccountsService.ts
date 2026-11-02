@@ -1,5 +1,6 @@
 import type { ApiClient } from '@/api/ApiClient'
 import { EventAccounts, type EntryKind, type Station, type StockUnit, type Team, type TokenColor } from '@/models/EventAccounts'
+import { LiveIncome } from '@/models/LiveIncome'
 
 /** Format vendu saisi : contenance en unité de stock (centilitres au litre), null si inconnue */
 export interface SaleFormatDraft {
@@ -71,6 +72,11 @@ export class EventAccountsService {
     return EventAccounts.parse(await this.api.get(this.base(eventId)))
   }
 
+  /** Recettes en direct : relues à chaque vente et à chaque commande */
+  async income(eventId: string): Promise<LiveIncome> {
+    return LiveIncome.parse(await this.api.get(`${this.base(eventId)}/income`))
+  }
+
   async addItem(eventId: string, draft: BarItemDraft): Promise<EventAccounts> {
     return EventAccounts.parse(await this.api.post(`${this.base(eventId)}/items`, { ...draft }))
   }
@@ -140,6 +146,10 @@ export class EventAccountsService {
 
   exportUrl(eventId: string): string {
     return `${this.base(eventId)}/export.csv`
+  }
+
+  incomeExportUrl(eventId: string): string {
+    return `${this.base(eventId)}/income.csv`
   }
 
   private base(eventId: string): string {

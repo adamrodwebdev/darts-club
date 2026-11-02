@@ -7,6 +7,7 @@ import AccountsSummary from '@/components/accounts/AccountsSummary.vue'
 import CashSettingsCard from '@/components/accounts/CashSettingsCard.vue'
 import EntryDialog from '@/components/accounts/EntryDialog.vue'
 import EveningTeamsCard from '@/components/accounts/EveningTeamsCard.vue'
+import LiveIncomePanel from '@/components/accounts/LiveIncomePanel.vue'
 import MenuItemDialog from '@/components/accounts/MenuItemDialog.vue'
 import MenuItemsList from '@/components/accounts/MenuItemsList.vue'
 import ReceiptDialog from '@/components/accounts/ReceiptDialog.vue'
@@ -29,11 +30,12 @@ const { t } = useI18n()
 const route = useRoute()
 
 /** Parties du bilan, choisies par l'adresse (?partie=…) : la carte d'abord */
-const PARTS = ['carte', 'comptes', 'justificatifs'] as const
+const PARTS = ['carte', 'comptes', 'recettes', 'justificatifs'] as const
 type Part = (typeof PARTS)[number]
 const PART_LABELS = {
   carte: 'events.accounts.parts.menu',
   comptes: 'events.accounts.parts.books',
+  recettes: 'events.accounts.parts.live',
   justificatifs: 'events.accounts.parts.receipts',
 } as const
 const part = computed<Part>(() => PARTS.find((p) => p === route.query.partie) ?? 'carte')
@@ -237,6 +239,9 @@ const status = computed(() => {
         </div>
         <YearCounters :accounts="accounts" :pending="action.pending.value" @change="changeFlags" />
       </div>
+
+      <!-- Les recettes en direct ne vivent (temps réel, relectures) que lorsqu'elles sont affichées, et ne s'impriment pas -->
+      <LiveIncomePanel v-if="part === 'recettes'" :event-id="id" class="no-print" />
 
       <div v-show="part === 'justificatifs'" class="part stack">
         <ReceiptsPanel :receipts="accounts.receipts" :editable="accounts.editable" @add="openDialog(() => (receiptDialog = true))" @remove="removeReceipt" />

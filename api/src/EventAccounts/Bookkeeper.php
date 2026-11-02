@@ -13,6 +13,8 @@ use App\Entity\Receipt;
 use App\Entity\User;
 use App\Repository\EventAccountsRepository;
 use App\Repository\TokenSaleRepository;
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Clock\ClockInterface;
 
 /**
@@ -26,6 +28,7 @@ final class Bookkeeper
         private readonly AuditTrail $audit,
         private readonly ClockInterface $clock,
         private readonly TokenSaleRepository $sales,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -36,11 +39,19 @@ final class Bookkeeper
         $this->save($actor, $accounts, self::entry($accounts, 'accounts.item_add', ['item' => $draft->label]));
     }
 
+    /**
+     * Bilan verrouillé et article relu le temps de la modification : une commande prise au même
+     * moment ne perd pas son décompte (les ventes comptées par les commandes sont gardées).
+     */
     public function changeItem(User $actor, BarItem $item, BarItemDraft $draft): void
     {
         $accounts = $item->accounts();
-        $accounts->changeItem($item, $draft);
-        $this->save($actor, $accounts, self::entry($accounts, 'accounts.item_edit', ['item' => $draft->label]));
+        $this->em->wrapInTransaction(function () use ($actor, $item, $draft, $accounts): void {
+            $this->em->refresh($accounts, LockMode::PESSIMISTIC_WRITE);
+            $this->em->refresh($item);
+            $accounts->changeItem($item, $draft);
+            $this->save($actor, $accounts, self::entry($accounts, 'accounts.item_edit', ['item' => $draft->label]));
+        });
     }
 
     public function removeItem(User $actor, BarItem $item): void

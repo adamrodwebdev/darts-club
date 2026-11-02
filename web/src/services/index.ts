@@ -17,7 +17,8 @@ import { ProfileService } from './ProfileService'
 import { PublicEventService } from './PublicEventService'
 import { PushService } from './PushService'
 import { RealtimeClient } from './RealtimeClient'
-import { SaleOutbox, type KeyValueStore } from './SaleOutbox'
+import { Chime } from './Chime'
+import { OrderOutbox, SaleOutbox, type KeyValueStore } from './SaleOutbox'
 import { TreasuryService } from './TreasuryService'
 import { VideoUploadService } from './VideoUploadService'
 
@@ -61,6 +62,8 @@ export function createServices({ api = new ApiClient(), clock = systemClock, ids
     eventDocuments: new EventDocumentsService(api),
     eveningDesk: new EveningDeskService(api),
     saleOutbox: new SaleOutbox(storage),
+    orderOutbox: new OrderOutbox(storage),
+    chime: new Chime(),
     associationProfile: new AssociationProfileService(api),
     publicEvents: new PublicEventService(api),
     videoUploads: new VideoUploadService(api),

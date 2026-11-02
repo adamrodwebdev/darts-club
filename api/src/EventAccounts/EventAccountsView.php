@@ -9,6 +9,7 @@ use App\Entity\ClubEvent;
 use App\Entity\EventAccounts;
 use App\Entity\Receipt;
 use App\Evening\Team;
+use App\Membership\Money;
 use App\Messaging\MessagingView;
 use App\Repository\EveningTeamMemberRepository;
 use App\Repository\EventAccountsRepository;
@@ -50,7 +51,7 @@ final class EventAccountsView
             'teams' => $this->teams($event),
             'entries' => array_map(self::entry(...), $accounts?->entries() ?? []),
             'receipts' => array_map(static fn (Receipt $receipt): array => $receipt->toArray(), $accounts?->receipts() ?? []),
-            'totals' => null === $accounts ? self::noTotals() : self::totals($accounts),
+            'totals' => null === $accounts ? self::noTotals() : self::totals($accounts, $this->sales->entranceMoney($event)),
             'counters' => [
                 'year' => $year,
                 'temporaryBars' => ['used' => $this->books->temporaryBarsIn($year), 'limit' => AccountsFlags::TEMPORARY_BARS_PER_YEAR],
@@ -131,14 +132,17 @@ final class EventAccountsView
     }
 
     /** @return array<string, string> */
-    private static function totals(EventAccounts $accounts): array
+    private static function totals(EventAccounts $accounts, ?Money $entrance): array
     {
         return [
             'barCosts' => $accounts->barCosts()->toDecimal(),
-            'barIncome' => $accounts->barIncome()->toDecimal(),
+            // Buvette comptée au résultat : l'argent de l'accueil quand des jetons y ont été vendus
+            'barIncome' => ($entrance ?? $accounts->barIncome())->toDecimal(),
+            'barIncomeSource' => null === $entrance ? 'menu' : 'entrance',
+            'barSales' => $accounts->barIncome()->toDecimal(),
             'costs' => $accounts->costs()->toDecimal(),
-            'income' => $accounts->income()->toDecimal(),
-            'result' => $accounts->result()->toDecimal(),
+            'income' => $accounts->income($entrance)->toDecimal(),
+            'result' => $accounts->result($entrance)->toDecimal(),
             'plannedCosts' => $accounts->plannedCosts()->toDecimal(),
             'plannedIncome' => $accounts->plannedIncome()->toDecimal(),
             'plannedResult' => $accounts->plannedResult()->toDecimal(),
@@ -148,6 +152,6 @@ final class EventAccountsView
     /** @return array<string, string> */
     private static function noTotals(): array
     {
-        return array_fill_keys(['barCosts', 'barIncome', 'costs', 'income', 'result', 'plannedCosts', 'plannedIncome', 'plannedResult'], '0.00');
+        return ['barIncomeSource' => 'menu'] + array_fill_keys(['barCosts', 'barIncome', 'barSales', 'costs', 'income', 'result', 'plannedCosts', 'plannedIncome', 'plannedResult'], '0.00');
     }
 }

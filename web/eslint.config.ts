@@ -26,6 +26,11 @@ export default defineConfigWithVueTs(
   {
     ...pluginPlaywright.configs['flat/recommended'],
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    rules: {
+      ...pluginPlaywright.configs['flat/recommended'].rules,
+      // L'audit d'accessibilité (e2e/a11y.ts) est une vérification : ses `expect` sont à l'intérieur
+      'playwright/expect-expect': ['warn', { assertFunctionNames: ['auditBothThemes'] }],
+    },
   },
 
   {
