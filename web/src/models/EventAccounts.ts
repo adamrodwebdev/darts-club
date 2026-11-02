@@ -112,7 +112,11 @@ export interface Receipt {
 
 export interface AccountsTotals {
   barCosts: string
+  /** Buvette comptée au résultat : l'argent de l'accueil quand des jetons y ont été vendus, sinon les ventes de la carte */
   barIncome: string
+  barIncomeSource: 'entrance' | 'menu'
+  /** Ventes de la carte (vendu × prix), pour comparer */
+  barSales: string
   costs: string
   income: string
   /** Signé : négatif en cas de perte */
@@ -242,6 +246,8 @@ function parseTotals(value: unknown): AccountsTotals {
   return {
     barCosts: str(d.barCosts),
     barIncome: str(d.barIncome),
+    barIncomeSource: d.barIncomeSource === 'entrance' ? 'entrance' : 'menu',
+    barSales: str(d.barSales),
     costs: str(d.costs),
     income: str(d.income),
     result: str(d.result),

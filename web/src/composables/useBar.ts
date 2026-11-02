@@ -1,6 +1,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ApiError } from '@/api/ApiError'
+import { formatEuro } from '@/i18n/format'
 import { toCents } from '@/models/CashRules'
 import type { BarScreen, EveningOrder, ServiceFormat, ServiceItem } from '@/models/EveningService'
 import { tokensFor } from '@/models/OrderRules'
@@ -165,10 +166,20 @@ export function useBar(eventId: string) {
     const updated = await action.run(() => services.eveningDesk.cancelOrder(order.id))
     if (updated) {
       screen.value = updated
-      toast.value = t('evening.bar.cancelled', { number: order.number })
+      toast.value = refundOf(order)
     } else {
       await refresh()
     }
+  }
+
+  /** Part cuisine annulée : ce que le bar rend au client, en jetons quand la soirée en a */
+  function refundOf(order: EveningOrder): string {
+    const cents = order.lines.filter((line) => line.station === 'cuisine').reduce((sum, line) => sum + toCents(line.price) * line.count, 0)
+    const amount = formatEuro(cents / 100)
+    const counts = screen.value?.tokensEnabled ? tokensFor(cents, screen.value.tokens).counts : []
+    if (counts.length === 0) return t('evening.bar.cancelledAmount', { number: order.number, amount })
+    const tokens = counts.map((entry) => t('evening.entrance.line', { count: entry.count, name: entry.token.name })).join(' + ')
+    return t('evening.bar.cancelledTokens', { number: order.number, tokens, amount })
   }
 
   let refreshTimer: ReturnType<typeof setTimeout> | undefined

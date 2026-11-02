@@ -22,6 +22,7 @@ function signed(decimal: string): string {
     <p class="figure">
       <span class="figure__label">{{ t('events.accounts.income') }}</span>
       <strong class="figure__value">{{ formatEuro(accounts.totals.income) }}</strong>
+      <span v-if="accounts.totals.barIncomeSource === 'entrance'" class="muted">{{ t('events.accounts.incomeFromEntrance', { amount: formatEuro(accounts.totals.barIncome) }) }}</span>
       <span class="muted">{{ t('events.accounts.planned', { amount: formatEuro(accounts.totals.plannedIncome) }) }}</span>
     </p>
     <p class="figure figure--result" :class="{ 'figure--loss': accounts.isLoss }">

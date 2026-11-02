@@ -17,6 +17,7 @@
         "label": "Parties du bilan",
         "menu": "Carte et stock",
         "books": "Dépenses et recettes",
+        "live": "Recettes en direct",
         "receipts": "Justificatifs"
       },
       "cash": {
@@ -145,6 +146,7 @@
       "income": "Recettes",
       "result": "Résultat",
       "planned": "prévu {amount}",
+      "incomeFromEntrance": "dont {amount} encaissés à l’accueil",
       "editLabel": "Modifier {name}",
       "edit": "Modifier",
       "fields": {
@@ -187,7 +189,49 @@
       "overLimit": "Limite dépassée",
       "typePdf": "PDF",
       "typeImage": "Photo",
-      "back": "← {title}"
+      "back": "← {title}",
+      "live": {
+        "status": "En direct · mis à jour à {time}",
+        "stale": "Hors ligne · mis à jour à {time}",
+        "loading": "Calcul des recettes…",
+        "export": "Exporter les recettes (CSV)",
+        "entrance": "Accueil · encaissé",
+        "cash": "Espèces",
+        "card": "Carte",
+        "tokenLine": "{count} × {name} à {value}",
+        "noSales": "Aucune vente pour l’instant.",
+        "expectedCash": "Attendu en caisse : {amount} (fond {float} + espèces). Carte : à comparer au ticket du terminal.",
+        "bar": "Bar · boissons",
+        "kitchen": "Cuisine · plats",
+        "paidInTokens": "payés en jetons",
+        "sold": "vendus",
+        "preparing": "aucune en préparation | {n} en préparation | {n} en préparation",
+        "nothingServed": "Rien de servi pour l’instant.",
+        "circulation": "Jetons en circulation",
+        "circulationCaption": "en jetons pas encore dépensés",
+        "circulationDetail": "{sold} vendus à l’accueil − {spent} dépensés au bar et en cuisine.",
+        "explainTokens": "L’accueil compte l’argent réellement encaissé. Le bar et la cuisine comptent la valeur des jetons dépensés, au prix figé dans chaque commande ; une commande annulée rend ses plats au client. Le résultat du bilan part de l’argent de l’accueil.",
+        "explainNoTokens": "Pas de jetons ce soir : le bar et la cuisine comptent la valeur des articles vendus, au prix de chaque commande.",
+        "perItem": "Ventes par article",
+        "orders": "aucune commande | {n} commande | {n} commandes",
+        "inKitchen": "aucune en cuisine | {n} en cuisine | {n} en cuisine",
+        "ready": "aucune prête | {n} prête | {n} prêtes",
+        "cancelled": "aucune annulée | {n} annulée | {n} annulées",
+        "soldLabel": "Vendu",
+        "amountLabel": "Recette",
+        "leftLabel": "Reste",
+        "nothingSold": "rien encore",
+        "formatLine": "{count} × {name}",
+        "soldTotal": "{lines} = {total}",
+        "servings": "≈ {count} × {name}",
+        "leftUnknown": "contenance à préciser",
+        "removed": "retiré de la carte",
+        "totalBar": "Bar",
+        "totalKitchen": "Cuisine",
+        "totalSpent": "Total dépensé en jetons",
+        "totalSold": "Total vendu",
+        "emptyMenu": "La carte est vide : ajoutez des articles dans « Carte et stock »."
+      }
     },
     "documents": {
       "title": "Démarches",
@@ -502,7 +546,8 @@
       "kitchenHint": "En cuisine, de la plus ancienne à la plus récente. Tu seras prévenu dès qu’une commande est prête.",
       "noWaiting": "Rien en cuisine pour l’instant.",
       "cancel": "Annuler",
-      "cancelled": "Commande {number} annulée : les plats reviennent au stock."
+      "cancelledTokens": "Commande {number} annulée : rendez {tokens} ({amount}) au client. Les plats reviennent au stock.",
+      "cancelledAmount": "Commande {number} annulée : rendez {amount} au client. Les plats reviennent au stock."
     },
     "kitchen": {
       "title": "Cuisine",
