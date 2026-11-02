@@ -1,7 +1,8 @@
 // Résumé de chaque passage Lighthouse (lhr-*.json) dans le journal de la CI : tous les passages,
 // pas seulement le médian publié, pour voir d'un coup d'œil lequel a échoué et sur quelle mesure.
 // Un passage qui bloque plus de 50 ms détaille ses tâches longues, ses scripts et le travail du fil
-// principal ; l'indice de vitesse de la machine suit chaque passage. La cause se lit dans le journal.
+// principal ; l'indice de vitesse de la machine et le ralentissement appliqué suivent chaque passage.
+// La cause se lit dans le journal.
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -20,7 +21,7 @@ for (const file of readdirSync(DIR).filter((name) => /^lhr-.*\.json$/.test(name)
   const report = JSON.parse(readFileSync(join(DIR, file), 'utf8'))
   const scores = Object.values(report.categories).map((category) => `${category.id} ${Math.round(category.score * 100)}`)
   const metrics = METRICS.map((id) => `${id} ${report.audits[id].displayValue}`)
-  console.log(`${report.finalDisplayedUrl} | ${scores.join(', ')} | ${metrics.join(', ')} | machine ${Math.round(report.environment.benchmarkIndex)}`)
+  console.log(`${report.finalDisplayedUrl} | ${scores.join(', ')} | ${metrics.join(', ')} | machine ${Math.round(report.environment.benchmarkIndex)}, ralenti ${report.configSettings.throttling.cpuSlowdownMultiplier}×`)
   if (report.audits['total-blocking-time'].numericValue <= DETAIL_ABOVE_MS) continue
   const tasks = items(report, 'long-tasks').map((task) => `${ms(task.duration)} à ${ms(task.startTime)} (${withoutOrigin(task.url)})`)
   const scripts = items(report, 'bootup-time').slice(0, 4).map((script) => `${withoutOrigin(script.url)} ${ms(script.total)} (exécution ${ms(script.scripting)})`)
