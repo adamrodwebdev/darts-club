@@ -19,6 +19,16 @@ cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";
 APT::Periodic::Unattended-Upgrade "1";
 EOF
+# Le moteur Docker (runc, containerd : les évasions de conteneur se corrigent là) vient du dépôt de Docker,
+# que unattended-upgrades ignore par défaut. Un noyau ou une libc corrigés ne servent qu'après redémarrage :
+# fait la nuit, seulement quand une mise à jour l'exige (les conteneurs repartent seuls)
+cat > /etc/apt/apt.conf.d/52skull-darts-71-upgrades <<'EOF'
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Docker";
+};
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "04:15";
+EOF
 
 echo "→ Docker"
 if ! command -v docker > /dev/null; then
@@ -31,17 +41,25 @@ id deploy > /dev/null 2>&1 || adduser --disabled-password --gecos '' deploy
 usermod -aG docker deploy
 install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
 touch /home/deploy/.ssh/authorized_keys
-# Clé de l'administrateur (celle utilisée pour cette connexion) + clé de GitHub Actions
+# Clé de l'administrateur (celle utilisée pour cette connexion)
 for source in /root/.ssh/authorized_keys /home/debian/.ssh/authorized_keys; do
   [ -f "$source" ] && cat "$source" >> /home/deploy/.ssh/authorized_keys
 done
-[ -n "$DEPLOY_KEY" ] && echo "$DEPLOY_KEY" >> /home/deploy/.ssh/authorized_keys
 sort -u -o /home/deploy/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
 chown deploy:deploy /home/deploy/.ssh/authorized_keys
 chmod 600 /home/deploy/.ssh/authorized_keys
 
 install -d -m 750 -o deploy -g deploy "$APP_DIR"
 install -d -m 700 -o deploy -g deploy "$BACKUP_DIR"
+
+# Clé de GitHub Actions : déploiement seulement (commande imposée deploy/ssh-gate.sh, installée ici pour
+# le premier déploiement ; les suivants la mettent à jour depuis l'image)
+if [ -n "$DEPLOY_KEY" ]; then
+  here=$(dirname "$0")
+  install -d -m 755 -o deploy -g deploy "$APP_DIR/deploy"
+  install -m 755 -o deploy -g deploy "$here/ssh-gate.sh" "$here/authorize-github-key.sh" "$APP_DIR/deploy/"
+  printf '%s\n' "$DEPLOY_KEY" | AUTHORIZED_KEYS=/home/deploy/.ssh/authorized_keys sh "$APP_DIR/deploy/authorize-github-key.sh" > /dev/null
+fi
 
 echo "→ Pare-feu : SSH, HTTP, HTTPS uniquement"
 ufw default deny incoming
@@ -54,10 +72,15 @@ ufw --force enable
 echo "→ SSH : clés uniquement, pas de connexion root"
 # Préfixe 00 : lu avant 50-cloud-init.conf (la première valeur rencontrée l'emporte)
 rm -f /etc/ssh/sshd_config.d/90-skull-darts-71.conf
+# Ni affichage graphique ni agent relayés (un agent relayé prête les clés de l'ordinateur au serveur) ;
+# 30 s pour s'authentifier
 cat > /etc/ssh/sshd_config.d/00-skull-darts-71.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PermitRootLogin no
+X11Forwarding no
+AllowAgentForwarding no
+LoginGraceTime 30
 EOF
 sshd -t && systemctl reload ssh
 

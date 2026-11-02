@@ -22,22 +22,31 @@ Chez le registraire, créer :
 | Type | Nom | Valeur |
 |---|---|---|
 | A | `@` | adresse IPv4 du serveur |
-| AAAA | `@` | adresse IPv6 du serveur |
 | A | `www` | adresse IPv4 du serveur (redirigé vers le domaine principal) |
 
 Le certificat HTTPS est obtenu automatiquement par Caddy au premier démarrage (ports 80 et 443 ouverts).
 
+**Pas d'enregistrement AAAA (IPv6) tant que Docker n'a pas IPv6.** Par défaut, Docker relaie les connexions
+IPv6 par un proxy : le site verrait alors tous les visiteurs IPv6 (la plupart des téléphones en 4G/5G) sous une
+seule adresse interne. Ils partageraient les limites d'essais (5 connexions manquées bloqueraient tout le monde)
+et le journal noterait une fausse adresse. Les visiteurs IPv6 passent très bien par l'IPv4 en attendant. Pour
+ajouter l'AAAA plus tard : activer IPv6 dans Docker (`"ipv6": true` et un préfixe `fixed-cidr-v6` dans
+`/etc/docker/daemon.json`, puis `enable_ipv6: true` sur le réseau `default` de `compose.prod.yaml`), vérifier
+dans le journal d'administration qu'une connexion en 4G montre bien une adresse IPv6, puis créer l'AAAA.
+
 ## 3. Préparer le serveur (une fois)
 
 Installer Debian 12 avec la clé SSH publique de l'administrateur (option proposée par l'hébergeur à
-l'installation), copier [`deploy/server-setup.sh`](../deploy/server-setup.sh) sur le serveur puis :
+l'installation), copier le dossier [`deploy/`](../deploy) sur le serveur puis :
 
 ```bash
-sudo sh server-setup.sh "ssh-ed25519 AAAA… clé publique de déploiement GitHub Actions"
+sudo sh deploy/server-setup.sh "ssh-ed25519 AAAA… clé publique de déploiement GitHub Actions"
 ```
 
-Le script installe les mises à jour (et les rend automatiques), Docker, le pare-feu (SSH, HTTP, HTTPS),
-fail2ban, crée le compte `deploy` (clés SSH uniquement) et interdit les mots de passe et la connexion root en SSH.
+Le script installe les mises à jour (et les rend automatiques, moteur Docker compris, avec un redémarrage
+la nuit quand le noyau l'exige), Docker, le pare-feu (SSH, HTTP, HTTPS), fail2ban, crée le compte `deploy`
+(clés SSH uniquement), interdit les mots de passe et la connexion root en SSH, et n'autorise la clé de
+GitHub Actions qu'à déployer (voir § 6). Relancé sur un serveur existant, il applique les réglages ajoutés depuis.
 
 ## 4. Secrets du serveur (`.env`)
 
@@ -102,8 +111,28 @@ Dans **Settings › Secrets and variables › Actions** du dépôt :
 
 | Type | Nom | Valeur |
 |---|---|---|
-| Secret d'environnement | `DEPLOY_SSH_KEY` | clé privée SSH **dédiée** (générée par `ssh-keygen -t ed25519 -f deploy_key`), sa clé publique ajoutée à `/home/deploy/.ssh/authorized_keys` |
+| Secret d'environnement | `DEPLOY_SSH_KEY` | clé privée SSH **dédiée** (voir ci-dessous), autorisée sur le serveur pour le déploiement seulement |
 | Secret d'environnement | `DEPLOY_KNOWN_HOSTS` | résultat de `ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR` |
+
+**Clé de déploiement, limitée au déploiement.** Le compte `deploy` pilote Docker, donc tout le serveur : la clé
+de GitHub Actions ne doit rien pouvoir faire d'autre que déployer. Sur l'ordinateur de l'administrateur
+(PowerShell), la clé privée n'allant que dans GitHub :
+
+```powershell
+ssh-keygen -t ed25519 -N '""' -C github-actions-deploy -f "$env:USERPROFILE\.ssh\skull-darts-github-deploy"
+Get-Content "$env:USERPROFILE\.ssh\skull-darts-github-deploy.pub" | ssh deploy@ADRESSE_DU_SERVEUR /opt/skull-darts-71/deploy/authorize-github-key.sh
+Get-Content "$env:USERPROFILE\.ssh\skull-darts-github-deploy" | Set-Clipboard   # à coller dans DEPLOY_SSH_KEY
+ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR                                            # à coller dans DEPLOY_KNOWN_HOSTS
+Remove-Item "$env:USERPROFILE\.ssh\skull-darts-github-deploy*"                       # une fois les deux secrets enregistrés
+```
+
+[`deploy/authorize-github-key.sh`](../deploy/authorize-github-key.sh) écrit la ligne
+`restrict,command="/opt/skull-darts-71/deploy/ssh-gate.sh" ssh-ed25519 AAAA…` : avec cette clé, le serveur
+n'accepte que `deploy <tag>` ([`deploy/ssh-gate.sh`](../deploy/ssh-gate.sh)), ni session, ni copie de fichier, ni
+tunnel ; il tire l'image publiée et les fichiers de déploiement qu'elle contient. Il affiche ensuite la liste des
+clés et leur rôle (`--list` pour la revoir) ; une ancienne clé de déploiement à accès complet se retire avec
+`--remove SHA256:…` (empreinte de votre propre clé : `ssh-keygen -lf "$env:USERPROFILE\.ssh\id_ed25519.pub"`).
+Supprimer enfin les anciens secrets **du dépôt** du même nom, s'il y en a (*Repository secrets*).
 
 *Required reviewers* reste facultatif : chaque mise en production, y compris celle du lundi, attendrait alors
 une validation.
@@ -120,10 +149,12 @@ télécharger l'image sans identifiant (elle ne contient aucun secret, ce que la
 ## 7. Premier déploiement
 
 1. Fusionner les PR dans `main` : la CI passe, puis « Déploiement » publie l'image (et déploie si le serveur est configuré).
-2. Ou à la main, sur le serveur (fichiers copiés depuis le dépôt : `compose.yaml`, `compose.prod.yaml`, `deploy/`) :
+2. Ou à la main, sur le serveur, avec le tag d'une image publiée (ses fichiers `compose.yaml`,
+   `compose.prod.yaml` et `deploy/` sont copiés depuis l'image, comme le fait GitHub Actions) :
    ```bash
-   cd /opt/skull-darts-71 && ./deploy/deploy.sh latest
+   /opt/skull-darts-71/deploy/ssh-gate.sh deploy 1a2b3c4d5e6f
    ```
+   (`./deploy/deploy.sh latest` relance la version `latest` avec les fichiers déjà présents.)
 3. Ouvrir `https://skulldarts71.fr` : le cadenas HTTPS doit apparaître.
 
 ## 8. Nommer le premier président
@@ -192,12 +223,16 @@ Journaux : `dc logs -f php worker` (rotation automatique, 50 Mo max par service)
 ## 12. Mises à jour et retour arrière
 
 - Mise à jour : fusionner sur `main` ; le déploiement applique les migrations puis vérifie `/api/health`.
-- Correctifs de sécurité : chaque lundi à 4 h 30 (UTC), le workflow « Déploiement » reconstruit l'image sur
-  la dernière image de base (PHP, Caddy, Alpine), installe les correctifs de PostgreSQL, Redis et Mercure,
-  puis vérifie `/api/health`. Une faille urgente : **Actions › Déploiement › Run workflow** (branche `main`).
+- Correctifs de sécurité : chaque lundi à 4 h 30 (UTC), le workflow « Déploiement » reconstruit l'image sans
+  cache sur la dernière image de base (PHP, Caddy) avec les derniers paquets Alpine (ffmpeg, OpenSSL…), installe
+  les correctifs de PostgreSQL, Redis et Mercure, puis vérifie `/api/health`. Une faille urgente :
+  **Actions › Déploiement › Run workflow** (branche `main`).
 - Retour arrière : relancer avec l'étiquette (SHA court) de la version précédente, visible dans GitHub › Packages :
   `./deploy/deploy.sh 1a2b3c4d5e6f`. Les migrations de base ne sont pas annulées automatiquement.
-- Mises à jour système : automatiques (unattended-upgrades) ; redémarrer le serveur quand le noyau est mis à jour.
+- Mises à jour système : automatiques (unattended-upgrades), moteur Docker compris (dépôt de Docker ajouté par
+  `server-setup.sh`) ; le serveur redémarre seul à 4 h 15 quand une mise à jour du noyau ou de la libc l'exige.
+- Debian 12 est en support long terme (LTS) depuis juin 2026, jusqu'en juin 2028 : prévoir le passage à
+  Debian 13 avant.
 
 ## 13. Vérifications après la mise en ligne
 
