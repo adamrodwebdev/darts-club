@@ -30,4 +30,10 @@ final readonly class BarItemDraft
         }
         $this->label = $label;
     }
+
+    /** Même article, mais les ventes déjà comptées par les commandes de la soirée */
+    public function keepingSoldOf(SaleFormats $current): self
+    {
+        return new self(label: $this->label, serving: $this->serving, stock: $this->stock, formats: $this->formats->keepingSoldOf($current));
+    }
 }
