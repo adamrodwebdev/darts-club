@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
+use App\Evening\OrderedItem;
 use App\EventAccounts\BarItemDraft;
 use App\EventAccounts\ContainerSpec;
+use App\EventAccounts\ItemAvailability;
 use App\EventAccounts\ItemQuantities;
 use App\EventAccounts\ItemServing;
 use App\EventAccounts\ItemStock;
@@ -11,6 +13,7 @@ use App\EventAccounts\SaleFormats;
 use App\EventAccounts\Station;
 use App\EventAccounts\StockUnit;
 use App\Membership\Money;
+use App\Translation\InvalidValue;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -75,6 +78,14 @@ class BarItem
 
     #[ORM\Column]
     private int $position;
+
+    /** Déclaré épuisé par la cuisine ou le bar : caché à la prise de commande */
+    #[ORM\Column]
+    private bool $soldOut = false;
+
+    /** @var list<string> garnitures épuisées */
+    #[ORM\Column(type: Types::JSON)]
+    private array $garnishesOut = [];
 
     public function __construct(EventAccounts $accounts, BarItemDraft $draft, int $position)
     {
@@ -155,6 +166,77 @@ class BarItem
         $served = $this->formats()->served();
 
         return null === $served ? null : $this->stock()->units() - $served;
+    }
+
+    public function availability(): ItemAvailability
+    {
+        return new ItemAvailability($this->soldOut, $this->garnishesOut);
+    }
+
+    /** Épuisé : déclaré par une équipe, ou plus de quoi servir le plus petit format */
+    public function isSoldOut(): bool
+    {
+        $left = $this->left();
+        $smallest = $this->formats()->smallestVolume();
+
+        return $this->soldOut || (null !== $left && null !== $smallest && $left < $smallest);
+    }
+
+    /**
+     * Ce que la carte propose pour ce format et ces garnitures, figé pour la commande ; refusé si
+     * l'article ou une garniture est épuisé, ou si le format n'existe plus.
+     *
+     * @param list<string> $garnishes
+     */
+    public function offer(string $format, array $garnishes): OrderedItem
+    {
+        if ($this->isSoldOut()) {
+            throw new InvalidValue('Épuisé : %item%.', ['%item%' => $this->label]);
+        }
+        $sold = $this->formats()->find($format) ?? throw new InvalidValue('Format inconnu pour %item% : « %format% ».', ['%item%' => $this->label, '%format%' => $format]);
+        foreach ($garnishes as $garnish) {
+            $known = array_filter($this->garnishes, static fn (string $g): bool => mb_strtolower($g) === mb_strtolower(trim($garnish)));
+            if ([] === $known || $this->availability()->lacks($garnish)) {
+                throw new InvalidValue('Garniture indisponible pour %item% : « %garnish% ».', ['%item%' => $this->label, '%garnish%' => $garnish]);
+            }
+        }
+
+        return new OrderedItem(
+            itemId: $this->id->toRfc4122(),
+            label: $this->label,
+            station: $this->station,
+            format: $sold->name,
+            volume: $sold->volume,
+            price: $sold->price,
+        );
+    }
+
+    /** Une commande décompte le stock ; refusée s'il ne suffit plus (contenances connues) */
+    public function sell(string $format, int $count): void
+    {
+        $formats = $this->formats()->withSold($format, $count);
+        $served = $formats->served();
+        if (null !== $served && $served > $this->stock()->units()) {
+            throw new InvalidValue('Plus assez de stock : %item%.', ['%item%' => $this->label]);
+        }
+        $this->formats = $formats->toArray();
+    }
+
+    /** Commande annulée : le stock revient */
+    public function restock(string $format, int $count): void
+    {
+        $this->formats = $this->formats()->withSold($format, -$count)->toArray();
+    }
+
+    public function changeAvailability(ItemAvailability $availability): void
+    {
+        foreach ($availability->garnishesOut as $garnish) {
+            if ([] === array_filter($this->garnishes, static fn (string $g): bool => mb_strtolower($g) === mb_strtolower($garnish))) {
+                throw new InvalidValue('Garniture inconnue pour %item% : « %garnish% ».', ['%item%' => $this->label, '%garnish%' => $garnish]);
+            }
+        }
+        $this->soldOut = $availability->soldOut;
+        $this->garnishesOut = $availability->garnishesOut;
     }
 
     public function label(): string

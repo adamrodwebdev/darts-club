@@ -2,17 +2,23 @@
 
 namespace App\Entity;
 
+use App\Evening\NewOrder;
+use App\Evening\OrderLine;
+use App\Evening\PlacedOrder;
+use App\Evening\Stamp;
 use App\EventAccounts\AccountsException;
 use App\EventAccounts\AccountsFlags;
 use App\EventAccounts\BarItemDraft;
 use App\EventAccounts\CashSettings;
 use App\EventAccounts\EntryDraft;
 use App\EventAccounts\EntryKind;
+use App\EventAccounts\ItemAvailability;
 use App\EventAccounts\NewReceipt;
 use App\EventAccounts\SignedAmount;
 use App\EventAccounts\TokenKind;
 use App\Membership\Money;
 use App\Repository\EventAccountsRepository;
+use App\Translation\InvalidValue;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -53,6 +59,10 @@ class EventAccounts
     /** Fond de caisse de l'accueil, en centimes */
     #[ORM\Column]
     private int $cashFloat = 0;
+
+    /** Numéro de la dernière commande de la soirée (le bar annonce le suivant) */
+    #[ORM\Column]
+    private int $lastOrderNumber = 0;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $closedAt = null;
@@ -118,10 +128,54 @@ class EventAccounts
         return $item;
     }
 
+    /** Pendant la soirée, les ventes comptées par les commandes restent celles du serveur */
     public function changeItem(BarItem $item, BarItemDraft $draft): void
     {
         $this->assertOpen();
-        $item->change($draft);
+        $item->change($this->lastOrderNumber > 0 ? $draft->keepingSoldOf($item->formats()) : $draft);
+    }
+
+    /**
+     * Prend une commande : numéro suivant de la soirée, lignes figées aux prix de la carte, stock
+     * décompté. Chaque ligne est vérifiée avant le premier décompte.
+     */
+    public function placeOrder(NewOrder $order, Stamp $taken): EveningOrder
+    {
+        $this->assertOpen();
+        $lines = [];
+        foreach ($order->lines as $request) {
+            $item = $this->item($request->itemId) ?? throw new InvalidValue('Article inconnu pour cette soirée.');
+            $lines[] = [$item, new OrderLine($item->offer($request->format, $request->garnishes), $request->count, $request->garnishes)];
+        }
+        foreach ($lines as [$item, $line]) {
+            $item->sell($line->item->format, $line->count);
+        }
+        ++$this->lastOrderNumber;
+
+        $placed = new PlacedOrder(id: $order->id, number: $this->lastOrderNumber, note: $order->note, lines: array_column($lines, 1));
+
+        return new EveningOrder($this->event, $placed, $taken);
+    }
+
+    /** Part cuisine annulée : les plats reviennent au stock */
+    public function restock(EveningOrder $order): void
+    {
+        $this->assertOpen();
+        foreach ($order->kitchenLines() as $line) {
+            $this->item($line->item->itemId)?->restock($line->item->format, $line->count);
+        }
+    }
+
+    public function changeItemAvailability(BarItem $item, ItemAvailability $availability): void
+    {
+        $this->assertOpen();
+        $item->changeAvailability($availability);
+    }
+
+    /** Numéro que prendra la prochaine commande */
+    public function nextOrderNumber(): int
+    {
+        return $this->lastOrderNumber + 1;
     }
 
     public function removeItem(BarItem $item): void
@@ -292,6 +346,17 @@ class EventAccounts
         }
 
         return $total;
+    }
+
+    private function item(string $id): ?BarItem
+    {
+        foreach ($this->items as $item) {
+            if ($item->getId()->toRfc4122() === $id) {
+                return $item;
+            }
+        }
+
+        return null;
     }
 
     private function applyCash(CashSettings $settings): void

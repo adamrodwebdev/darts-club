@@ -1,10 +1,15 @@
 import { createI18n } from 'vue-i18n'
+import type frBoard from './locales/fr/board.json'
 import type frCatalogue from './locales/fr/index'
 import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from './locales'
 import { frenchTypography } from './typography'
 
-/** Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue par langue. */
-export type MessageSchema = typeof frCatalogue
+/**
+ * Un fichier par domaine (locales/<langue>/<domaine>.json), fusionnés en un catalogue par langue ;
+ * les textes du bureau et des équipes (board.json) sont à part, chargés à la demande, mais leurs clés
+ * restent vérifiées par le compilateur.
+ */
+export type MessageSchema = typeof frCatalogue & typeof frBoard
 
 declare module 'vue-i18n' {
   // Clés de traduction vérifiées par le compilateur TypeScript
@@ -30,10 +35,33 @@ const loaders: Record<Locale, () => Promise<{ default: unknown }>> = {
   en: () => import('./locales/en/index'),
 }
 
+const boardLoaders: Record<Locale, () => Promise<{ default: unknown }>> = {
+  fr: () => import('./locales/fr/board.json'),
+  en: () => import('./locales/en/board.json'),
+}
+
+/** Langues dont les textes du bureau sont déjà fusionnés ; demandés une fois, suivis au changement de langue */
+const boardLoaded = new Set<Locale>()
+let boardWanted = false
+
 export async function loadLocaleMessages(locale: Locale): Promise<void> {
-  if (i18n.global.availableLocales.includes(locale)) return
-  const catalogue = await loaders[locale]()
-  i18n.global.setLocaleMessage(locale, catalogue.default as MessageSchema)
+  if (!i18n.global.availableLocales.includes(locale)) {
+    const catalogue = await loaders[locale]()
+    i18n.global.setLocaleMessage(locale, catalogue.default as MessageSchema)
+  }
+  if (boardWanted) await loadBoardMessages(locale)
+}
+
+/**
+ * Textes du bureau et des équipes (bilan, démarches, affiche QR, écrans de soirée, journal) : jamais
+ * chargés par une page publique, qui démarre ainsi avec un catalogue plus léger.
+ */
+export async function loadBoardMessages(locale: Locale): Promise<void> {
+  boardWanted = true
+  if (boardLoaded.has(locale)) return
+  const board = await boardLoaders[locale]()
+  i18n.global.mergeLocaleMessage(locale, board.default as MessageSchema)
+  boardLoaded.add(locale)
 }
 
 export function currentLocale(): Locale {

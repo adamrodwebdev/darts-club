@@ -30,6 +30,49 @@ final readonly class SaleFormats
         return $this->all[0];
     }
 
+    /** Le format de ce nom (« verre », « Verre ») ; null s'il n'est pas à la carte */
+    public function find(string $name): ?SaleFormat
+    {
+        foreach ($this->all as $format) {
+            if (mb_strtolower($format->name) === mb_strtolower(trim($name))) {
+                return $format;
+            }
+        }
+
+        return null;
+    }
+
+    /** Ventes d'un format augmentées (commande) ou diminuées (commande annulée), jamais sous zéro */
+    public function withSold(string $name, int $delta): self
+    {
+        return new self(...array_map(
+            static fn (SaleFormat $format): SaleFormat => mb_strtolower($format->name) === mb_strtolower(trim($name))
+                ? new SaleFormat($format->name, $format->volume, $format->price, max(0, $format->sold + $delta))
+                : $format,
+            $this->all,
+        ));
+    }
+
+    /**
+     * Mêmes formats, mais les ventes déjà comptées par les commandes : modifier la carte pendant la
+     * soirée ne remet jamais ces compteurs à la valeur d'un formulaire ouvert plus tôt.
+     */
+    public function keepingSoldOf(self $current): self
+    {
+        return new self(...array_map(
+            static fn (SaleFormat $format): SaleFormat => new SaleFormat($format->name, $format->volume, $format->price, $current->find($format->name)->sold ?? $format->sold),
+            $this->all,
+        ));
+    }
+
+    /** Plus petite contenance vendue ; null si une contenance manque */
+    public function smallestVolume(): ?int
+    {
+        $volumes = array_map(static fn (SaleFormat $format): ?int => $format->volume, $this->all);
+
+        return \in_array(null, $volumes, true) ? null : min($volumes);
+    }
+
     public function income(): Money
     {
         return array_reduce($this->all, static fn (Money $sum, SaleFormat $format): Money => $sum->add($format->income()), Money::zero());
