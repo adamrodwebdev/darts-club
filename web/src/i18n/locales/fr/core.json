@@ -105,6 +105,7 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "close": "Fermer",
+    "closeDialog": "Fermer la fenêtre",
     "confirm": "Confirmer",
     "loading": "Chargement…",
     "justNow": "à l’instant",

@@ -5,9 +5,26 @@ import type { Plugin } from 'vite'
 type MetaMessages = Record<string, string>
 
 /** Pages publiques indexables (en plus des accueils de chaque langue) */
-const PUBLIC_PAGES = ['/connexion', '/inscription', '/mentions-legales', '/confidentialite']
-/** Espaces réservés aux adhérents : inutile de les explorer */
-const PRIVATE_PATHS = ['/api/', '/compte', '/admin', '/tresorerie', '/messages', '/notifications', '/evenements', '/infos']
+const PUBLIC_PAGES = ['/evenements', '/connexion', '/inscription', '/mentions-legales', '/confidentialite']
+/**
+ * Espaces réservés aux adhérents et au bureau : inutile de les explorer. « /evenements/ », barre finale
+ * comprise : les pages d'une soirée et les écrans du bureau restent fermés, mais la liste des
+ * événements ouverts à tous (/evenements, publique depuis le 13 octobre 2026) est indexée.
+ */
+const PRIVATE_PATHS = ['/api/', '/compte', '/admin', '/association', '/tresorerie', '/messages', '/notifications', '/evenements/', '/infos']
+
+/** robots.txt : espaces privés et API hors index ; plan du site si l'URL publique est connue */
+export function robotsTxt(siteUrl: string): string {
+  const lines = ['User-agent: *', 'Allow: /', ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`)]
+  if (siteUrl) lines.push('', `Sitemap: ${siteUrl}/sitemap.xml`)
+  return lines.join('\n') + '\n'
+}
+
+/** Plan du site : accueils de chaque langue puis pages publiques, en URL absolues */
+export function sitemapXml(siteUrl: string, homes: string[]): string {
+  const urls = [...homes, ...PUBLIC_PAGES].map((path) => `  <url><loc>${siteUrl}${path}</loc></url>`).join('\n')
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`
+}
 
 function readMeta(localesDir: string, locale: string): MetaMessages {
   return (JSON.parse(readFileSync(join(localesDir, locale, 'core.json'), 'utf8')) as { meta: MetaMessages }).meta
@@ -95,20 +112,9 @@ export function localizedIndex(options: {
         this.emitFile({ type: 'asset', fileName: `${directory}.html`, source: localized })
       }
 
-      // Robots : espaces adhérents et API hors index ; plan du site si l'URL publique est connue
-      const robots = ['User-agent: *', 'Allow: /', ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`)]
-      if (siteUrl) {
-        robots.push('', `Sitemap: ${siteUrl}/sitemap.xml`)
-        const urls = [...Object.values(homes), ...PUBLIC_PAGES]
-          .map((path) => `  <url><loc>${siteUrl}${path}</loc></url>`)
-          .join('\n')
-        this.emitFile({
-          type: 'asset',
-          fileName: 'sitemap.xml',
-          source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
-        })
-      }
-      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robots.join('\n') + '\n' })
+      // Plan du site seulement si l'URL publique est connue (ses adresses sont absolues)
+      if (siteUrl) this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemapXml(siteUrl, Object.values(homes)) })
+      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robotsTxt(siteUrl) })
     },
   }
 }

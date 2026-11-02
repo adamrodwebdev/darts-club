@@ -11,7 +11,8 @@ import { useServices } from '@/services'
 const AV1_TYPE = 'video/mp4; codecs="av01.0.05M.08, mp4a.40.2"'
 const H264_TYPE = 'video/mp4; codecs="avc1.64001F, mp4a.40.2"'
 
-const props = defineProps<{ item: GalleryItem; index: number; total: number; rights: GalleryRights; canManage: boolean }>()
+/** `description` : légende de l'auteur ou légende tirée de la soirée (EventGallery), jamais vide */
+const props = defineProps<{ item: GalleryItem; description: string; index: number; total: number; rights: GalleryRights; canManage: boolean }>()
 const emit = defineEmits<{ close: []; step: [delta: number]; changed: [] }>()
 const { t } = useI18n()
 const services = useServices()
@@ -55,7 +56,7 @@ const restore = () => run(() => services.events.restoreMedia(mediaRef.value))
         :src="photo.largeUrl"
         :srcset="`${photo.thumbUrl} 480w, ${photo.largeUrl} 1600w`"
         sizes="(min-width: 32.5rem) 27.5rem, calc(100vw - 4.5rem)"
-        :alt="photo.caption ?? t('events.gallery.photoBy', { name: photo.uploader })"
+        :alt="description"
         :width="photo.width"
         :height="photo.height"
       />
@@ -68,7 +69,7 @@ const restore = () => run(() => services.events.restoreMedia(mediaRef.value))
         :poster="video.posterUrl ?? undefined"
         :width="video.width ?? undefined"
         :height="video.height ?? undefined"
-        :aria-label="t('events.gallery.videoBy', { name: video.uploader })"
+        :aria-label="description"
       >
         <source v-if="video.av1Url" :src="video.av1Url" :type="AV1_TYPE" />
         <source v-if="video.videoUrl" :src="video.videoUrl" :type="H264_TYPE" />
