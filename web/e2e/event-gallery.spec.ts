@@ -63,6 +63,8 @@ test('the gallery plays the lightest video format first and filters by kind', as
   await page.getByRole('button', { name: 'Lire la vidéo 1 sur 1, 0:42' }).click()
 
   const player = page.getByRole('dialog').locator('video')
+  // Sans légende : une légende tirée de la soirée (lecteurs d'écran, moteurs)
+  await expect(player).toHaveAttribute('aria-label', /^Vidéo de «\s?Soirée fléchettes\s?», le 10 octobre 2026, ajoutée par Présidente$/)
   await expect(player).toHaveAttribute('preload', 'none')
   await expect(player.locator('source').first()).toHaveAttribute('src', `/api/event-videos/${VIDEO}/file/av1`)
   await expect(player.locator('source').nth(1)).toHaveAttribute('src', `/api/event-videos/${VIDEO}/file`)
@@ -80,6 +82,8 @@ test('a member asks for a photo to be removed', async ({ page }) => {
   await expect(page.getByText('Ajouter des photos', { exact: true })).toBeVisible()
   await expect(page.getByText('Ajouter des photos ou des vidéos')).toHaveCount(0)
   await page.getByRole('button', { name: 'Agrandir la photo 1 sur 1' }).click()
+  // Photo envoyée sans légende : son texte alternatif est tiré de la soirée, jamais vide
+  await expect(page.getByRole('dialog').getByRole('img')).toHaveAttribute('alt', /^Photo de «\s?Soirée fléchettes\s?», le 10 octobre 2026, ajoutée par Bob$/)
   await page.getByRole('dialog').getByRole('button', { name: 'Demander le retrait' }).click()
   await expect(page.getByText(/disparaît tout de suite de la galerie/)).toBeVisible()
   await page.getByRole('dialog').getByRole('button', { name: 'Demander le retrait' }).last().click()
