@@ -94,6 +94,13 @@ docker run --rm $img php -r 'echo "POSTGRES_PASSWORD=", bin2hex(random_bytes(24)
 - `REDIS_PASSWORD` : créé par `deploy.sh` au premier déploiement qui en a besoin (64 caractères hexadécimaux
   tirés sur le serveur, jamais affichés). Redis garde les sessions et la file des messages, que l'API relit
   par `unserialize()` : pouvoir y écrire suffirait à exécuter du code, d'où le mot de passe même sur un réseau interne.
+- `POSTGRES_APP_PASSWORD` : créé de même par `deploy.sh`. Le site et le worker se connectent à la base avec le
+  compte limité `app_runtime` ([`deploy/database-role.sh`](../deploy/database-role.sh), remis à jour à chaque
+  déploiement) : il lit et écrit les lignes des tables du club, sans pouvoir changer le schéma, lancer une commande
+  dans le conteneur de la base (`COPY … TO PROGRAM`) ni toucher à la table des migrations. Le propriétaire des
+  tables (`POSTGRES_USER`, `POSTGRES_PASSWORD`) ne sert qu'aux migrations, sauvegardes et restaurations : son mot
+  de passe n'entre jamais dans les conteneurs du site. Une commande d'administration qui modifie le schéma passe
+  donc par lui (`-e DATABASE_URL`, comme les migrations dans `deploy.sh`).
 - Plafonds de mémoire (facultatif, selon la taille du serveur) : `WEB_MEMORY_LIMIT` (site, `2g` par défaut) et
   `WORKER_MEMORY_LIMIT` (worker, conversions ffmpeg comprises, `1536m` par défaut). Le conteneur qui les
   dépasse redémarre seul ; PostgreSQL, lui, n'est jamais tué faute de mémoire par un autre.
@@ -242,6 +249,8 @@ Renseigner `OAUTH_*` dans `.env`, puis `./deploy/deploy.sh`.
    - L'ordinateur garde les 30 dernières sauvegardes, toujours chiffrées ; journal : `copie.log` dans le dossier de destination.
      Choisir un dossier synchronisé (OneDrive, Google Drive) ajoute une copie dans le cloud.
 5. **Tester une restauration** une fois par trimestre : `./deploy/restore.sh archive.tar.gz.age skull-darts-71-backup.key`.
+   Elle remet ensuite les droits du compte limité du site sur les tables recréées, même depuis une sauvegarde
+   plus ancienne que ce compte.
 
 La sauvegarde contient la base (comptes, cotisations, messages, événements) et les avatars/photos.
 

@@ -12,13 +12,17 @@ if grep -q '^MAILER_DSN=smtp://[^?[:space:]]*$' .env; then
   echo "→ Emails : TLS désormais exigé vers le relais SMTP"
 fi
 
-# Redis : mot de passe tiré ici, sur le serveur, la première fois (jamais affiché ni copié ailleurs)
-if ! grep -q '^REDIS_PASSWORD=.' .env; then
+# Mots de passe internes tirés ici, sur le serveur, la première fois (jamais affichés ni copiés ailleurs)
+new_password() {
+  grep -q "^$1=." .env && return 0
   umask 077
   [ -z "$(tail -c 1 .env)" ] || echo >> .env
-  printf 'REDIS_PASSWORD=%s\n' "$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')" >> .env
-  echo "→ Redis : mot de passe créé dans .env"
-fi
+  printf '%s=%s\n' "$1" "$(od -An -N32 -tx1 /dev/urandom | tr -d ' \n')" >> .env
+  echo "→ $2 : mot de passe créé dans .env"
+}
+new_password REDIS_PASSWORD Redis
+# Compte limité du site et du worker dans la base (deploy/database-role.sh)
+new_password POSTGRES_APP_PASSWORD "Base, compte du site"
 
 set -a
 . ./.env
@@ -34,7 +38,13 @@ echo "→ Services de données"
 compose up -d --wait database redis mercure
 
 echo "→ Migrations de la base"
-compose run --rm --no-deps php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+# Par le propriétaire des tables, le temps de la commande : le site et le worker n'ont que le compte limité.
+# URL passée par l'environnement (-e sans valeur), jamais dans la liste des processus
+(
+  export DATABASE_URL="postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-app}?serverVersion=17&charset=utf8"
+  compose run --rm --no-deps -e DATABASE_URL php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+)
+deploy/database-role.sh
 
 echo "→ Application et worker"
 compose up -d --remove-orphans
