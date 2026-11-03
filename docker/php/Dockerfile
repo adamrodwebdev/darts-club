@@ -14,7 +14,10 @@ RUN npm run build-only
 # --- Base PHP (FrankenPHP = Caddy + PHP) ---
 FROM dunglas/frankenphp:1-php8.4-alpine AS base
 WORKDIR /app
-RUN install-php-extensions pdo_pgsql intl opcache apcu redis zip gmp gd \
+# Correctifs Alpine du jour (OpenSSL, musl, curl…) : l'image de base n'est pas republiée à chaque correctif,
+# et la reconstruction du lundi se fait sans cache (deploy.yml), donc ffmpeg et le reste sont aussi à jour
+RUN apk upgrade --no-cache \
+ && install-php-extensions pdo_pgsql intl opcache apcu redis zip gmp gd \
  && apk add --no-cache libcap ffmpeg \
  # Galerie : formats les plus légers vérifiés à la construction (l'image ne part pas sans eux) :
  # AVIF par GD (photos), H.264 et WebP par ffmpeg (vidéos, aperçus), un encodeur AV1
@@ -39,6 +42,10 @@ COPY api/composer.json api/composer.lock api/symfony.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-progress
 COPY api/ ./
 COPY --from=web-build /web/dist /app/web
+# Fichiers de déploiement de cette version : le serveur les tire de l'image (deploy/ssh-gate.sh), la clé
+# SSH de GitHub Actions ne pouvant rien copier
+COPY compose.yaml compose.prod.yaml /app/ops/
+COPY deploy /app/ops/deploy
 RUN composer dump-autoload --classmap-authoritative --no-dev \
  && composer run-script --no-dev post-install-cmd \
  # Photos, avatars et vidéos : volume persistant monté sur var/storage (propriétaire www-data)

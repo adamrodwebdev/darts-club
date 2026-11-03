@@ -41,7 +41,7 @@ jobs:
     outputs:
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - id: version
@@ -60,6 +60,9 @@ jobs:
           push: true
           # Toujours la dernière image de base publiée (correctifs de sécurité)
           pull: true
+          # Le lundi, sans cache : sinon les couches « apk » gardées en cache garderaient les paquets
+          # Alpine (ffmpeg, OpenSSL…) d'avant tant que l'image de base ne change pas
+          no-cache: ${{ github.event_name == 'schedule' }}
           # Domaine public (variable du dépôt SERVER_NAME) : Open Graph, hreflang, sitemap
           build-args: |
             SITE_URL=${{ vars.SERVER_NAME && format('https://{0}', vars.SERVER_NAME) || '' }}
@@ -72,7 +75,8 @@ jobs:
   deploy:
     name: Mise à jour du serveur
     needs: image
-    # Activé une fois le serveur prêt : variables DEPLOY_HOST / DEPLOY_USER, secrets DEPLOY_SSH_KEY / DEPLOY_KNOWN_HOSTS
+    # Activé une fois le serveur prêt : variables DEPLOY_HOST / DEPLOY_USER, secrets d'environnement
+    # DEPLOY_SSH_KEY / DEPLOY_KNOWN_HOSTS (docs/deploiement.md § 6)
     if: vars.DEPLOY_HOST != ''
     runs-on: ubuntu-latest
     environment:
@@ -80,9 +84,8 @@ jobs:
       url: https://${{ vars.SERVER_NAME }}
     permissions:
       contents: read
-      packages: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           sparse-checkout: |
@@ -98,16 +101,19 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-      - name: Fichiers de déploiement
+      # Transition : tant que la clé n'est pas limitée au déploiement (deploy/authorize-github-key.sh), la
+      # copie apporte deploy/ssh-gate.sh au serveur. Une fois la clé limitée, la copie est refusée et les
+      # fichiers viennent de l'image elle-même (étape suivante)
+      - name: Fichiers de déploiement (avant limitation de la clé)
         run: |
           scp -i ~/.ssh/deploy -r compose.yaml compose.prod.yaml deploy \
-            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/opt/skull-darts-71/"
+            "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}:/opt/skull-darts-71/" \
+            || echo "::notice::Copie refusée : clé limitée au déploiement, fichiers tirés de l'image"
+      # Seule commande que la clé limitée accepte : deploy <tag>. L'image est publique (aucun jeton
+      # envoyé au serveur) ; le tag est vérifié par ssh-gate.sh
       - name: Déploiement
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.image.outputs.tag }}
-        # Jeton transmis par l'entrée standard (jamais dans une ligne de commande du serveur)
         run: |
-          printf '%s' "$TOKEN" | ssh -i ~/.ssh/deploy "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
-            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin > /dev/null \
-             && /opt/skull-darts-71/deploy/deploy.sh '$TAG'; status=\$?; docker logout ghcr.io > /dev/null; exit \$status"
+          ssh -i ~/.ssh/deploy "${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}" \
+            "/opt/skull-darts-71/deploy/ssh-gate.sh deploy $TAG" < /dev/null
