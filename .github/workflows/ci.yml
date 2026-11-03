@@ -213,7 +213,8 @@ jobs:
         run: |
           docker run --rm skull-darts-71:ci sh -c 'cd /app/ops && test -f compose.yaml && test -f compose.prod.yaml \
             && test -x deploy/deploy.sh && test -x deploy/ssh-gate.sh && test -x deploy/backup-share.sh \
-            && test -x deploy/authorize-github-key.sh && sh -n deploy/ssh-gate.sh && sh -n deploy/authorize-github-key.sh'
+            && test -x deploy/authorize-github-key.sh && sh -n deploy/ssh-gate.sh && sh -n deploy/authorize-github-key.sh \
+            && sh -n deploy/server-setup.sh'
 
   lighthouse:
     name: Lighthouse (100)
