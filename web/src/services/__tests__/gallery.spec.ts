@@ -116,6 +116,19 @@ describe('gallery models', () => {
     expect(clip.durationLabel).toBe('0:04')
   })
 
+  it('gives each item its small image and the fields photos and videos share', () => {
+    const photo = { id: 'p1', thumbUrl: '/thumb', width: 480, height: 320, uploader: 'Bob', uploadedAt: new Date('2026-11-21T21:00:00+01:00') } as EventPhoto
+    const ready = GalleryVideo.parse(video({ status: 'prete', posterUrl: '/poster', width: 720, height: 1280 }))
+    const converting = GalleryVideo.parse(video({ id: 'v2', uploadedAt: '2026-11-21T22:00:00+01:00' }))
+
+    const [first, second, third] = galleryItems([photo], [ready, converting])
+
+    expect(first).toMatchObject({ media: ready, preview: { url: '/poster', width: 720, height: 1280 } })
+    expect(second).toMatchObject({ media: photo, preview: { url: '/thumb', width: 480, height: 320 } })
+    // Pas encore convertie : aucun aperçu, ni dimensions
+    expect(third).toMatchObject({ media: converting, preview: { url: null, width: undefined, height: undefined } })
+  })
+
   it('reads the rights, nothing beyond viewing with an older API', () => {
     expect(parseGalleryRights(undefined)).toEqual({ canAddPhotos: false, canAddVideos: false, canModerate: false })
     expect(parseGalleryRights({ canAddPhotos: true, canAddVideos: true, canModerate: false }).canAddVideos).toBe(true)

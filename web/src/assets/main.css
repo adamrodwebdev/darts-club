@@ -65,6 +65,17 @@
   /* Pastilles posées sur une photo ou une vidéo (durée, lecture) : lisibles sur toute image, dans les deux thèmes */
   --media-scrim: rgb(0 0 0 / 72%);
   --on-media: #ffffff;
+  /* Carrousel et plein écran de la galerie : cadre sombre dans les deux thèmes, comme une table lumineuse */
+  --media-stage: #070709;
+  --media-ink: #f2f2f2;
+  --media-ink-muted: #b9b9c2;
+  --media-line: rgb(255 255 255 / 22%);
+  --media-panel: #17171c;
+  --media-panel-2: #222229;
+  --media-accent: #d62839;
+  --media-link: #ff6b78;
+  --media-danger: #ff8a8a;
+  --media-glint: rgb(255 255 255 / 24%);
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
