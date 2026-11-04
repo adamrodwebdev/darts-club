@@ -7,9 +7,14 @@ export interface Reel {
   readonly active: Ref<number>
   /** Le contenu dépasse : la navigation est utile */
   readonly scrollable: Ref<boolean>
-  goTo(index: number): void
+  goTo(index: number, options?: GoToOptions): void
   next(): void
   previous(): void
+}
+
+export interface GoToOptions {
+  /** La carte vient d'un coup, sans défiler devant les autres (saut de plusieurs cartes, retour du plein écran) */
+  instant?: boolean
 }
 
 export interface ReelOptions {
@@ -84,14 +89,14 @@ export function useReel(track: Ref<HTMLElement | null>, options: ReelOptions): R
     target = null
   }
 
-  function goTo(index: number): void {
+  function goTo(index: number, { instant = false }: GoToOptions = {}): void {
     const element = track.value
     const clamped = Math.min(Math.max(index, 0), options.count() - 1)
     const card = cards()[clamped]
     if (element === null || card === undefined) return
     target = clamped
     const left = options.align === 'center' ? anchorOf(card) - element.clientWidth / 2 : anchorOf(card)
-    element.scrollTo({ left, behavior: motionEnabled() ? 'smooth' : 'auto' })
+    element.scrollTo({ left, behavior: motionEnabled() && !instant ? 'smooth' : 'auto' })
   }
 
   onMounted(() => {

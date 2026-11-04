@@ -2,19 +2,59 @@ import { formatClock } from '@/i18n/format'
 import type { EventPhoto } from './ClubEvent'
 import { bool, InvalidResponseError, num, obj, optStr, str } from './guards'
 
-/** Une case de la galerie, photo ou vidéo, dans l'ordre d'arrivée */
-export type GalleryItem = { kind: 'photo'; key: string; at: Date; photo: EventPhoto } | { kind: 'video'; key: string; at: Date; video: GalleryVideo }
+/** Petite image d'une case (vignette de la photo, aperçu de la vidéo ; aucune tant que la vidéo n'est pas convertie) */
+export interface GalleryPreview {
+  url: string | null
+  width: number | undefined
+  height: number | undefined
+}
+
+interface GalleryEntry {
+  key: string
+  at: Date
+  preview: GalleryPreview
+}
+
+/**
+ * Une case de la galerie, photo ou vidéo, dans l'ordre d'arrivée. `media` porte ce que les deux ont en
+ * commun (auteur, état, identifiant) : l'affichage n'a pas à demander de quelle sorte elle est.
+ */
+export type GalleryItem = (GalleryEntry & { kind: 'photo'; photo: EventPhoto; media: EventPhoto }) | (GalleryEntry & { kind: 'video'; video: GalleryVideo; media: GalleryVideo })
 
 export function galleryItems(photos: readonly EventPhoto[], videos: readonly GalleryVideo[]): GalleryItem[] {
   const items: GalleryItem[] = [
-    ...photos.map((photo): GalleryItem => ({ kind: 'photo', key: `photo-${photo.id}`, at: photo.uploadedAt, photo })),
-    ...videos.map((video): GalleryItem => ({ kind: 'video', key: `video-${video.id}`, at: video.uploadedAt, video })),
+    ...photos.map(
+      (photo): GalleryItem => ({
+        kind: 'photo',
+        key: `photo-${photo.id}`,
+        at: photo.uploadedAt,
+        photo,
+        media: photo,
+        preview: { url: photo.thumbUrl, width: photo.width, height: photo.height },
+      }),
+    ),
+    ...videos.map(
+      (video): GalleryItem => ({
+        kind: 'video',
+        key: `video-${video.id}`,
+        at: video.uploadedAt,
+        video,
+        media: video,
+        preview: { url: video.posterUrl, width: video.width ?? undefined, height: video.height ?? undefined },
+      }),
+    ),
   ]
   return items.sort((a, b) => a.at.getTime() - b.at.getTime())
 }
 
 /** Sortes de médias de la galerie */
 export type MediaKind = 'photo' | 'video'
+
+/** Libellés de chaque sorte de média (clés de traduction) : une seule table, aucun test répété */
+export const GALLERY_LABELS = {
+  photo: { item: 'events.gallery.itemPhoto', position: 'events.gallery.position', deleteTitle: 'events.gallery.deletePhoto' },
+  video: { item: 'events.gallery.itemVideo', position: 'events.gallery.positionVideo', deleteTitle: 'events.gallery.deleteVideo' },
+} as const satisfies Record<MediaKind, { item: string; position: string; deleteTitle: string }>
 
 /** Étapes d'une vidéo : envoi par morceaux, conversion par le serveur, prête, échec */
 export type VideoStatus = 'envoi' | 'conversion' | 'prete' | 'echec'
