@@ -40,14 +40,21 @@ echo "→ Compte de déploiement « deploy » (sans mot de passe, clés SSH seul
 id deploy > /dev/null 2>&1 || adduser --disabled-password --gecos '' deploy
 usermod -aG docker deploy
 install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-touch /home/deploy/.ssh/authorized_keys
-# Clé de l'administrateur (celle utilisée pour cette connexion)
-for source in /root/.ssh/authorized_keys /home/debian/.ssh/authorized_keys; do
-  [ -f "$source" ] && cat "$source" >> /home/deploy/.ssh/authorized_keys
-done
-sort -u -o /home/deploy/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
-chown deploy:deploy /home/deploy/.ssh/authorized_keys
-chmod 600 /home/deploy/.ssh/authorized_keys
+keys=/home/deploy/.ssh/authorized_keys
+# Clé de l'administrateur (celle utilisée pour cette connexion), à la première préparation seulement : ensuite
+# les clés de deploy se gèrent avec deploy/authorize-github-key.sh, et une clé retirée ne doit pas revenir à la
+# relance suivante. Sans les lignes à commande imposée (celle de root par cloud-init, « Please login as… ») :
+# triée avant la clé nue, elle l'emporterait et fermerait le compte à l'administrateur
+if [ ! -s "$keys" ]; then
+  : > "$keys"
+  for source in /root/.ssh/authorized_keys /home/debian/.ssh/authorized_keys; do
+    [ -f "$source" ] || continue
+    grep -v 'command=' "$source" >> "$keys" || true
+  done
+  sort -u -o "$keys" "$keys"
+fi
+chown deploy:deploy "$keys"
+chmod 600 "$keys"
 
 install -d -m 750 -o deploy -g deploy "$APP_DIR"
 install -d -m 700 -o deploy -g deploy "$BACKUP_DIR"

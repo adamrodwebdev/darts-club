@@ -47,6 +47,27 @@ Le script installe les mises à jour (et les rend automatiques, moteur Docker co
 la nuit quand le noyau l'exige), Docker, le pare-feu (SSH, HTTP, HTTPS), fail2ban, crée le compte `deploy`
 (clés SSH uniquement), interdit les mots de passe et la connexion root en SSH, et n'autorise la clé de
 GitHub Actions qu'à déployer (voir § 6). Relancé sur un serveur existant, il applique les réglages ajoutés depuis.
+Relance depuis l'ordinateur de l'administrateur, avec le compte qui a `sudo` (`debian` chez OVH) :
+
+```powershell
+ssh -t debian@ADRESSE_DU_SERVEUR sudo sh /opt/skull-darts-71/deploy/server-setup.sh
+```
+
+Elle installe d'abord les mises à jour en attente : si Docker en fait partie, les conteneurs redémarrent (une
+trentaine de secondes de coupure), puis repartent seuls. Les clés de `deploy` ne sont copiées depuis celles de
+`root` et `debian` qu'à la première préparation, sans les lignes à commande imposée : une clé retirée ensuite ne
+revient pas à la relance.
+
+**Changer la clé de l'administrateur.** Elle ouvre deux comptes, `deploy` (Docker) et `debian` (sudo) : une
+ancienne clé oubliée sur `debian` garde l'accès root. Ajouter la nouvelle aux deux avec l'ancienne, puis, connecté
+avec la nouvelle (preuve qu'elle ouvre les deux comptes), retirer l'ancienne des deux ; son empreinte :
+`ssh-keygen -lf ANCIENNE_CLÉ.pub`.
+
+```powershell
+foreach ($account in 'deploy', 'debian') { Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh -i ANCIENNE_CLÉ "$account@ADRESSE_DU_SERVEUR" "(echo; tr -d '\r') >> ~/.ssh/authorized_keys" }
+ssh deploy@ADRESSE_DU_SERVEUR /opt/skull-darts-71/deploy/authorize-github-key.sh --remove SHA256:EMPREINTE_ANCIENNE
+ssh -t debian@ADRESSE_DU_SERVEUR "sudo AUTHORIZED_KEYS=/home/debian/.ssh/authorized_keys sh /opt/skull-darts-71/deploy/authorize-github-key.sh --remove SHA256:EMPREINTE_ANCIENNE"
+```
 
 ## 4. Secrets du serveur (`.env`)
 
@@ -73,6 +94,13 @@ docker run --rm $img php -r 'echo "POSTGRES_PASSWORD=", bin2hex(random_bytes(24)
 - `REDIS_PASSWORD` : créé par `deploy.sh` au premier déploiement qui en a besoin (64 caractères hexadécimaux
   tirés sur le serveur, jamais affichés). Redis garde les sessions et la file des messages, que l'API relit
   par `unserialize()` : pouvoir y écrire suffirait à exécuter du code, d'où le mot de passe même sur un réseau interne.
+- `POSTGRES_APP_PASSWORD` : créé de même par `deploy.sh`. Le site et le worker se connectent à la base avec le
+  compte limité `app_runtime` ([`deploy/database-role.sh`](../deploy/database-role.sh), remis à jour à chaque
+  déploiement) : il lit et écrit les lignes des tables du club, sans pouvoir changer le schéma, lancer une commande
+  dans le conteneur de la base (`COPY … TO PROGRAM`) ni toucher à la table des migrations. Le propriétaire des
+  tables (`POSTGRES_USER`, `POSTGRES_PASSWORD`) ne sert qu'aux migrations, sauvegardes et restaurations : son mot
+  de passe n'entre jamais dans les conteneurs du site. Une commande d'administration qui modifie le schéma passe
+  donc par lui (`-e DATABASE_URL`, comme les migrations dans `deploy.sh`).
 - Plafonds de mémoire (facultatif, selon la taille du serveur) : `WEB_MEMORY_LIMIT` (site, `2g` par défaut) et
   `WORKER_MEMORY_LIMIT` (worker, conversions ffmpeg comprises, `1536m` par défaut). Le conteneur qui les
   dépasse redémarre seul ; PostgreSQL, lui, n'est jamais tué faute de mémoire par un autre.
@@ -118,7 +146,7 @@ Dans **Settings › Secrets and variables › Actions** du dépôt :
 | Type | Nom | Valeur |
 |---|---|---|
 | Secret d'environnement | `DEPLOY_SSH_KEY` | clé privée SSH **dédiée** (voir ci-dessous), autorisée sur le serveur pour le déploiement seulement |
-| Secret d'environnement | `DEPLOY_KNOWN_HOSTS` | résultat de `ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR` |
+| Secret d'environnement | `DEPLOY_KNOWN_HOSTS` | clés d'hôte du serveur, tirées du `known_hosts` de l'administrateur (voir ci-dessous) |
 
 **Clé de déploiement, limitée au déploiement.** Le compte `deploy` pilote Docker, donc tout le serveur : la clé
 de GitHub Actions ne doit rien pouvoir faire d'autre que déployer. Sur l'ordinateur de l'administrateur
@@ -127,10 +155,22 @@ de GitHub Actions ne doit rien pouvoir faire d'autre que déployer. Sur l'ordina
 ```powershell
 ssh-keygen -t ed25519 -N '""' -C github-actions-deploy -f "$env:USERPROFILE\.ssh\skull-darts-github-deploy"
 Get-Content "$env:USERPROFILE\.ssh\skull-darts-github-deploy.pub" | ssh deploy@ADRESSE_DU_SERVEUR /opt/skull-darts-71/deploy/authorize-github-key.sh
-Get-Content "$env:USERPROFILE\.ssh\skull-darts-github-deploy" | Set-Clipboard   # à coller dans DEPLOY_SSH_KEY
-ssh-keyscan -t ed25519 ADRESSE_DU_SERVEUR                                            # à coller dans DEPLOY_KNOWN_HOSTS
-Remove-Item "$env:USERPROFILE\.ssh\skull-darts-github-deploy*"                       # une fois les deux secrets enregistrés
+cmd /c "gh secret set DEPLOY_SSH_KEY --env production --repo adamrodwebdev/darts-club < %USERPROFILE%\.ssh\skull-darts-github-deploy"
+ssh-keygen -F ADRESSE_DU_SERVEUR | gh secret set DEPLOY_KNOWN_HOSTS --env production --repo adamrodwebdev/darts-club
+Remove-Item "$env:USERPROFILE\.ssh\skull-darts-github-deploy*"
 ```
+
+- Les deux secrets vont directement des fichiers à GitHub : la clé privée ne passe pas par le presse-papiers, dont
+  Windows garde l'historique.
+- `-N '""'` donne une clé sans phrase secrète sous Windows PowerShell 5.1 ; sous PowerShell 7.3 et suivants, écrire
+  `-N ""`.
+- La clé d'hôte vient du `known_hosts` de l'administrateur, auquel il se fie depuis sa première connexion. Le
+  `ssh-keyscan` livré avec Windows (OpenSSH 9.5) échoue face au serveur
+  (`choose_kex: unsupported KEX method sntrup761x25519-sha512@openssh.com`) ; `gh` enregistre alors un secret vide
+  sans rien signaler, et ce secret d'environnement l'emporte sur un secret du dépôt du même nom.
+- Vérifier la date des deux secrets (**Settings › Environments › production**), puis lancer un déploiement d'essai
+  (**Actions › Déploiement › Run workflow**) : le journal montre la copie de fichiers refusée (« Copie refusée »)
+  et le déploiement passé.
 
 [`deploy/authorize-github-key.sh`](../deploy/authorize-github-key.sh) écrit la ligne
 `restrict,command="/opt/skull-darts-71/deploy/ssh-gate.sh" ssh-ed25519 AAAA…` : avec cette clé, le serveur
@@ -209,6 +249,8 @@ Renseigner `OAUTH_*` dans `.env`, puis `./deploy/deploy.sh`.
    - L'ordinateur garde les 30 dernières sauvegardes, toujours chiffrées ; journal : `copie.log` dans le dossier de destination.
      Choisir un dossier synchronisé (OneDrive, Google Drive) ajoute une copie dans le cloud.
 5. **Tester une restauration** une fois par trimestre : `./deploy/restore.sh archive.tar.gz.age skull-darts-71-backup.key`.
+   Elle remet ensuite les droits du compte limité du site sur les tables recréées, même depuis une sauvegarde
+   plus ancienne que ce compte.
 
 La sauvegarde contient la base (comptes, cotisations, messages, événements) et les avatars/photos.
 

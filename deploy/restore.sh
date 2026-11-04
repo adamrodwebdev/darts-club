@@ -21,7 +21,11 @@ trap 'rm -rf "$work"' EXIT
 age --decrypt --identity "$identity" "$archive" | tar -C "$work" -xzf -
 
 compose stop php worker
+# Compte limité du site présent avant (droits enregistrés dans la sauvegarde), puis droits remis sur les tables
+# recréées (une sauvegarde plus ancienne que ce compte n'en contient aucun)
+deploy/database-role.sh
 compose exec -T database pg_restore --clean --if-exists --no-owner --username="${POSTGRES_USER:-app}" --dbname="${POSTGRES_DB:-app}" < "$work/database.dump"
+deploy/database-role.sh
 compose run --rm --no-deps -T php sh -c 'rm -rf /app/var/storage/* && tar -C /app/var -xf -' < "$work/storage.tar"
 compose up -d
 echo "✓ Données restaurées depuis $archive"

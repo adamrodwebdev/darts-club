@@ -5,7 +5,10 @@
 x-prod-env: &prod-env
   APP_ENV: prod
   APP_SECRET: ${APP_SECRET:?définir APP_SECRET dans .env}
-  DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:?définir POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-app}?serverVersion=17&charset=utf8
+  # Compte limité aux lignes des tables du club (deploy/database-role.sh) : une injection SQL ou une faille du
+  # site ne peut ni changer le schéma ni lancer de commande dans le conteneur de la base. Le propriétaire des
+  # tables (POSTGRES_USER) ne sert qu'aux migrations, sauvegardes et restaurations
+  DATABASE_URL: postgresql://${POSTGRES_APP_USER:-app_runtime}:${POSTGRES_APP_PASSWORD:?définir POSTGRES_APP_PASSWORD (créé par deploy.sh)}@database:5432/${POSTGRES_DB:-app}?serverVersion=17&charset=utf8
   MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?définir MERCURE_JWT_SECRET}
   TWO_FACTOR_ENCRYPTION_KEY: ${TWO_FACTOR_ENCRYPTION_KEY:?définir TWO_FACTOR_ENCRYPTION_KEY}
   MAILER_DSN: ${MAILER_DSN:?définir MAILER_DSN (SMTP Brevo)}
