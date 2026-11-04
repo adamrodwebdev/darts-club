@@ -31,9 +31,10 @@ const resent = ref(false)
 /** Sans WebAuthn dans le navigateur, aucun bouton de clé d'accès */
 const passkeySupported = services.passkeys.isSupported()
 /**
- * Connexion par un fournisseur une image après le formulaire : le rendu de la page reste sous le
- * seuil d'une tâche longue au démarrage (Lighthouse : temps de blocage). En bas de page, elle ne
- * décale rien au-dessus d'elle.
+ * Sous le formulaire, une image après lui : clé d'accès, fournisseurs et lien d'inscription. Le
+ * premier rendu de la page (navigation comprise) reste court, et la mise en page qui le suit aussi :
+ * sur les machines partagées de la CI, ce rendu d'un seul tenant montait parfois à 75–96 ms au lieu
+ * de 10 (Lighthouse : temps de blocage, une mesure sur trois). Ajouté en bas, rien ne bouge au-dessus.
  */
 const extras = useStages(1, { all: false })
 
@@ -177,18 +178,20 @@ async function resendLink(): Promise<void> {
       <p v-if="resend.error.value" class="notice notice--error" role="alert">{{ resend.error.value }}</p>
     </div>
 
-    <div v-if="step === 'password' && passkeySupported" class="passkey">
-      <p class="separator"><span>{{ t('auth.oauthSeparator') }}</span></p>
-      <button type="button" class="passkey__button" :disabled="pending" @click="loginWithPasskey">
-        <LineIcon name="fingerprint" />
-        {{ t('auth.login.passkey') }}
-      </button>
-      <p class="muted passkey__hint">{{ t('auth.login.passkeyHint') }}</p>
-    </div>
+    <template v-if="extras >= 1">
+      <div v-if="step === 'password' && passkeySupported" class="passkey">
+        <p class="separator"><span>{{ t('auth.oauthSeparator') }}</span></p>
+        <button type="button" class="passkey__button" :disabled="pending" @click="loginWithPasskey">
+          <LineIcon name="fingerprint" />
+          {{ t('auth.login.passkey') }}
+        </button>
+        <p class="muted passkey__hint">{{ t('auth.login.passkeyHint') }}</p>
+      </div>
 
-    <OAuthButtons v-if="step === 'password' && extras >= 1" :separated="!passkeySupported" />
+      <OAuthButtons v-if="step === 'password'" :separated="!passkeySupported" />
 
-    <p class="switch">{{ t('auth.login.noAccount') }} <RouterLink to="/inscription">{{ t('auth.login.join') }}</RouterLink></p>
+      <p class="switch">{{ t('auth.login.noAccount') }} <RouterLink to="/inscription">{{ t('auth.login.join') }}</RouterLink></p>
+    </template>
   </section>
 </template>
 

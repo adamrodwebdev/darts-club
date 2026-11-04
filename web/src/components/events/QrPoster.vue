@@ -43,7 +43,7 @@ withDefaults(defineProps<{ content: QrPosterContent; ink?: 'light' | 'dark'; siz
   overflow: hidden;
   background: var(--paper);
   color: var(--ink);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: system-ui, sans-serif;
   text-align: center;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
