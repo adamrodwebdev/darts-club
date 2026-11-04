@@ -14,6 +14,11 @@ import { defineConfig, devices } from '@playwright/test'
 const SWEEP = /responsive\.spec\.ts$/
 /** Clés d'accès réelles (authentificateur virtuel du protocole de Chromium) : projets Chromium seulement */
 const WEBAUTHN = /@webauthn/
+/**
+ * Code construit seulement (chargeur de Vite, fichiers à empreinte) : l'aperçu de la CI. Le serveur
+ * de développement sert les sources une à une ; en local, lancer avec CI=1 après npm run build.
+ */
+const BUILT_ONLY = process.env.CI ? [] : [/stale-build\.spec\.ts$/]
 
 export default defineConfig({
   testDir: './e2e',
@@ -63,13 +68,14 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
       },
+      testIgnore: BUILT_ONLY,
     },
     {
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
       },
-      testIgnore: SWEEP,
+      testIgnore: [SWEEP, ...BUILT_ONLY],
       grepInvert: WEBAUTHN,
     },
     {
@@ -77,7 +83,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
       },
-      testIgnore: SWEEP,
+      testIgnore: [SWEEP, ...BUILT_ONLY],
       grepInvert: WEBAUTHN,
     },
 
@@ -87,14 +93,14 @@ export default defineConfig({
       use: {
         ...devices['Pixel 7'],
       },
-      testIgnore: SWEEP,
+      testIgnore: [SWEEP, ...BUILT_ONLY],
     },
     {
       name: 'Mobile Safari',
       use: {
         ...devices['iPhone 14'],
       },
-      testIgnore: SWEEP,
+      testIgnore: [SWEEP, ...BUILT_ONLY],
       grepInvert: WEBAUTHN,
     },
 

@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
+import { watchForStaleBuild } from './boot/StaleBuildReload'
 import { dismissTitleCard } from './boot/titleCard'
 import { i18n, loadLocaleMessages } from './i18n'
 import { createPreferenceControllers, PREFERENCES } from './preferences'
@@ -19,7 +20,9 @@ await nextTask()
 // Racine de composition : chaque dépendance est créée ici une fois, puis fournie à l'application
 const services = createServices()
 const preferences = createPreferenceControllers(window)
-const router = createAppRouter(services)
+// Onglet ouvert avant un déploiement : un code disparu du serveur fait charger la version en ligne
+const staleBuild = watchForStaleBuild(window, services.clock)
+const router = createAppRouter(services, staleBuild)
 
 // Langue connue avant le premier rendu : aucun texte affiché dans la mauvaise langue.
 // Le code de la page demandée est téléchargé en même temps que les traductions.

@@ -151,6 +151,29 @@ jobs:
             and (.register_argc_argv == "" or .register_argc_argv == "0") and .use_strict_mode == "1"
             and (.display_errors == "" or .display_errors == "0")'
           docker run --rm skull-darts-71:ci php -r 'exit(function_exists("proc_open") ? 0 : 1);'
+      # Fichiers du front servis par le vrai Caddyfile de l'image : le fichier versionné disparu que demande
+      # un onglet ouvert avant un déploiement répond 404 sans cache, jamais la page d'accueil gardée un an
+      - name: Fichiers du front (un fichier disparu répond 404)
+        run: |
+          docker run -d --name web-files -e SERVER_NAME=localhost -e APP_SECRET=ci-check -p 8444:443 skull-darts-71:ci
+          for attempt in $(seq 1 30); do curl -fsSk -o /dev/null https://localhost:8444/ && break; sleep 1; done
+          headers() { curl -sSk -o /dev/null -D - "https://localhost:8444$1" | tr -d '\r' | tr '[:upper:]' '[:lower:]'; }
+          asset=$(docker exec web-files sh -c 'cd /app/web/assets && ls *.js | head -n 1')
+          page=$(headers /evenements)
+          present=$(headers "/assets/$asset")
+          gone=$(headers /assets/disparu-0000000.js)
+          sound=$(headers /audio/disparu.mp3)
+          docker rm -f web-files > /dev/null
+          printf '%s\n\n' "$page" "$present" "$gone" "$sound"
+          echo "$page" | grep -qE '^http/[0-9.]+ 200'
+          echo "$page" | grep -q '^content-type: text/html'
+          echo "$page" | grep -q '^cache-control: no-cache'
+          echo "$present" | grep -qE '^http/[0-9.]+ 200'
+          echo "$present" | grep -q '^cache-control: public, max-age=31536000, immutable'
+          echo "$gone" | grep -qE '^http/[0-9.]+ 404'
+          echo "$gone" | grep -q '^cache-control: no-store'
+          echo "$sound" | grep -qE '^http/[0-9.]+ 404'
+          if echo "$gone" | grep -q '^content-type: text/html'; then echo 'fichier disparu servi comme une page'; exit 1; fi
       # Hub lancé avec la configuration Compose de production (émetteur de confiance, audience) : les
       # jetons de l'API doivent y être acceptés et une publication privée reçue par un abonné
       - name: Hub Mercure accepte les jetons de l'API
