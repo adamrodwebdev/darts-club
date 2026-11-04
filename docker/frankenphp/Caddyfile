@@ -70,8 +70,22 @@
 			Cross-Origin-Opener-Policy "same-origin"
 		}
 
-		try_files {path} {path}.html /index.html
-		file_server
+		# Fichier disparu de ces dossiers : l'ancien code d'un onglet ouvert avant un déploiement. Un 404
+		# sans cache, pour que l'application le sache et charge la version en ligne ; jamais la page
+		# d'accueil, que le navigateur refuserait comme code et garderait un an
+		@gone {
+			path /assets/* /audio/*
+			not file
+		}
+		handle @gone {
+			header Cache-Control "no-store"
+			respond 404
+		}
+
+		handle {
+			try_files {path} {path}.html /index.html
+			file_server
+		}
 	}
 }
 
