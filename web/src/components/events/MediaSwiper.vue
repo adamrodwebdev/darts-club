@@ -264,13 +264,13 @@ defineExpose({ show: (at: number) => reel.goTo(at, { instant: true }) })
 
 /*
  * Titre, filtres, photo, boutons et vignettes tiennent dans un écran de téléphone, sous l'en-tête
- * collant : 22rem pour l'en-tête, le titre, les filtres, les boutons et les vignettes (mesurés à
- * 390 × 844 et 393 × 659, e2e/event-gallery.spec.ts), et une marge.
+ * collant : 23rem pour l'en-tête, le titre (sur deux lignes avec une police large), les filtres, les
+ * boutons et les vignettes, mesurés à 390 × 844 et 393 × 659 avec Verdana (e2e/event-gallery.spec.ts).
  */
 .swiper__stage {
   position: relative;
   isolation: isolate;
-  block-size: clamp(15rem, 100svh - 22.5rem, 40rem);
+  block-size: clamp(15rem, 100svh - 23rem, 40rem);
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: calc(var(--radius) * 1.6);

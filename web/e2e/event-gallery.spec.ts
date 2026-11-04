@@ -217,6 +217,10 @@ for (const screen of [{ width: 390, height: 844 }, { width: 393, height: 659 }])
   test(`title, filters, photo and thumbnails fit one ${screen.width}×${screen.height} phone screen`, async ({ page }) => {
     await page.setViewportSize(screen)
     await openEvent(page, ['ROLE_MEMBER'], [video({ mine: false })], MEMBER, threePhotos)
+    // Une police large partout (Verdana, ou DejaVu Sans aux mêmes chasses sous Linux) : la page doit tenir
+    // avec la plus large des polices d'appareil, et le test mesure la même chose sur le poste et en CI.
+    // Par le DOM : la CSP du site refuse les balises <style> ajoutées
+    await page.evaluate(() => document.documentElement.style.setProperty('font-family', "Verdana, 'DejaVu Sans', sans-serif", 'important'))
     const heading = page.getByRole('heading', { name: /Photos et vidéos/ })
     // Le titre de la galerie en haut, sous l'en-tête collant (scroll-padding de la page)
     await heading.evaluate((element) => element.scrollIntoView({ block: 'start' }))

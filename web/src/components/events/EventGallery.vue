@@ -87,16 +87,10 @@ function onMediaChanged(): void {
 </script>
 
 <template>
-  <section class="stack" aria-labelledby="gallery-title">
+  <section class="stack gallery" aria-labelledby="gallery-title">
     <div class="head">
       <div class="head__row">
-        <div class="head__text">
-          <h2 id="gallery-title">{{ t('events.gallery.title') }} <span class="muted">({{ items.length }})</span></h2>
-          <p class="muted members-only">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-            {{ t('events.gallery.membersOnly') }}
-          </p>
-        </div>
+        <h2 id="gallery-title">{{ t('events.gallery.title') }} <span class="muted">({{ items.length }})</span></h2>
         <!-- Le champ porte son nom entier, quel que soit le texte affiché (« + Ajouter » au téléphone) -->
         <label v-if="canUpload" class="upload">
           <input type="file" :accept="accept" multiple class="visually-hidden" :aria-label="uploadLabel" @change="onFiles" />
@@ -104,6 +98,11 @@ function onMediaChanged(): void {
           <span class="upload__short" aria-hidden="true">+ {{ t('events.gallery.uploadShort') }}</span>
         </label>
       </div>
+      <!-- Toute la largeur sous le titre : une ligne de moins à côté du bouton -->
+      <p class="muted members-only">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+        {{ t('events.gallery.membersOnly') }}
+      </p>
     </div>
 
     <ul v-if="rights.canAddVideos" class="rules">
@@ -162,8 +161,15 @@ function onMediaChanged(): void {
 </template>
 
 <style scoped>
+/* Un peu plus serré que la page : le titre, les filtres et le carrousel tiennent dans un écran */
+.gallery {
+  gap: 0.75rem;
+}
+
 .head {
   container: gallery-head / inline-size;
+  display: grid;
+  gap: 0.25rem;
 }
 
 .head__row {
@@ -171,12 +177,10 @@ function onMediaChanged(): void {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.5rem 1rem;
 }
 
-.head__text {
-  display: grid;
-  gap: 0.25rem;
+h2 {
   min-width: 0;
 }
 
@@ -220,7 +224,10 @@ h2,
 @container gallery-head (width < 40rem) {
   .head__row {
     flex-wrap: nowrap;
-    align-items: flex-start;
+  }
+
+  .upload {
+    padding-inline: 0.9rem;
   }
 
   .upload__label {
@@ -242,13 +249,27 @@ h2,
   font-size: 0.9rem;
 }
 
+/*
+ * Une seule ligne, quelle que soit la police de l'appareil (sur une ligne de plus, les vignettes
+ * passeraient sous l'écran) : au besoin, la bande glisse de côté. Marge intérieure rendue au-dehors :
+ * l'anneau de focus n'est pas rogné.
+ */
 .filters {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
+  margin: -0.25rem;
+  padding: 0.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
 }
 
 .filter {
+  flex: none;
   min-height: 44px;
   padding: 0 1rem;
   border: 1px solid var(--color-border);
