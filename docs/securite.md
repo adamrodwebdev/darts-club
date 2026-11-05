@@ -80,6 +80,15 @@ inconnu, Mercure anonyme) : rien d'exposé au-delà de SSH, HTTP et HTTPS ; TLS 
 | Moyenne | La clé de l'administrateur retirée le 13 octobre ouvrait encore le compte `debian`, qui a `sudo` ; et chaque relance de `server-setup.sh` recopiait les clés de `root` et `debian` dans celles de `deploy`, où une clé retirée revenait avec accès complet | Ancienne clé retirée du serveur et du PC (3 novembre) ; le script ne copie ces clés qu'à la première préparation, sans les lignes à commande imposée ; changement de clé décrit pour les deux comptes ([guide § 3](deploiement.md)) | Syntaxe du script en CI ; première préparation et relance essayées sur une copie |
 | Élevée | Le site et le worker se connectaient à PostgreSQL avec le superutilisateur : une injection SQL ou une exécution de code dans le site aurait pu lancer des commandes dans le conteneur de la base (`COPY … TO PROGRAM`), lire ses fichiers, changer le schéma ou effacer la base | Compte `app_runtime` limité aux lignes des tables du club ([`deploy/database-role.sh`](../deploy/database-role.sh)) ; le propriétaire ne sert qu'aux migrations, sauvegardes et restaurations, et son mot de passe ne va plus dans les conteneurs du site | Pile de production en CI : connexion du site en `app_runtime` ; lecture et écriture de chaque table, d'une table créée après coup comprise ; création, modification et suppression de table, `COPY … TO PROGRAM` et table des migrations refusées |
 
+## Alertes acceptées
+
+Alertes connues au moment d'une publication, laissées pour plus tard par décision écrite : gravité,
+endroit où le code tourne et raison de l'attente. Chacune est revue à chaque publication.
+
+| Date | Gravité | Alerte | Où elle tourne | Pourquoi elle peut attendre | À revoir |
+|---|---|---|---|---|---|
+| 5 novembre 2026 | Moyenne (17 lignes de `npm audit`, 2 failles) | `minimatch` 7.0.0 à 11.0.0 : déni de service par des motifs piégés (corrigé en 11.0.1). `glob` 9.0.0 à 14.0.1 : annulation (`AbortSignal`) contournée | Outils de développement seulement : ESLint et typescript-eslint, `@vue/test-utils` (par js-beautify), les plugins ESLint et de construction de vue-i18n. Rien n'est livré dans le site ni dans l'image | Ces outils ne lisent que les motifs et les fichiers du dépôt, jamais ce qu'envoie un visiteur. Les « correctifs » de npm reviennent à des versions majeures plus anciennes. L'alerte Dependabot de `minimatch` a été retirée par GitHub (constaté le 5 novembre) | À chaque publication (`npm audit`, développement compris), et dès qu'ESLint ou typescript-eslint passent à `minimatch` 11.0.1 |
+
 ## Contrôles vérifiés
 
 - **Pare-feu** : seules la connexion (mot de passe ou clé d'accès), l'inscription, la confirmation d'email (lien et mot de passe), le mot de passe oublié, OAuth, la sonde `/api/health`, le flux iCal à jeton et la déconnexion sont publics ; le reste exige une connexion complète (2FA comprise).
