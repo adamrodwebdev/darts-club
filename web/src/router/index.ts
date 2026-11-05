@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized, type Router, type RouteRecordRaw, START_LOCATION } from 'vue-router'
+import type { StaleBuildReload } from '@/boot/StaleBuildReload'
 import { loadBoardMessages, type MessageSchema } from '@/i18n'
 import { DEFAULT_LOCALE, HOME_PATHS, type Locale } from '@/i18n/locales'
 import { DOCUMENT_TYPES } from '@/models/EventDocuments'
@@ -252,7 +253,7 @@ const ROUTES: RouteRecordRaw[] = [
 ]
 
 /** Routeur de l'application, construit au démarrage avec les services injectés (main.ts). */
-export function createAppRouter(services: Services): Router {
+export function createAppRouter(services: Services, staleBuild: Pick<StaleBuildReload, 'navigating' | 'arrived'>): Router {
   const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     scrollBehavior: (to, from, saved) => {
@@ -265,6 +266,15 @@ export function createAppRouter(services: Services): Router {
       return { top: 0 }
     },
     routes: ROUTES,
+  })
+
+  // Onglet ouvert avant un déploiement : la page visée est notée avant toute garde (celle des textes
+  // du bureau charge du code), pour être chargée à neuf si son code a disparu du serveur
+  router.beforeEach((to) => {
+    staleBuild.navigating(to.fullPath)
+  })
+  router.afterEach((_to, _from, failure) => {
+    if (!failure) staleBuild.arrived()
   })
 
   router.beforeEach(async (to: RouteLocationNormalized) => {

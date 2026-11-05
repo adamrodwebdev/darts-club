@@ -20,11 +20,12 @@ const rulesId = useId()
 const done = ref(false)
 const { pending, error, fieldErrors, run } = useAsyncAction()
 /**
- * Connexion par un fournisseur une image après le formulaire : le rendu de la page reste sous le
- * seuil d'une tâche longue au démarrage (Lighthouse : temps de blocage). En bas de page, elle ne
- * décale rien au-dessus d'elle.
+ * Page rendue en trois images, chaque partie ajoutée sous la précédente (rien ne bouge) : e-mail et
+ * téléphone ; mot de passe et bouton ; fournisseurs et lien de connexion. Sur les machines partagées
+ * de la CI, le formulaire d'un seul tenant faisait la plus longue tâche du démarrage (Lighthouse :
+ * temps de blocage, 80 ms sur une mesure de trois, quand la page perd un point vers 90).
  */
-const extras = useStages(1, { all: false })
+const stages = useStages(2, { all: false })
 
 async function submit(): Promise<void> {
   await run(async () => {
@@ -54,27 +55,29 @@ async function submit(): Promise<void> {
           :hint="t('auth.register.phoneHint')"
           :error="fieldErrors.phone"
         />
-        <BaseField
-          v-model="password"
-          :label="t('common.password')"
-          type="password"
-          autocomplete="new-password"
-          required
-          :error="fieldErrors.password"
-          :describedby="rulesId"
-        >
-          <PasswordRules :id="rulesId" :password="password" />
-        </BaseField>
+        <template v-if="stages >= 1">
+          <BaseField
+            v-model="password"
+            :label="t('common.password')"
+            type="password"
+            autocomplete="new-password"
+            required
+            :error="fieldErrors.password"
+            :describedby="rulesId"
+          >
+            <PasswordRules :id="rulesId" :password="password" />
+          </BaseField>
 
-        <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
+          <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
 
-        <BaseButton type="submit" :pending="pending">{{ t('auth.register.submit') }}</BaseButton>
+          <BaseButton type="submit" :pending="pending">{{ t('auth.register.submit') }}</BaseButton>
+        </template>
       </form>
 
-      <OAuthButtons v-if="extras >= 1" />
+      <OAuthButtons v-if="stages >= 2" />
     </template>
 
-    <p class="switch">{{ t('auth.register.alreadyMember') }} <RouterLink to="/connexion">{{ t('auth.register.login') }}</RouterLink></p>
+    <p v-if="stages >= 2" class="switch">{{ t('auth.register.alreadyMember') }} <RouterLink to="/connexion">{{ t('auth.register.login') }}</RouterLink></p>
   </section>
 </template>
 
