@@ -5,6 +5,11 @@ updates:
     schedule: { interval: weekly }
     groups:
       symfony: { patterns: ["symfony/*"] }
+    # Branche LTS de Symfony (7.4) : une nouvelle version majeure, moins éprouvée et suivie moins
+    # longtemps, n'est jamais proposée. Les correctifs de sécurité arrivent dans la 7.4.
+    ignore:
+      - dependency-name: "symfony/*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /web
     schedule: { interval: weekly }
