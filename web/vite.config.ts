@@ -5,6 +5,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { compileHints } from './build/compileHints.ts'
 import { deferredBoot } from './build/deferredBoot.ts'
 import { localizedIndex } from './build/localizedIndex.ts'
 import { songStructuredData } from './build/songStructuredData.ts'
@@ -47,6 +48,8 @@ export default defineConfig(({ mode, isPreview }) => {
         themeScript: fileURLToPath(new URL('./public/theme-init.js', import.meta.url)),
         structuredData: (url) => [songStructuredData(url)],
       }),
+      // Scripts compilés pendant leur téléchargement (ajoutée après tout le reste, voir le plugin)
+      compileHints(),
     ],
     resolve: {
       alias: {

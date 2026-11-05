@@ -1,11 +1,14 @@
 /**
  * Budget de performance : poids compressé (gzip) de ce que charge la
  * première page (point d'entrée, modules et CSS du manifeste de démarrage
- * de index.html), et du plus gros module chargé à la demande.  Usage : npm run budget
+ * de index.html), et du plus gros module chargé à la demande. Vérifie
+ * aussi que chaque script commence par l'indication de compilation
+ * (build/compileHints.ts).  Usage : npm run budget
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 import { fileURLToPath } from 'node:url'
+import { COMPILE_HINT } from '../build/compileHints.ts'
 
 const BUDGETS = { initialJs: 150, initialCss: 30, largestLazyChunk: 100 } // Ko gzip
 
@@ -44,7 +47,18 @@ for (const [label, size, budget] of results) {
   console.log(`${ok ? '✓' : '✗'} ${label} : ${size.toFixed(1)} Ko gzip (budget ${budget} Ko)`)
 }
 
+const unhinted = []
+for (const file of allJs) {
+  if (!(await readFile(`${dist}${file}`, 'utf8')).startsWith(COMPILE_HINT)) unhinted.push(file)
+}
+failed ||= unhinted.length > 0
+console.log(
+  unhinted.length === 0
+    ? `✓ Indication de compilation en tête des ${allJs.length} scripts`
+    : `✗ Indication de compilation absente de ${unhinted.length} scripts sur ${allJs.length} : ${unhinted.slice(0, 5).join(', ')}`,
+)
+
 if (failed) {
-  console.error('Budget de performance dépassé.')
+  console.error('Build refusé : voir les lignes ✗ ci-dessus.')
   process.exit(1)
 }
