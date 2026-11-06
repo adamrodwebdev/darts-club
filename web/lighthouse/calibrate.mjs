@@ -3,6 +3,7 @@
 // passait de 10 à 140 ms de blocage). Référence : 4× sur une machine d'indice 2450, la plus lente vue
 // (2 novembre 2026). Lit les passages de préchauffage et écrit LIGHTHOUSE_CPU_SLOWDOWN=… (pour $GITHUB_ENV).
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { cpus } from 'node:os'
 import { join } from 'node:path'
 
 const DIR = process.argv[2] ?? '.lighthouseci'
@@ -20,5 +21,8 @@ const indexes = existsSync(DIR)
 const sorted = indexes.toSorted((a, b) => a - b)
 const index = sorted.length ? sorted[Math.floor(sorted.length / 2)] : Number.NaN
 const slowdown = Number.isFinite(index) ? Math.max(1, (REFERENCE_SLOWDOWN * index) / REFERENCE_INDEX) : REFERENCE_SLOWDOWN
-console.error(`Indice de la machine : ${indexes.map(Math.round).join(', ') || 'inconnu'} → ralentissement ${slowdown.toFixed(2)}×`)
+// Le modèle de processeur dit quel type de machine a été tiré : les échecs ne s'y répartissent pas également
+const processors = cpus()
+const machine = processors.length ? `${processors[0].model.trim()}, ${processors.length} cœurs` : 'processeur inconnu'
+console.error(`Indice de la machine : ${indexes.map(Math.round).join(', ') || 'inconnu'} → ralentissement ${slowdown.toFixed(2)}× (${machine})`)
 console.log(`LIGHTHOUSE_CPU_SLOWDOWN=${slowdown.toFixed(2)}`)
