@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRouter } from 'vue-router'
@@ -88,7 +89,7 @@ onUnmounted(stop)
           <BaseButton variant="ghost" @click="recipient = null">{{ t('messaging.compose.change') }}</BaseButton>
         </div>
         <template v-else>
-          <BaseField v-model="search" :label="t('messaging.compose.search')" :hint="t('messaging.compose.searchHint')" :error="send.fieldErrors.value.recipientId" />
+          <BaseField :maxlength="TEXT_LIMITS.search" v-model="search" :label="t('messaging.compose.search')" :hint="t('messaging.compose.searchHint')" :error="send.fieldErrors.value.recipientId" />
           <ul v-if="results.length" class="results" role="listbox" :aria-label="t('messaging.compose.results')">
             <li v-for="m in results" :key="m.id ?? m.displayName">
               <button type="button" class="result" role="option" :aria-selected="false" @click="recipient = m">

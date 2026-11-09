@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 use App\Translation\InvalidValue;
@@ -42,6 +44,10 @@ final readonly class ProcedureContent
         $fields = [];
         foreach ($values as $key => $value) {
             if (\is_string($key) && (\is_string($value) || \is_bool($value))) {
+                // Borné à la porte : une valeur enregistrée avant cette règle se relit toujours
+                if (\is_string($value) && mb_strlen($value) > FieldValues::TEXT_MAX) {
+                    throw new InvalidValue('Un champ dépasse %max% caractères.', ['%max%' => FieldValues::TEXT_MAX]);
+                }
                 $fields[$key] = $value;
             }
         }

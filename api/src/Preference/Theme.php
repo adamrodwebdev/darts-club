@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Preference;
 
 /** Thème d'affichage choisi par l'adhérent ; « system » suit le réglage de l'appareil. */

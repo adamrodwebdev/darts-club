@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Nature d'un champ du formulaire d'un document (rendu par l'écran). */

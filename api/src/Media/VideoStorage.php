@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Fichiers des vidéos converties (MP4, aperçus), hors de la racine web, sous un nom aléatoire. */

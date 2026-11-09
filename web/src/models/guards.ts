@@ -26,8 +26,9 @@ export function optStr(value: unknown, what = 'texte'): string | null {
   return value === null || value === undefined ? null : str(value, what)
 }
 
+/** Un nombre fini : ni NaN ni l'infini (le JSON n'en porte pas, un objet construit ailleurs si) */
 export function num(value: unknown, what = 'nombre'): number {
-  if (typeof value !== 'number' || Number.isNaN(value)) throw new InvalidResponseError(what)
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new InvalidResponseError(what)
   return value
 }
 

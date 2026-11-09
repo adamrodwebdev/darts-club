@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Evening;
 
 /** Équipes d'une soirée, choisies par le bureau : chacune ouvrira son écran (accueil, bar, cuisine). */

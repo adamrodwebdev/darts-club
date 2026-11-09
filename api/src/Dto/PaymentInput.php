@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
+use App\Membership\Money;
 use App\Membership\PaymentMethod;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -11,6 +14,7 @@ final class PaymentInput
         /** Montant décimal : « 30 », « 30.50 », « 30,50 » */
         #[Assert\NotBlank]
         #[Assert\Regex('/^\d{1,6}([.,]\d{1,2})?$/', message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly string $amount = '',
 
         #[Assert\NotBlank]

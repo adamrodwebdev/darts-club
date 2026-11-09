@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
 use App\EventAccounts\CashSettings;
@@ -17,6 +19,7 @@ final class CashSettingsInput
         #[Assert\Count(max: CashSettings::TOKENS_MAX)]
         public readonly array $tokens = [],
         #[Assert\NotBlank]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly string $cashFloat = '0',
     ) {
     }

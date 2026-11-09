@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notification\Push;
 
 /** Adresse Web Push d'un navigateur (PushSubscription.toJSON()) : URL du service et clés de chiffrement */

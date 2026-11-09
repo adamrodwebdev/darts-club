@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Doctrine\EncryptedStringType;
@@ -38,6 +40,8 @@ use Symfony\Component\Uid\Uuid;
 class User implements UserInterface, PasswordAuthenticatedUserInterface, RecordsDomainEvents, TwoFactorInterface
 {
     use DomainEventsTrait;
+    /** Longueur du motif de suspension, en caractères (celle de sa colonne) */
+    public const SUSPENSION_REASON_MAX = 200;
 
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
@@ -427,7 +431,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Records
         }
 
         $this->suspendedAt = $now;
-        $this->suspensionReason = mb_substr($reason, 0, 200);
+        $this->suspensionReason = mb_substr($reason, 0, self::SUSPENSION_REASON_MAX);
     }
 
     public function reactivate(): void

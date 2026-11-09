@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\ClubEvent;
 
 use App\Preference\Language;

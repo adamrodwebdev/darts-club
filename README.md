@@ -17,7 +17,10 @@ cd web && npm install && npm run dev   # http://localhost:5173, /api proxifié v
 | API | `vendor/bin/phpstan analyse` · `vendor/bin/php-cs-fixer fix` · `vendor/bin/phpunit` |
 | Web | `npm run lint` · `npm run type-check` · `npm run test:unit` · `npm run test:e2e` |
 
-La CI (GitHub Actions) bloque toute PR sous **Lighthouse 95** dans les 4 catégories.
+La CI (GitHub Actions) bloque toute PR sous **Lighthouse 100** dans les 4 catégories, sur le pire des 3 passages
+sur mobile. Le processeur y est ralenti selon la machine tirée, calé sur deux horloges dont la plus douce l'emporte :
+l'indice JavaScript de Lighthouse et le travail du navigateur sur une page sonde fixe (`web/lighthouse/cpuSlowdown.ts`,
+détail des deux horloges dans le journal du job « Lighthouse (100) »).
 
 ## Notifications push (VAPID)
 

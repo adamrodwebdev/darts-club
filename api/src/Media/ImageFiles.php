@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Une image servie aux membres : WebP pour tous, AVIF quand elle existe, étiquette de cache. */

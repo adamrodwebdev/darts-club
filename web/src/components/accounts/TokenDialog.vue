@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -47,7 +48,7 @@ function save(): void {
       <p v-if="frozen" class="notice">{{ t('events.accounts.cash.frozen') }}</p>
       <template v-else>
         <BaseField v-model="name" :label="t('events.accounts.cash.name')" required :maxlength="30" />
-        <BaseField v-model="value" :label="t('events.accounts.cash.value')" :hint="t('events.accounts.fields.priceHint')" inputmode="decimal" required />
+        <BaseField :maxlength="TEXT_LIMITS.amount" v-model="value" :label="t('events.accounts.cash.value')" :hint="t('events.accounts.fields.priceHint')" inputmode="decimal" required />
         <label class="check">
           <input v-model="bag" type="checkbox" />
           <span class="check__text">

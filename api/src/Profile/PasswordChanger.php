@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Profile;
 
 use App\Dto\PasswordChange;

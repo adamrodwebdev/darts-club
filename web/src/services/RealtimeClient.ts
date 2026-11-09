@@ -8,6 +8,8 @@ const CLOSED = 2
 /** Reconnexion de plus en plus espacée, jamais plus d'une demi-minute d'attente */
 const FIRST_RETRY_MS = 1000
 const MAX_RETRY_MS = 30_000
+/** Un message du hub tient en quelques centaines d'octets : au-delà, il n'est pas lu */
+const MESSAGE_MAX = 64_000
 
 /**
  * Connexion Mercure (Server-Sent Events, protocole 1.0 : abonnement par « match »). L'API pose un
@@ -76,7 +78,8 @@ export class RealtimeClient {
     source.onopen = () => {
       this.retries = 0
     }
-    source.onmessage = (event: MessageEvent<string>) => {
+    source.onmessage = (event: MessageEvent<unknown>) => {
+      if (typeof event.data !== 'string' || event.data.length > MESSAGE_MAX) return
       let data: unknown
       try {
         data = JSON.parse(event.data)

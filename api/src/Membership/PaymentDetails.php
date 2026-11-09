@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Membership;
 
 /** Ce que le trésorier saisit pour un paiement (montant, moyen, date, référence) */

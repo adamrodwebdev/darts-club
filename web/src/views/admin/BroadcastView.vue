@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -78,7 +79,7 @@ async function submit(): Promise<void> {
       </fieldset>
 
       <div v-if="audience === 'selection'" class="selection">
-        <BaseField v-model="filter" :label="t('admin.broadcast.filter')" />
+        <BaseField :maxlength="TEXT_LIMITS.search" v-model="filter" :label="t('admin.broadcast.filter')" />
         <p class="muted">{{ t('admin.broadcast.selected', selected.length) }}</p>
         <ul class="picker">
           <li v-for="m in visibleMembers" :key="m.id">

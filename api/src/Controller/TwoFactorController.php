@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Entity\User;
@@ -16,6 +18,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class TwoFactorController extends AbstractController
 {
+    /** Un code TOTP ou un code de secours, jamais plus long */
+    private const CODE_MAX = 20;
+
     public function __construct(
         private readonly RequestThrottle $requestThrottle,
         private readonly TwoFactorEnrollment $enrollment,
@@ -65,9 +70,7 @@ final class TwoFactorController extends AbstractController
 
     private static function code(Request $request): string
     {
-        $code = $request->toArray()['code'] ?? '';
-
-        return \is_string($code) ? mb_substr($code, 0, 20) : '';
+        return RequestFields::of($request)->secret('code', self::CODE_MAX);
     }
 
     private function throttle(User $user): void

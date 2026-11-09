@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -108,7 +109,7 @@ onMounted(refresh)
     <details class="card">
       <summary>{{ t('treasury.dashboard.openSummary') }}</summary>
       <form class="actions" novalidate @submit.prevent="openSeason">
-        <BaseField v-model="openAmount" :label="t('treasury.dashboard.openAmount')" :error="open.error.value ?? undefined" />
+        <BaseField :maxlength="TEXT_LIMITS.amount" v-model="openAmount" :label="t('treasury.dashboard.openAmount')" :error="open.error.value ?? undefined" />
         <BaseButton type="submit" :pending="open.pending.value">{{ t('treasury.dashboard.openSubmit', { season }) }}</BaseButton>
       </form>
       <BaseButton variant="ghost" :pending="remind.pending.value" @click="sendReminders">{{ t('treasury.dashboard.remind') }}</BaseButton>
@@ -116,7 +117,7 @@ onMounted(refresh)
     </details>
 
     <div class="filters">
-      <BaseField v-model="search" :label="t('treasury.dashboard.search')" />
+      <BaseField :maxlength="TEXT_LIMITS.search" v-model="search" :label="t('treasury.dashboard.search')" />
       <label class="field">
         <span>{{ t('treasury.dashboard.status') }}</span>
         <select v-model="status">

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Membership\Money;
@@ -14,6 +16,9 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Entity]
 class Payment
 {
+    /** Longueur du motif d'annulation, en caractères (celle de sa colonne) */
+    public const CANCEL_REASON_MAX = 200;
+
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME)]
     private Uuid $id;
@@ -72,7 +77,7 @@ class Payment
         }
 
         $this->cancelledAt = $now;
-        $this->cancelReason = mb_substr($reason, 0, 200);
+        $this->cancelReason = mb_substr($reason, 0, self::CANCEL_REASON_MAX);
     }
 
     public function isCancelled(): bool

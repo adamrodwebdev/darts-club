@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 use App\Enum\VideoFailure;
@@ -25,12 +27,14 @@ final readonly class VideoProbe
         $data = json_decode($json, true);
         $stream = \is_array($data) && \is_array($data['streams'] ?? null) ? ($data['streams'][0] ?? null) : null;
         $duration = \is_array($data) && \is_array($data['format'] ?? null) ? ($data['format']['duration'] ?? null) : null;
-        if (!\is_array($stream) || !is_numeric($stream['width'] ?? null) || !is_numeric($stream['height'] ?? null) || !is_numeric($duration)) {
+        // ffprobe écrit la largeur et la hauteur en nombres, la durée en texte décimal (« 12.480 »)
+        if (!\is_array($stream) || !\is_int($stream['width'] ?? null) || !\is_int($stream['height'] ?? null)
+            || !\is_string($duration) || 1 !== preg_match('/^\d{1,7}(\.\d{1,9})?$/', $duration)) {
             throw new VideoRejected(VideoFailure::Unreadable);
         }
 
-        $width = (int) $stream['width'];
-        $height = (int) $stream['height'];
+        $width = $stream['width'];
+        $height = $stream['height'];
         if ($width < 1 || $height < 1) {
             throw new VideoRejected(VideoFailure::Unreadable);
         }
@@ -48,12 +52,14 @@ final readonly class VideoProbe
     private static function rotation(array $stream): int
     {
         foreach (\is_array($stream['side_data_list'] ?? null) ? $stream['side_data_list'] : [] as $side) {
-            if (\is_array($side) && is_numeric($side['rotation'] ?? null)) {
-                return (int) $side['rotation'];
+            if (\is_array($side) && \is_int($side['rotation'] ?? null)) {
+                return $side['rotation'];
             }
         }
         $tags = \is_array($stream['tags'] ?? null) ? $stream['tags'] : [];
 
-        return is_numeric($tags['rotate'] ?? null) ? (int) $tags['rotate'] : 0;
+        $rotate = $tags['rotate'] ?? null;
+
+        return \is_string($rotate) && 1 === preg_match('/^-?\d{1,3}$/', $rotate) ? (int) $rotate : 0;
     }
 }

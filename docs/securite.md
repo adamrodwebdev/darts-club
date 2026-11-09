@@ -80,6 +80,25 @@ inconnu, Mercure anonyme) : rien d'exposé au-delà de SSH, HTTP et HTTPS ; TLS 
 | Moyenne | La clé de l'administrateur retirée le 13 octobre ouvrait encore le compte `debian`, qui a `sudo` ; et chaque relance de `server-setup.sh` recopiait les clés de `root` et `debian` dans celles de `deploy`, où une clé retirée revenait avec accès complet | Ancienne clé retirée du serveur et du PC (3 novembre) ; le script ne copie ces clés qu'à la première préparation, sans les lignes à commande imposée ; changement de clé décrit pour les deux comptes ([guide § 3](deploiement.md)) | Syntaxe du script en CI ; première préparation et relance essayées sur une copie |
 | Élevée | Le site et le worker se connectaient à PostgreSQL avec le superutilisateur : une injection SQL ou une exécution de code dans le site aurait pu lancer des commandes dans le conteneur de la base (`COPY … TO PROGRAM`), lire ses fichiers, changer le schéma ou effacer la base | Compte `app_runtime` limité aux lignes des tables du club ([`deploy/database-role.sh`](../deploy/database-role.sh)) ; le propriétaire ne sert qu'aux migrations, sauvegardes et restaurations, et son mot de passe ne va plus dans les conteneurs du site | Pile de production en CI : connexion du site en `app_runtime` ; lecture et écriture de chaque table, d'une table créée après coup comprise ; création, modification et suppression de table, `COPY … TO PROGRAM` et table des migrations refusées |
 
+## Données vérifiées à la porte (9 novembre 2026)
+
+Règle posée ce jour-là pour toutes les applications : un nombre attendu n'accepte qu'un nombre ; un
+texte attendu n'accepte qu'une chaîne, nettoyée, de longueur bornée dans le code. Revue de chaque
+entrée de l'API et du site.
+
+| Gravité | Problème | Correction | Test |
+|---|---|---|---|
+| Moyenne | Aucun fichier PHP ne déclarait `strict_types` : un paramètre `int` recevait `' 12'`, `'1e3'` (1000), `'12.5'` (12) ou `true` (1) sans erreur | `declare(strict_types=1)` dans les 515 fichiers, imposé par PHP-CS-Fixer ; PHPStan (niveau max) n'a trouvé aucun appel qui s'appuyait sur une conversion | Suite complète sous `strict_types` |
+| Moyenne | Les textes reçus étaient gardés tels quels : caractères de contrôle, inversions bidirectionnelles (« Trojan Source »), espaces invisibles, accents décomposés dans les messages, annonces, documents | `CleanTextDenormalizer` pour chaque DTO, `RequestFields` pour les corps lus sans DTO (`PlainText` : invisibles retirés, NFC, espaces resserrés) ; les mots de passe ne sont jamais touchés (`#[Secret]`) | `PlainTextTest`, `RequestFieldsTest`, `TypedInputTest` |
+| Faible | Des textes sans longueur maximale (mots de passe à la suppression du compte, montants, téléphone, note de commande, valeurs des documents) ; des motifs coupés à 200 caractères sans prévenir | `Length(max:)` sur chaque texte de DTO, `Count(max:)` sur chaque liste ; valeurs de documents bornées à 2 000 caractères ; un texte trop long est refusé (422), plus coupé | `PayloadLimitsTest` (61 champs), `TypedInputTest` |
+| Faible | Numéros de billets lus par `(int)` : « 1O0 » (lettre O) donnait 1 billet ; capacité en texte (`"12"`) devenue « illimitée » ; capacité saisie lue par `parseInt` (« 12.5 » → 12) | Chiffres seulement (sinon la valeur pré-remplie, visible à l'aperçu) ; capacité refusée si ce n'est pas un entier JSON ; champ texte `inputmode="numeric"` lu par `parseNumber` | `EventDocumentsTest`, `TypedInputTest` |
+| Faible | Sortie d'ffprobe lue par `is_numeric` et `(int)` (`1e3`, `NaN` acceptés) | Largeur et hauteur entières, durée en texte décimal strict | `GalleryMediaTest` |
+| Faible | Navigateur : instant de rechargement lu par `Number()` (`''` → 0, `'0x10'` → 16), messages temps réel lus sans taille maximale, `num()` acceptait l'infini | `parseNumber` strict, 64 000 caractères au plus par message, `Number.isFinite` | `StaleBuildReload.spec.ts`, `input.spec.ts` |
+
+À noter pour la suite : dans Symfony 7.4, une propriété `float` remplie depuis une requête GET ou un
+formulaire accepte `NaN`, `INF` et `1e3`, et `Assert\Range` laisse passer NaN. Il n'y en a aucune
+aujourd'hui ; n'en ajouter qu'avec une vérification de finitude.
+
 ## Alertes acceptées
 
 Alertes connues au moment d'une publication, laissées pour plus tard par décision écrite : gravité,
