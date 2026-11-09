@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--
+  Page sonde de la mesure Lighthouse en CI, servie par le bouchon (api-stub.mjs, /sonde) : elle mesure
+  le travail propre du navigateur de la machine tirée (cpuSlowdown.ts). Faite comme l'écran titre du
+  site : un script en tête (le contexte JavaScript est créé), un style en ligne, un titre et quelques
+  paragraphes, aucune requête. PROBE_REFERENCE_MS a été mesurée sur ce texte exact : le modifier
+  demande de remesurer la référence (probe.spec.ts le rappelle).
+-->
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonde de la mesure · Skull Darts 71</title>
+    <meta name="description" content="Page fixe de la mesure Lighthouse : le même travail pour le navigateur de chaque machine de la CI.">
+    <meta name="theme-color" content="#0b0b0d">
+    <link rel="icon" href="data:,">
+    <script>
+      ;(function () {
+        var light = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+        document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark')
+        var meta = document.querySelector('meta[name="theme-color"]')
+        if (meta) meta.setAttribute('content', light ? '#f6f6f8' : '#0b0b0d')
+      })()
+    </script>
+    <style>
+      :root {
+        --bg: #0b0b0d;
+        --text: #f2f2f2;
+        --glow: rgb(214 40 57 / 0.3);
+        color-scheme: dark;
+      }
+
+      :root[data-theme='light'] {
+        --bg: #f6f6f8;
+        --text: #15151a;
+        --glow: rgb(193 18 31 / 0.18);
+        color-scheme: light;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 50% 42%, var(--glow), transparent 62%), var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        place-content: center;
+        gap: 1.25rem;
+        min-height: 100svh;
+        padding: 1rem;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 1rem + 5vw, 4.5rem);
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+        text-wrap: balance;
+      }
+
+      p {
+        max-width: 36rem;
+        margin: 0 auto;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Skull Darts 71</h1>
+      <p>Association récréative de fléchettes : soirées conviviales, parties libres et initiation pour les nouveaux venus.</p>
+      <p>Cette page ne sert qu'à la mesure. Elle ne change jamais, pour que le navigateur de chaque machine fasse le même travail.</p>
+      <p>Son temps de travail, comparé à celui de la machine de référence, dit à quel point ralentir le processeur du téléphone simulé.</p>
+    </main>
+  </body>
+</html>

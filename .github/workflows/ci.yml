@@ -280,12 +280,13 @@ jobs:
           name: web-dist
           path: web/dist
       # vite preview : routes de la SPA (/connexion…) servies comme en production ; ses appels
-      # d'API vont au bouchon (web/lighthouse/api-stub.mjs). Lancés une fois pour toute la mesure.
+      # d'API vont au bouchon (web/lighthouse/api-stub.mjs), qui sert aussi la page sonde du calage
+      # (/sonde). Lancés une fois pour toute la mesure.
       - name: Serveurs de la mesure
         run: |
           node web/lighthouse/api-stub.mjs &
           npm --prefix web run preview -- --port 4173 --strictPort &
-          timeout 60 bash -c 'until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done'
+          timeout 60 bash -c 'until curl -sf -o /dev/null http://localhost:4173/ && curl -sf -o /dev/null http://127.0.0.1:8787/sonde; do sleep 1; done'
         env:
           VITE_API_PROXY: http://127.0.0.1:8787
       # Premiers passages sur une machine neuve (Chrome, Node et disque froids) : bien plus lents que les
@@ -293,14 +294,18 @@ jobs:
       # parfois trois passages (accueil à 220, 120, 90 puis 30 ms de blocage, contre 10 ms à chaque passage
       # sur le même code deux heures plus tôt). Ils préparent la machine et ne sont pas comptés ; les trois
       # passages de chaque page qui suivent le sont, le pire décide. Ils mesurent aussi la vitesse de la
-      # machine, sur laquelle le ralentissement du processeur est calé (web/lighthouse/calibrate.mjs).
+      # machine, sur laquelle le ralentissement du processeur est calé (web/lighthouse/calibrate.mjs), avec
+      # deux horloges dont la plus douce l'emporte : l'indice JavaScript de Lighthouse sur l'accueil, puis
+      # le travail propre du navigateur sur une page sonde fixe (création de la page et de son contexte
+      # JavaScript, lecture du HTML). Une machine rapide en JavaScript peut être lente pour le reste
+      # (PR #128 : indice 4050, donc 6,48×, et 99 sur /en par une tâche du navigateur de 179 ms).
       - name: Préchauffage (non compté)
         run: |
-          npx --yes @lhci/cli@0.15.x collect --url=http://localhost:4173/ --numberOfRuns=3
+          npx --yes @lhci/cli@0.15.x collect --url=http://localhost:4173/ --url=http://127.0.0.1:8787/sonde --numberOfRuns=3
           node web/lighthouse/summary.mjs
           node web/lighthouse/calibrate.mjs >> "$GITHUB_ENV"
           rm -rf .lighthouseci
-      # Toujours le même téléphone simulé, quelle que soit la machine tirée
+      # Le même téléphone simulé quelle que soit la machine tirée, jamais plus lent que la cible
       - run: npx --yes @lhci/cli@0.15.x autorun --collect.settings.throttling.cpuSlowdownMultiplier="$LIGHTHOUSE_CPU_SLOWDOWN"
       - name: Résumé de chaque passage
         if: always()

@@ -1,9 +1,15 @@
 // Fausse API de la mesure Lighthouse en CI : l'aperçu (vite preview) n'a pas d'API derrière lui.
 // Les pages publiques y reçoivent les réponses de la production pour un visiteur sans compte ;
 // sans elle, chaque appel échoue (502) et compte comme une erreur dans la console.
+// Le bouchon sert aussi la page sonde de l'horloge du navigateur (probe.html, voir cpuSlowdown.ts) :
+// servie par l'aperçu, elle verrait son script bloqué par la CSP de production.
+import { readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { PROBE_PATH, probeHeaders } from './probe.ts'
 
 const PORT = Number(process.env.API_STUB_PORT ?? 8787)
+const PROBE = readFileSync(new URL('./probe.html', import.meta.url), 'utf8')
+const PROBE_HEADERS = probeHeaders(PROBE)
 
 const upcoming = {
   slug: 'soiree-flechettes-2026-11-14-a1b2c3',
@@ -32,6 +38,11 @@ const ROUTES = {
 
 createServer((request, response) => {
   const path = new URL(request.url ?? '/', 'http://stub').pathname
+  if (request.method === 'GET' && path === PROBE_PATH) {
+    response.writeHead(200, PROBE_HEADERS)
+    response.end(PROBE)
+    return
+  }
   const body = request.method === 'GET' ? ROUTES[path] : undefined
   response.writeHead(body === undefined ? 404 : 200, { 'Content-Type': 'application/json' })
   response.end(JSON.stringify(body ?? { error: `Route absente du bouchon Lighthouse : ${request.method} ${path}` }))
