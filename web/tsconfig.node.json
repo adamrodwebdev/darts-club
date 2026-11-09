@@ -7,7 +7,8 @@
     "cypress.config.*",
     "playwright.config.*",
     "eslint.config.*",
-    "build/**/*"
+    "build/**/*",
+    "lighthouse/**/*"
   ],
   "compilerOptions": {
     // Most tools use transpilation instead of Node.js's native type-stripping.
@@ -15,6 +16,9 @@
     "module": "preserve",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    // Les modules de la mesure Lighthouse (lighthouse/*.ts) tournent tels quels sous Node, qui efface
+    // les types sans rien compiler : ni enum, ni propriété déclarée dans les paramètres d'un constructeur
+    "erasableSyntaxOnly": true,
 
     // Include Node.js types and avoid accidentally including other `@types/*` packages.
     "types": ["node"],
