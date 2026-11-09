@@ -90,7 +90,7 @@ services:
       - mercure_config:/config
 
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     restart: unless-stopped
     # Mémoire bornée : en cas d'afflux, les clés qui expirent (sessions) partent les premières,
     # jamais la file des messages
