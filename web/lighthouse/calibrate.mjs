@@ -4,7 +4,7 @@
 // du site et le travail du navigateur sur la page sonde ; la plus douce l'emporte (règles et références :
 // cpuSlowdown.ts). Lit les passages de préchauffage et écrit LIGHTHOUSE_CPU_SLOWDOWN=… (pour $GITHUB_ENV) ;
 // le détail des deux horloges va dans le journal, pour affiner leurs références.
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { closeSync, existsSync, fstatSync, openSync, readdirSync, readSync } from 'node:fs'
 import { join } from 'node:path'
 import { calibrate, MIN_SLOWDOWN, PROBE_REFERENCE_MS, WarmupPass } from './cpuSlowdown.ts'
 
@@ -12,13 +12,24 @@ const DIR = process.argv[2] ?? '.lighthouseci'
 // Taille vérifiée avant la lecture : un rapport pèse moins de 2 Mo, un fichier bien plus gros n'en est pas un
 const MAX_REPORT_BYTES = 32 * 1024 * 1024
 
-/** Contenu d'un rapport, ou rien s'il est trop gros ou n'est pas du JSON */
+/**
+ * Contenu d'un rapport, ou rien s'il est trop gros ou n'est pas du JSON. Taille et lecture passent par
+ * le même descripteur, et la lecture s'arrête à la taille vérifiée : le fichier ne peut pas changer
+ * entre les deux (CodeQL js/file-system-race, 2026-11-09)
+ */
 function readReport(path) {
-  if (statSync(path).size > MAX_REPORT_BYTES) return undefined
+  let descriptor
   try {
-    return JSON.parse(readFileSync(path, 'utf8'))
+    descriptor = openSync(path, 'r')
+    const size = fstatSync(descriptor).size
+    if (size > MAX_REPORT_BYTES) return undefined
+    const buffer = Buffer.alloc(size)
+    const read = readSync(descriptor, buffer, 0, size, 0)
+    return JSON.parse(buffer.toString('utf8', 0, read))
   } catch {
     return undefined
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor)
   }
 }
 
