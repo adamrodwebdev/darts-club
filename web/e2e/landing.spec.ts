@@ -40,6 +40,19 @@ test('landing shows the anthem, the friend band and legal links', async ({ page 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Politique de confidentialité')
 })
 
+// Règle du 2026-11-09 : la flèche sur le contenu, la main sur ce qui se clique, la barre dans un champ
+test('the cursor shows only what can be clicked', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('cursor', 'default')
+  await expect(page.locator('main p').first()).toHaveCSS('cursor', 'default')
+  await expect(page.getByRole('link', { name: 'Rejoindre le club' }).first()).toHaveCSS('cursor', 'pointer')
+  await expect(page.getByRole('button', { name: 'Écouter l’hymne' })).toHaveCSS('cursor', 'pointer')
+
+  await page.goto('/connexion')
+  await expect(page.getByRole('textbox', { name: /mail/i })).toHaveCSS('cursor', 'text')
+})
+
 test('the title card paints the club at once, then gives way to the page', async ({ page }) => {
   const response = await page.goto('/')
   // Premier affichage depuis le HTML, avant tout le code

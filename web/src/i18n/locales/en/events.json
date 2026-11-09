@@ -60,6 +60,7 @@
       "startsAt": "Start",
       "endsAt": "End",
       "capacity": "Number of places (empty = unlimited)",
+      "capacityInvalid": "Enter a number of places from 1 to 1000, in digits.",
       "description": "Description",
       "publish": "Publish the event",
       "locationHint": "Full address: visible to members, and to guests once their answer is confirmed.",

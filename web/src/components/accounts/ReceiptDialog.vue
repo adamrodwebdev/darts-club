@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -38,7 +39,7 @@ function save(): void {
         <p class="muted hint">{{ t('events.accounts.receiptFileHint') }}</p>
       </div>
       <BaseField v-model="label" :label="t('events.accounts.receiptLabel')" required :maxlength="80" />
-      <BaseField v-model="amount" :label="t('events.accounts.receiptAmount')" :hint="t('events.accounts.fields.priceHint')" />
+      <BaseField :maxlength="TEXT_LIMITS.amount" v-model="amount" :label="t('events.accounts.receiptAmount')" :hint="t('events.accounts.fields.priceHint')" />
       <label class="check">
         <input v-model="credit" type="checkbox" />
         {{ t('events.accounts.receiptCredit') }}

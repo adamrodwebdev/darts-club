@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -40,7 +41,7 @@ async function submit(): Promise<void> {
     <form class="stack" novalidate @submit.prevent="submit">
       <p class="muted">{{ t('treasury.paymentForm.remaining', { amount: formatEuro(membership.remaining) }) }}</p>
 
-      <BaseField v-model="amount" :label="t('treasury.paymentForm.amount')" required :error="fieldErrors.amount" />
+      <BaseField :maxlength="TEXT_LIMITS.amount" v-model="amount" :label="t('treasury.paymentForm.amount')" required :error="fieldErrors.amount" />
       <label class="field">
         <span>{{ t('treasury.paymentForm.method') }}</span>
         <select v-model="method">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -51,7 +52,7 @@ const announcement = computed(() => (results.value === null ? '' : t('events.acc
 <template>
   <BaseDialog :title="t('events.accounts.teams.dialogTitle', { team: teamName })" @close="emit('close')">
     <div class="stack">
-      <BaseField v-model="search" :label="t('events.accounts.teams.search')" :hint="t('events.accounts.teams.searchHint')" />
+      <BaseField :maxlength="TEXT_LIMITS.search" v-model="search" :label="t('events.accounts.teams.search')" :hint="t('events.accounts.teams.searchHint')" />
       <p class="visually-hidden" aria-live="polite">{{ announcement }}</p>
       <p v-if="results !== null && !choices.length" class="muted">{{ t('events.accounts.teams.noResult') }}</p>
       <ul v-if="choices.length" class="results" :aria-label="t('events.accounts.teams.results')">

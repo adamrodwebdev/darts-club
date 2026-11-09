@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
@@ -52,7 +53,7 @@ async function deleteAccount(): Promise<void> {
     <section v-if="auth.user?.hasPassword" class="card" aria-labelledby="pwd-title">
       <h2 id="pwd-title">{{ t('common.password') }}</h2>
       <form class="stack" novalidate @submit.prevent="changePassword">
-        <BaseField
+        <BaseField :maxlength="TEXT_LIMITS.password"
           v-model="currentPassword"
           :label="t('account.security.currentPassword')"
           type="password"
@@ -60,7 +61,7 @@ async function deleteAccount(): Promise<void> {
           required
           :error="password.fieldErrors.value.currentPassword"
         />
-        <BaseField
+        <BaseField :maxlength="TEXT_LIMITS.password"
           v-model="newPassword"
           :label="t('account.security.newPassword')"
           type="password"
@@ -90,8 +91,8 @@ async function deleteAccount(): Promise<void> {
       <h2 id="delete-title">{{ t('account.security.deleteTitle') }}</h2>
       <p class="muted">{{ t('account.security.deleteText') }}</p>
       <form class="stack" novalidate @submit.prevent="deleteAccount">
-        <BaseField v-model="confirmation" :label="t('account.security.deleteConfirm', { word: t('account.security.deleteWord') })" autocomplete="off" />
-        <BaseField v-if="auth.user?.hasPassword" v-model="deletePassword" :label="t('common.password')" type="password" autocomplete="current-password" />
+        <BaseField :maxlength="TEXT_LIMITS.confirmation" v-model="confirmation" :label="t('account.security.deleteConfirm', { word: t('account.security.deleteWord') })" autocomplete="off" />
+        <BaseField :maxlength="TEXT_LIMITS.password" v-if="auth.user?.hasPassword" v-model="deletePassword" :label="t('common.password')" type="password" autocomplete="current-password" />
         <p v-if="removal.error.value" class="notice notice--error" role="alert">{{ removal.error.value }}</p>
         <BaseButton type="submit" variant="danger" :disabled="confirmation !== t('account.security.deleteWord')" :pending="removal.pending.value">
           {{ t('account.security.deleteSubmit') }}

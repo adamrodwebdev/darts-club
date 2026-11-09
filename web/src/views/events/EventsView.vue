@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -91,7 +92,7 @@ onMounted(refresh)
           <option v-for="s in seasons" :key="s" :value="s">{{ s }}</option>
         </select>
       </label>
-      <BaseField v-model="search" :label="t('events.list.search')" />
+      <BaseField :maxlength="TEXT_LIMITS.search" v-model="search" :label="t('events.list.search')" />
     </div>
 
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>

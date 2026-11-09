@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -56,7 +57,7 @@ function save(): void {
         <legend>{{ t('events.accounts.menu.fields.purchase') }}</legend>
         <div class="grid">
           <BaseField v-model="containerName" :label="t('events.accounts.menu.fields.container')" :hint="t('events.accounts.menu.fields.containerHint')" :maxlength="40" />
-          <BaseField
+          <BaseField :maxlength="TEXT_LIMITS.quantity"
             v-model="containerSize"
             :label="t('events.accounts.menu.fields.size')"
             :hint="byTheLitre ? t('events.accounts.menu.fields.sizeHintLitre') : t('events.accounts.menu.fields.sizeHintCount')"
@@ -64,7 +65,7 @@ function save(): void {
             required
             :error="shown('containerSize')"
           />
-          <BaseField
+          <BaseField :maxlength="TEXT_LIMITS.amount"
             v-model="purchasePrice"
             :label="t('events.accounts.menu.fields.purchasePrice')"
             :hint="t('events.accounts.menu.fields.purchasePriceHint')"
@@ -74,9 +75,9 @@ function save(): void {
           />
         </div>
         <div class="grid grid--three">
-          <BaseField v-model="planned" :label="t('events.accounts.menu.fields.planned')" inputmode="numeric" :error="shown('planned')" />
-          <BaseField v-model="bought" :label="t('events.accounts.menu.fields.bought')" inputmode="numeric" :error="shown('bought')" />
-          <BaseField v-model="returned" :label="t('events.accounts.menu.fields.returned')" inputmode="numeric" :error="shown('returned')" />
+          <BaseField :maxlength="TEXT_LIMITS.quantity" v-model="planned" :label="t('events.accounts.menu.fields.planned')" inputmode="numeric" :error="shown('planned')" />
+          <BaseField :maxlength="TEXT_LIMITS.quantity" v-model="bought" :label="t('events.accounts.menu.fields.bought')" inputmode="numeric" :error="shown('bought')" />
+          <BaseField :maxlength="TEXT_LIMITS.quantity" v-model="returned" :label="t('events.accounts.menu.fields.returned')" inputmode="numeric" :error="shown('returned')" />
         </div>
         <p class="muted note">{{ t('events.accounts.menu.fields.quantitiesHint') }}</p>
         <p v-if="preview" class="preview" aria-live="polite">{{ t('events.accounts.menu.fields.preview', preview) }}</p>
@@ -87,15 +88,15 @@ function save(): void {
         <fieldset v-for="(format, index) in formats" :key="format.key" class="format" :class="{ 'format--removable': formats.length > 1 }">
           <legend class="visually-hidden">{{ t('events.accounts.menu.fields.formatLegend', { n: index + 1 }) }}</legend>
           <BaseField v-model="format.name" :label="t('events.accounts.menu.fields.formatName')" required :maxlength="30" />
-          <BaseField
+          <BaseField :maxlength="TEXT_LIMITS.quantity"
             v-if="byTheLitre"
             v-model="format.volume"
             :label="t('events.accounts.menu.fields.formatVolume')"
             inputmode="decimal"
             :error="shown(`format${format.key}`)"
           />
-          <BaseField v-model="format.price" :label="t('events.accounts.menu.fields.formatPrice')" inputmode="decimal" required />
-          <BaseField v-model="format.sold" :label="t('events.accounts.menu.fields.formatSold')" inputmode="numeric" :error="shown(`sold${format.key}`)" />
+          <BaseField :maxlength="TEXT_LIMITS.amount" v-model="format.price" :label="t('events.accounts.menu.fields.formatPrice')" inputmode="decimal" required />
+          <BaseField :maxlength="TEXT_LIMITS.quantity" v-model="format.sold" :label="t('events.accounts.menu.fields.formatSold')" inputmode="numeric" :error="shown(`sold${format.key}`)" />
           <button
             v-if="formats.length > 1"
             type="button"
@@ -112,7 +113,7 @@ function save(): void {
         <p v-if="byTheLitre" class="muted note">{{ t('events.accounts.menu.fields.volumeNote') }}</p>
       </fieldset>
 
-      <BaseField
+      <BaseField :maxlength="TEXT_LIMITS.garnishes"
         v-if="station === 'cuisine'"
         v-model="garnishes"
         :label="t('events.accounts.menu.fields.garnishes')"
