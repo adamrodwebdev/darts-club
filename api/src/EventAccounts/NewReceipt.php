@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventAccounts;
 
 /** Justificatif à ranger dans un bilan : ce qu'en dit le bureau et son fichier déjà stocké. */

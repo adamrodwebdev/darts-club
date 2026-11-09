@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** L'essai de la galerie vidéo (app:media:check) a échoué : le message dit sur quel format. */

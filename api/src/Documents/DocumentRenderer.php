@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Rend le document d'une démarche : le modèle, rempli pour la soirée, puis les changements du secrétariat. */

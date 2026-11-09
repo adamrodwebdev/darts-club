@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\ClubEvent;
 
 /** Fuseau du club pour l'affichage (stockage en UTC avec décalage). */

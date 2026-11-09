@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Morceaux d'un document, mis en page par l'écran (courrier ou fiche). */

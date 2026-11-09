@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\ClubEvent;
 
 /** Message planifié (chaque nuit) : fin de la mesure d'audience des événements anciens. */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Gallery;
 
 /** Photo ou vidéo de galerie : préfixe des actions du journal et texte de la demande de retrait. */

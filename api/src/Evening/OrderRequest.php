@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Evening;
 
 /** Une ligne demandée par le bar : article, format, quantité, garnitures choisies. */

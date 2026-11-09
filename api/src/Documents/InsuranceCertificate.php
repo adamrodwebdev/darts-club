@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Attestation d'assurance responsabilité civile délivrée par l'assureur (PDF rangé hors de la racine web). */

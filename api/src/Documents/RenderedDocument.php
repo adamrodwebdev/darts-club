@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Document d'une démarche rendu pour une soirée, avec ce que le secrétariat y a changé. */

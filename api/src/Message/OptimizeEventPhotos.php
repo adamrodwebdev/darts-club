@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Message;
 
 /** Photos de galerie déjà en ligne (WebP) : le worker en ajoute les versions AVIF, plus légères. */

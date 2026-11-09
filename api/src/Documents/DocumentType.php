@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Démarches d'une soirée, préparées par le secrétariat (identifiants des adresses du site). */
