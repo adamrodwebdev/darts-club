@@ -143,4 +143,25 @@ describe('gallery models', () => {
 
     expect(calls.map((c) => `${c.method} ${c.path}`)).toEqual(['POST /api/event-photos/p1/removal-request', 'POST /api/event-videos/v1/restore'])
   })
+
+  it('files a photo in the press with its details, then gives it back to the gallery', async () => {
+    const press = { outlet: 'La Gazette de la Bresse', publishedOn: '2026-11-03', title: 'Halloween à Bellevesvre', credit: null }
+    const { api, calls } = scriptedApi([
+      {
+        json: {
+          id: 'p1', thumbUrl: '/api/event-photos/p1/thumb', largeUrl: '/api/event-photos/p1/large', width: 480, height: 320, caption: null,
+          uploader: 'Bob', uploadedAt: '2026-11-04T10:00:00+01:00', hidden: false, hiddenBy: null, mine: false, press,
+        },
+      },
+      { status: 204 },
+    ])
+    const events = new EventService(api)
+
+    const filed = await events.savePressClipping('p1', { outlet: 'La Gazette de la Bresse', publishedOn: '2026-11-03', title: 'Halloween à Bellevesvre', credit: '' })
+    await events.returnToGallery('p1')
+
+    expect(calls.map((c) => `${c.method} ${c.path}`)).toEqual(['PUT /api/event-photos/p1/press', 'DELETE /api/event-photos/p1/press'])
+    expect(JSON.parse(String(calls[0]?.body))).toEqual({ outlet: 'La Gazette de la Bresse', publishedOn: '2026-11-03', title: 'Halloween à Bellevesvre', credit: '' })
+    expect(filed.press?.publishedLabel).toBe('3 novembre 2026')
+  })
 })

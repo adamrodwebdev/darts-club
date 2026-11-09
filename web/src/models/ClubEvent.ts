@@ -2,6 +2,7 @@ import { CLUB_TIME_ZONE, formatDate } from '@/i18n/format'
 import { parseMember, type Member } from './Conversation'
 import { GalleryVideo, parseGalleryRights, type GalleryRights } from './Gallery'
 import { bool, InvalidResponseError, list, num, obj, optStr, str, type Json } from './guards'
+import { PressClipping, PressDetails } from './PressClipping'
 
 /** Affiche d'un événement (WebP) : version carte pour le calendrier, grande version pour la page */
 export interface EventPoster {
@@ -141,6 +142,28 @@ export interface EventPhoto {
   /** Masquée après une demande de retrait (visible de la présidence et de son auteur) */
   hidden: boolean
   hiddenBy: string | null
+  /** Classée « Dans la presse » par le bureau : ses détails ; null pour une photo de la galerie */
+  press: PressDetails | null
+}
+
+/** Photo telle que l'API la décrit (galerie, coupures de presse, réponse d'un envoi) */
+export function parseEventPhoto(value: unknown): EventPhoto {
+  const x = obj(value, 'photo')
+  return {
+    id: str(x.id),
+    thumbUrl: str(x.thumbUrl),
+    largeUrl: str(x.largeUrl),
+    width: num(x.width),
+    height: num(x.height),
+    caption: optStr(x.caption),
+    uploader: str(x.uploader),
+    uploadedAt: new Date(str(x.uploadedAt)),
+    mine: bool(x.mine),
+    hidden: x.hidden === true,
+    hiddenBy: optStr(x.hiddenBy),
+    // API plus ancienne, sans coupures de presse : une photo de la galerie
+    press: x.press === undefined || x.press === null ? null : PressDetails.parse(x.press),
+  }
 }
 
 export interface EventPost {
@@ -184,6 +207,8 @@ export interface EventDetail {
   report: string | null
   canManage: boolean
   photos: EventPhoto[]
+  /** « Dans la presse », au-dessus de la galerie : de la plus ancienne parution à la plus récente */
+  pressClippings: PressClipping[]
   videos: GalleryVideo[]
   gallery: GalleryRights
   /** Écrans de la soirée que la personne ouvre maintenant (son équipe le jour même, le bureau toujours) */
@@ -201,22 +226,9 @@ export function parseEventDetail(value: unknown): EventDetail {
     organizer: str(d.organizer),
     report: optStr(d.summary),
     canManage: bool(d.canManage),
-    photos: list(d.photos, (p) => {
-      const x = obj(p, 'photo')
-      return {
-        id: str(x.id),
-        thumbUrl: str(x.thumbUrl),
-        largeUrl: str(x.largeUrl),
-        width: num(x.width),
-        height: num(x.height),
-        caption: optStr(x.caption),
-        uploader: str(x.uploader),
-        uploadedAt: new Date(str(x.uploadedAt)),
-        mine: bool(x.mine),
-        hidden: x.hidden === true,
-        hiddenBy: optStr(x.hiddenBy),
-      }
-    }),
+    photos: list(d.photos, parseEventPhoto),
+    // API plus ancienne : pas de coupures de presse
+    pressClippings: d.pressClippings === undefined ? [] : list(d.pressClippings, (p) => PressClipping.from(parseEventPhoto(p))),
     // API plus ancienne : ni vidéos ni droits de publication
     videos: d.videos === undefined ? [] : list(d.videos, (v) => GalleryVideo.parse(v)),
     gallery: parseGalleryRights(d.gallery),

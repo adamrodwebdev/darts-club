@@ -154,6 +154,33 @@
         "unsupported": "Unsupported format: JPEG, PNG or WebP photos, MP4, MOV or WebM videos."
       }
     },
+    "press": {
+      "title": "In the press",
+      "ring": "Press clippings",
+      "status": "Clipping {index} of {total} · {outlet}",
+      "statusBare": "Clipping {index} of {total}",
+      "previous": "Previous clipping",
+      "next": "Next clipping",
+      "open": "Enlarge clipping {index} of {total}",
+      "position": "Clipping {index} / {total}",
+      "alt": "Press clipping from {outlet}: {title}",
+      "altTitle": "Press clipping: {title}",
+      "altOutlet": "Press clipping from {outlet}",
+      "altEvent": "Press clipping about “{event}”",
+      "file": "Mark as a press clipping",
+      "edit": "Edit the press clipping",
+      "fileTitle": "Press clipping",
+      "editTitle": "Edit the press clipping",
+      "formHint": "The photo moves from the gallery to “In the press”. Everything is optional: fill in what you know.",
+      "editHint": "“Back to the gallery” puts it back among the photos and clears these details.",
+      "outlet": "Newspaper",
+      "publishedOn": "Publication date",
+      "headline": "Article title",
+      "credit": "Credit",
+      "creditHint": "For example “Words and photo: Camille Martin”.",
+      "dateInvalid": "Pick a day on the calendar, or leave the field empty.",
+      "unmark": "Back to the gallery"
+    },
     "poster": {
       "label": "Poster (optional)",
       "hint": "JPEG, PNG or WebP, 10 MB at most. Shown to members in the calendar.",

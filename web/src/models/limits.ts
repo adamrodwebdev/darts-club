@@ -24,4 +24,10 @@ export const TEXT_LIMITS = {
   capacity: 4,
   /** PublicEventController::HONEYPOT_MAX : le champ piège des robots */
   honeypot: 500,
+  /** PressDetails::OUTLET_MAX : le journal d'une coupure de presse */
+  pressOutlet: 80,
+  /** PressDetails::TITLE_MAX : le titre de l'article */
+  pressTitle: 200,
+  /** PressDetails::CREDIT_MAX : « Texte et photo : … » */
+  pressCredit: 120,
 } as const

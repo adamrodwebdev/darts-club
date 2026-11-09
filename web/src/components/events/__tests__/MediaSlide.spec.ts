@@ -6,7 +6,7 @@ import MediaSlide from '../MediaSlide.vue'
 
 const photo: EventPhoto = {
   id: 'p1', thumbUrl: '/api/event-photos/p1/thumb', largeUrl: '/api/event-photos/p1/large', width: 480, height: 320, caption: null,
-  uploader: 'Bob', uploadedAt: new Date('2026-10-10T19:00:00Z'), mine: false, hidden: false, hiddenBy: null,
+  uploader: 'Bob', uploadedAt: new Date('2026-10-10T19:00:00Z'), mine: false, hidden: false, hiddenBy: null, press: null,
 }
 const clip = GalleryVideo.parse({
   id: 'v1', status: 'prete', fileName: 'IMG_2041.MOV', size: 12, received: 12, durationMs: 42_000, width: 720, height: 1280,

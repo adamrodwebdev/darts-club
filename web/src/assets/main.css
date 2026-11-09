@@ -76,6 +76,14 @@
   --media-link: #ff6b78;
   --media-danger: #ff8a8a;
   --media-glint: rgb(255 255 255 / 24%);
+  /* Coupures de presse (« Dans la presse ») : papier journal et encre, contrastes AA dans les deux thèmes */
+  --newsprint: #efe8da;
+  --newsprint-ink: #1b1815;
+  --newsprint-muted: #5b5248;
+  --newsprint-accent: #9e1b25;
+  --newsprint-photo: #d9cdb0;
+  --newsprint-edge: rgb(255 255 255 / 10%);
+  --newsprint-shadow: rgb(0 0 0 / 70%);
   color-scheme: dark;
   font-family: system-ui, sans-serif;
   line-height: 1.5;
@@ -106,6 +114,9 @@
   --token-blanc-ring: #8e8e99;
   --token-noir-ring: #15151a;
   --wire: linear-gradient(90deg, transparent, #9a9aa6 6%, #2c2c34 50%, #9a9aa6 94%, transparent);
+  --newsprint: #fbf7ee;
+  --newsprint-edge: rgb(0 0 0 / 12%);
+  --newsprint-shadow: rgb(0 0 0 / 28%);
   color-scheme: light;
 }
 

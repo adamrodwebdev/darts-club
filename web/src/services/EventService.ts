@@ -1,8 +1,9 @@
 import type { ApiClient } from '@/api/ApiClient'
-import { EventSummary, parseEventDetail, type Attendance, type EventDetail } from '@/models/ClubEvent'
+import { EventSummary, parseEventDetail, parseEventPhoto, type Attendance, type EventDetail, type EventPhoto } from '@/models/ClubEvent'
 import { parseEventAudience, type EventAudience } from '@/models/EventAudience'
 import type { MediaKind } from '@/models/Gallery'
 import { bool, list, obj, str } from '@/models/guards'
+import type { PressDraft } from '@/models/PressClipping'
 
 export interface EventDraft {
   title: string
@@ -135,6 +136,19 @@ export class EventService {
   /** La présidence remet en ligne une photo ou une vidéo masquée */
   async restoreMedia(media: MediaRef): Promise<void> {
     await this.api.post(`${mediaPath(media)}/restore`, {})
+  }
+
+  /**
+   * Classe une photo « Dans la presse », ou en corrige les détails (organisateurs) : elle quitte la
+   * galerie. Un champ vide n'est pas renseigné.
+   */
+  async savePressClipping(photoId: string, draft: PressDraft): Promise<EventPhoto> {
+    return parseEventPhoto(await this.api.put(`/api/event-photos/${encodeURIComponent(photoId)}/press`, { ...draft }))
+  }
+
+  /** La coupure de presse redevient une photo de la galerie ; ses détails sont effacés */
+  async returnToGallery(photoId: string): Promise<void> {
+    await this.api.delete(`/api/event-photos/${encodeURIComponent(photoId)}/press`)
   }
 
   async addPost(id: string, body: string): Promise<void> {

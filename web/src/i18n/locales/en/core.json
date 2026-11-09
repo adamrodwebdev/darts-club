@@ -388,7 +388,9 @@
       "photo": {
         "delete": "Photo removed (moderation)",
         "hide": "Photo hidden (removal request)",
-        "restore": "Photo put back online"
+        "restore": "Photo put back online",
+        "press": "Photo marked as a press clipping",
+        "unpress": "Press clipping moved back to the gallery"
       },
       "video": {
         "delete": "Video removed (moderation)",
