@@ -33,6 +33,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ClubEventController extends AbstractController
 {
     private const UUID = '[0-9a-f-]{36}';
+    /** Une date ISO 8601 avec millisecondes et décalage tient en 29 caractères */
+    private const DATE_TEXT_MAX = 40;
 
     public function __construct(
         private readonly ClubEvents $events,
@@ -106,8 +108,8 @@ final class ClubEventController extends AbstractController
     #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
     public function cancel(ClubEvent $event, Request $request, #[CurrentUser] User $organizer): Response
     {
-        $reason = $request->toArray()['reason'] ?? '';
-        DomainCall::run(fn () => $this->events->cancel($event, \is_string($reason) ? $reason : '', $organizer));
+        $reason = RequestFields::of($request)->line('reason', ClubEvent::CANCEL_REASON_MAX);
+        DomainCall::run(fn () => $this->events->cancel($event, $reason, $organizer));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -116,8 +118,8 @@ final class ClubEventController extends AbstractController
     #[IsGranted(ClubEventVoter::MANAGE, subject: 'event')]
     public function summary(ClubEvent $event, Request $request): Response
     {
-        $summary = $request->toArray()['summary'] ?? '';
-        DomainCall::run(fn () => $this->events->writeSummary($event, \is_string($summary) ? $summary : ''));
+        $summary = RequestFields::of($request)->lines('summary', ClubEvent::SUMMARY_MAX);
+        DomainCall::run(fn () => $this->events->writeSummary($event, $summary));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -155,10 +157,11 @@ final class ClubEventController extends AbstractController
     private static function details(Request $request): EventDetails
     {
         $data = $request->toArray();
-        $text = static fn (string $key): string => \is_string($data[$key] ?? null) ? $data[$key] : '';
-        $date = static function (string $key) use ($text): \DateTimeImmutable {
-            $value = \DateTimeImmutable::createFromFormat(\DATE_ATOM, $text($key))
-                ?: \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.vP', $text($key));
+        $fields = RequestFields::of($request);
+        $date = static function (string $key) use ($fields): \DateTimeImmutable {
+            $text = $fields->line($key, self::DATE_TEXT_MAX);
+            $value = \DateTimeImmutable::createFromFormat(\DATE_ATOM, $text)
+                ?: \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.vP', $text);
             if (false === $value) {
                 throw new InvalidValue('Date « %field% » invalide (format ISO 8601 attendu).', ['%field%' => $key]);
             }
@@ -166,16 +169,19 @@ final class ClubEventController extends AbstractController
             return $value;
         };
         $capacity = $data['capacity'] ?? null;
+        if (null !== $capacity && !\is_int($capacity)) {
+            throw new Unprocessable('La capacité doit être un nombre entier.');
+        }
 
         return new EventDetails(
-            title: $text('title'),
-            description: $text('description'),
-            location: $text('location'),
+            title: $fields->line('title', EventDetails::TITLE_MAX),
+            description: $fields->lines('description', EventDetails::DESCRIPTION_MAX),
+            location: $fields->line('location', EventDetails::LOCATION_MAX),
             startsAt: $date('startsAt'),
             endsAt: $date('endsAt'),
-            capacity: \is_int($capacity) ? $capacity : null,
+            capacity: $capacity,
             public: true === ($data['public'] ?? false),
-            city: $text('city'),
+            city: $fields->line('city', EventDetails::CITY_MAX),
         );
     }
 

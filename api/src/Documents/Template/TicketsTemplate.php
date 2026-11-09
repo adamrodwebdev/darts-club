@@ -60,8 +60,8 @@ final class TicketsTemplate implements DocumentTemplate
             event: $event->getTitle().' · '.FrenchDates::day($event->getStartsAt()),
             category: $values->text('category'),
             price: '' === $values->text('price') ? 'Gratuit' : $values->text('price'),
-            first: (int) $values->text('first'),
-            count: (int) $values->text('count'),
+            first: self::whole($values->text('first'), 1),
+            count: self::whole($values->text('count'), 100),
         );
 
         return new DocumentSheet([
@@ -70,5 +70,16 @@ final class TicketsTemplate implements DocumentTemplate
             LetterParts::note('mentions', 'Chaque billet et sa souche portent le nom de l’organisateur, un numéro d’une série continue, la catégorie et le prix payé (ou « gratuit »).'),
             LetterParts::note('stubs', 'Garder les souches jusqu’au 31 décembre de l’année suivante et noter, après la soirée, les numéros vendus et la recette par catégorie.'),
         ], tickets: $tickets);
+    }
+
+    /**
+     * Nombre écrit en chiffres seulement (« 1O0 » n'est pas cent) ; sinon la valeur pré-remplie,
+     * que l'aperçu montre aussitôt. TicketSeries le ramène ensuite dans ses bornes.
+     */
+    private static function whole(string $text, int $prefilled): int
+    {
+        $digits = trim($text);
+
+        return 1 === preg_match('/^\d{1,6}$/', $digits) ? (int) $digits : $prefilled;
     }
 }

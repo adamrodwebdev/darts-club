@@ -26,9 +26,11 @@ final class AccountsEntryInput
 
         #[Assert\NotBlank]
         #[Assert\Regex(self::MONEY, message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly string $planned = '',
 
         #[Assert\Regex(self::MONEY, message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly ?string $actual = null,
     ) {
     }

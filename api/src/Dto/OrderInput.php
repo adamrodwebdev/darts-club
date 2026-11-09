@@ -22,6 +22,7 @@ final class OrderInput
         public readonly string $id = '',
         #[Assert\Count(min: 1, max: NewOrder::LINES_MAX)]
         public readonly array $lines = [],
+        #[Assert\Length(max: NewOrder::NOTE_MAX)]
         public readonly ?string $note = null,
     ) {
     }

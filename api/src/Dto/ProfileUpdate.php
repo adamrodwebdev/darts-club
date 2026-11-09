@@ -16,6 +16,7 @@ final class ProfileUpdate
         public readonly ?string $displayName = null,
 
         #[PhoneNumber(defaultRegion: 'FR')]
+        #[Assert\Length(max: 30)]
         public readonly ?string $phone = null,
     ) {
     }

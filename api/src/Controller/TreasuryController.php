@@ -128,10 +128,10 @@ final class TreasuryController extends AbstractController
     #[Route('/payments/{id}/cancel', name: 'cancel_payment', requirements: ['id' => self::UUID], methods: ['POST'])]
     public function cancelPayment(Payment $payment, Request $request, #[CurrentUser] User $treasurer): JsonResponse
     {
-        $reason = $request->toArray()['reason'] ?? '';
+        $reason = RequestFields::of($request)->line('reason', Payment::CANCEL_REASON_MAX);
 
         try {
-            $this->treasury->cancelPayment($payment, \is_string($reason) ? $reason : '', $treasurer);
+            $this->treasury->cancelPayment($payment, $reason, $treasurer);
         } catch (\InvalidArgumentException|\LogicException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }

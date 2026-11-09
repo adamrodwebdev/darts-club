@@ -21,11 +21,14 @@ use App\Entity\User;
 use App\Enum\Role;
 use App\Membership\MemberBadges;
 use App\Membership\Season;
+use App\Notification\NotificationContent;
 use App\Profile\ProfileView;
 use App\Repository\AuditLogRepository;
 use App\Repository\BroadcastRepository;
 use App\Repository\MembershipRepository;
 use App\Repository\UserRepository;
+use App\Text\PlainText;
+use App\Translation\Unprocessable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Clock\ClockInterface;
@@ -44,6 +47,8 @@ final class AdminController extends AbstractController
 {
     private const UUID = '[0-9a-f-]{36}';
     private const ROLE_IDS = ['secretaire' => Role::Secretary, 'tresorier' => Role::Treasurer, 'president' => Role::President];
+    /** Une recherche d'adhérent, comme celle des archives (ArchiveSearch::QUERY_MAX) */
+    private const SEARCH_MAX = 80;
 
     public function __construct(
         private readonly EntityManagerInterface $em,
@@ -55,7 +60,10 @@ final class AdminController extends AbstractController
     #[Route('/members', name: 'members', methods: ['GET'])]
     public function members(UserRepository $users, MembershipRepository $memberships, MemberBadges $badges, ClockInterface $clock, #[MapQueryParameter] string $q = ''): JsonResponse
     {
-        $needle = mb_strtolower(trim($q));
+        $needle = mb_strtolower(PlainText::line($q));
+        if (mb_strlen($needle) > self::SEARCH_MAX) {
+            throw new Unprocessable('Le champ « %field% » dépasse %max% caractères.', parameters: ['%field%' => 'q', '%max%' => self::SEARCH_MAX]);
+        }
         $season = Season::containing($clock->now());
         $statusByUser = [];
         foreach ($memberships->forSeason($season) as $membership) {
@@ -143,8 +151,7 @@ final class AdminController extends AbstractController
     #[Route('/members/{id}/suspend', name: 'member_suspend', requirements: ['id' => self::UUID], methods: ['POST'])]
     public function suspend(User $member, Request $request, #[CurrentUser] User $actor, MemberAdministration $administration): Response
     {
-        $reason = $request->toArray()['reason'] ?? '';
-        $administration->suspend($actor, $member, \is_string($reason) ? $reason : '');
+        $administration->suspend($actor, $member, RequestFields::of($request)->line('reason', User::SUSPENSION_REASON_MAX));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
@@ -182,10 +189,11 @@ final class AdminController extends AbstractController
             $audience = BroadcastAudience::members(array_values(array_filter($data['userIds'], 'is_string')));
         }
 
+        $fields = RequestFields::of($request);
         $sent = $broadcast->send($president, new BroadcastDraft(
             label: $label,
-            title: \is_string($data['title'] ?? null) ? $data['title'] : '',
-            body: \is_string($data['body'] ?? null) ? $data['body'] : '',
+            title: $fields->line('title', NotificationContent::TITLE_MAX),
+            body: $fields->lines('body', NotificationContent::BODY_MAX),
         ), $audience);
 
         return $this->json($sent->toArray(), Response::HTTP_CREATED);
@@ -195,9 +203,10 @@ final class AdminController extends AbstractController
     public function publishAnnouncement(Request $request, #[CurrentUser] User $president): JsonResponse
     {
         $data = $request->toArray();
+        $fields = RequestFields::of($request);
 
         try {
-            $announcement = Announcement::publish($president, AnnouncementText::of(self::text($data, 'title'), self::text($data, 'body')), $this->clock->now());
+            $announcement = Announcement::publish($president, AnnouncementText::of($fields->line('title', AnnouncementText::TITLE_MAX), $fields->lines('body', AnnouncementText::BODY_MAX)), $this->clock->now());
             if (true === ($data['pinned'] ?? false)) {
                 $announcement->pin();
             }
@@ -216,13 +225,14 @@ final class AdminController extends AbstractController
     public function editAnnouncement(Announcement $announcement, Request $request, #[CurrentUser] User $president): JsonResponse
     {
         $data = $request->toArray();
+        $fields = RequestFields::of($request);
 
         try {
-            if (\array_key_exists('title', $data) || \array_key_exists('body', $data)) {
+            if ($fields->has('title') || $fields->has('body')) {
                 $announcement->edit(
                     AnnouncementText::of(
-                        \array_key_exists('title', $data) ? self::text($data, 'title') : $announcement->getTitle(),
-                        \array_key_exists('body', $data) ? self::text($data, 'body') : $announcement->getBody(),
+                        $fields->has('title') ? $fields->line('title', AnnouncementText::TITLE_MAX) : $announcement->getTitle(),
+                        $fields->has('body') ? $fields->lines('body', AnnouncementText::BODY_MAX) : $announcement->getBody(),
                     ),
                     $this->clock->now(),
                 );
@@ -254,11 +264,5 @@ final class AdminController extends AbstractController
     public function audit(AuditLogRepository $logs): JsonResponse
     {
         return $this->json(['items' => array_map(static fn (AuditLog $l): array => $l->toArray(), $logs->latest())]);
-    }
-
-    /** @param array<mixed> $data */
-    private static function text(array $data, string $key): string
-    {
-        return \is_string($data[$key] ?? null) ? $data[$key] : '';
     }
 }

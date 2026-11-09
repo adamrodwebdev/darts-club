@@ -8,6 +8,7 @@ use App\ClubEvent\EventPosts;
 use App\Entity\ClubEvent;
 use App\Entity\EventPost;
 use App\Entity\User;
+use App\Messaging\MessageBody;
 use App\Security\RequestThrottle;
 use App\Security\Voter\ClubEventVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,8 +37,7 @@ final class EventPostController extends AbstractController
     {
         $this->requestThrottle->consume($messagePostLimiter, $user->getId()->toRfc4122());
 
-        $body = $request->toArray()['body'] ?? '';
-        $post = $this->posts->add($event, $user, \is_string($body) ? $body : '');
+        $post = $this->posts->add($event, $user, RequestFields::of($request)->lines('body', MessageBody::MAX));
 
         return $this->json(['id' => $post->getId()->toRfc4122()], Response::HTTP_CREATED);
     }

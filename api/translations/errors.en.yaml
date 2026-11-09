@@ -154,3 +154,7 @@
 'Le repère fait %max% caractères au plus.': 'The marker is %max% characters at most.'
 'Identifiant de commande déjà utilisé.': 'Order identifier already used.'
 'La carte de cette soirée est vide.': 'This evening’s menu is empty.'
+'Le champ « %field% » doit être un texte.': 'The “%field%” field must be text.'
+'Le champ « %field% » dépasse %max% caractères.': 'The “%field%” field is longer than %max% characters.'
+'La capacité doit être un nombre entier.': 'The capacity must be a whole number.'
+'Un champ dépasse %max% caractères.': 'A field is longer than %max% characters.'

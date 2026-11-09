@@ -36,8 +36,10 @@ final class BarItemInput
         public readonly string $station = 'bar',
         #[Assert\Choice(callback: [self::class, 'units'])]
         public readonly string $unit = 'unite',
+        #[Assert\Count(max: ItemServing::GARNISHES_MAX)]
         public readonly array $garnishes = [],
         public readonly bool $alcoholic = false,
+        #[Assert\Length(max: ContainerSpec::NAME_MAX)]
         public readonly ?string $containerName = null,
         #[Assert\Range(min: 1, max: ContainerSpec::SIZE_MAX)]
         public readonly int $containerSize = 1,
@@ -49,6 +51,7 @@ final class BarItemInput
         public readonly int $returned = 0,
         #[Assert\NotBlank]
         #[Assert\Regex(self::MONEY, message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly string $purchasePrice = '',
         #[Assert\Count(min: 1, max: SaleFormats::MAX)]
         public readonly array $formats = [],

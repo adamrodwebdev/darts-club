@@ -34,6 +34,10 @@ class ClubEvent implements RecordsDomainEvents
 {
     use DomainEventsTrait;
 
+    /** Longueur du motif d'annulation, en caractères (celle de sa colonne) */
+    public const CANCEL_REASON_MAX = 200;
+    public const SUMMARY_MAX = 10000;
+
     private const WEEK = 'P7D';
     private const DAY = 'P1D';
     /** Mesure d'audience : jusqu'à 30 jours après la fin */
@@ -173,7 +177,7 @@ class ClubEvent implements RecordsDomainEvents
         }
 
         $this->status = EventStatus::Cancelled;
-        $this->cancelReason = mb_substr($reason, 0, 200);
+        $this->cancelReason = mb_substr($reason, 0, self::CANCEL_REASON_MAX);
         $this->recordThat(new ClubEventCancelled($this->id));
     }
 
@@ -294,7 +298,7 @@ class ClubEvent implements RecordsDomainEvents
     public function writeSummary(string $summary): void
     {
         $summary = trim(str_replace("\r\n", "\n", $summary));
-        if (mb_strlen($summary) > 10000) {
+        if (mb_strlen($summary) > self::SUMMARY_MAX) {
             throw new \InvalidArgumentException('Le résumé ne doit pas dépasser 10 000 caractères.');
         }
 

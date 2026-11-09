@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Dto;
 
 use App\Documents\AssociationDetails;
+use App\Text\Multiline;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** Fiche de l'association : champ vide = inconnu (il apparaîtra entre crochets dans les courriers). */
@@ -22,6 +23,7 @@ final class AssociationProfileInput
         public readonly ?string $siret = null,
 
         #[Assert\Length(max: AssociationDetails::ADDRESS_MAX)]
+        #[Multiline]
         public readonly ?string $seatAddress = null,
 
         #[Assert\Length(max: AssociationDetails::PERSON_MAX)]
