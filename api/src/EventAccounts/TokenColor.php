@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventAccounts;
 
 /** Couleur d'un jeton, reconnue d'un coup d'œil à l'accueil (les sachets n'en ont pas). */

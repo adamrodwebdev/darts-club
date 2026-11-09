@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Unit;
 
 use App\Enum\VideoFailure;
@@ -8,6 +10,7 @@ use App\Media\VideoContainer;
 use App\Media\VideoProbe;
 use App\Media\VideoRejected;
 use App\Media\VideoSource;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /** Règles de sûreté et de légèreté de la galerie, sans ffmpeg. */
@@ -90,5 +93,23 @@ final class GalleryMediaTest extends TestCase
         } catch (VideoRejected $e) {
             self::assertSame(VideoFailure::Unreadable, $e->failure);
         }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function forgedProbes(): iterable
+    {
+        yield 'une largeur écrite en texte' => ['{"streams":[{"width":"1920","height":1080}],"format":{"duration":"3"}}'];
+        yield 'une hauteur décimale' => ['{"streams":[{"width":1920,"height":1080.5}],"format":{"duration":"3"}}'];
+        yield 'une durée en exposant' => ['{"streams":[{"width":1920,"height":1080}],"format":{"duration":"1e3"}}'];
+        yield 'une durée qui n\'est pas un nombre' => ['{"streams":[{"width":1920,"height":1080}],"format":{"duration":"NaN"}}'];
+        yield 'une durée écrite en nombre' => ['{"streams":[{"width":1920,"height":1080}],"format":{"duration":3}}'];
+    }
+
+    #[DataProvider('forgedProbes')]
+    public function testTheProbeReadsOnlyTheTypesFfprobeWrites(string $json): void
+    {
+        $this->expectException(VideoRejected::class);
+
+        VideoProbe::fromJson($json);
     }
 }

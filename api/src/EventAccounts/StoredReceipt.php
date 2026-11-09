@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventAccounts;
 
 /** Fichier d'un justificatif rangé hors de la racine web : identifiant opaque et type servi. */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\ValueObject;
 
 use App\Translation\InvalidValue;
@@ -7,6 +9,9 @@ use App\Translation\InvalidValue;
 /** Adresse email normalisée (minuscules, sans espaces). */
 final readonly class EmailAddress implements \Stringable
 {
+    /** Longueur maximale d'une adresse, en caractères */
+    public const MAX = 180;
+
     /** @param non-empty-string $value */
     private function __construct(
         public string $value,
@@ -17,7 +22,7 @@ final readonly class EmailAddress implements \Stringable
     {
         $normalized = mb_strtolower(trim($email));
 
-        if ('' === $normalized || false === filter_var($normalized, \FILTER_VALIDATE_EMAIL) || mb_strlen($normalized) > 180) {
+        if ('' === $normalized || false === filter_var($normalized, \FILTER_VALIDATE_EMAIL) || mb_strlen($normalized) > self::MAX) {
             throw new InvalidValue('Adresse email invalide : « %email% ».', ['%email%' => $email]);
         }
 

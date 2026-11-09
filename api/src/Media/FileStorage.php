@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Fichiers privés (justificatifs) rangés hors de la racine web, sous un identifiant opaque. */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Functional;
 
 use App\ClubEvent\EventDetails;
@@ -189,6 +191,32 @@ final class EventDocumentsTest extends ApiTestCase
         self::assertResponseIsSuccessful();
         self::assertSame(['organizer' => 'Skull Darts 71', 'event' => 'Soirée fléchettes · samedi 14 novembre 2026', 'category' => 'Entrée', 'price' => 'Gratuit', 'first' => 101, 'count' => 500], $this->json()['tickets']);
         self::assertSame('n° 101 à 600 (500 billets) · Entrée · Gratuit', $this->blocks()['series']);
+    }
+
+    public function testTicketNumbersCountOnlyWhenWrittenInDigits(): void
+    {
+        $event = $this->evening('2026-11-14 20:00');
+        $this->board(['secretary@example.com' => Role::Secretary]);
+        $this->loginAs('secretary@example.com');
+
+        // « 1O0 » avec la lettre O n'est pas cent, « 12abc » pas douze : la série garde ses valeurs pré-remplies
+        $this->request('PUT', $this->proceduresUri($event).'/billets', ['values' => ['count' => '1O0', 'first' => '12abc', 'price' => '', 'category' => 'Entrée']]);
+        self::assertResponseIsSuccessful();
+        self::assertSame(['organizer' => 'Skull Darts 71', 'event' => 'Soirée fléchettes · samedi 14 novembre 2026', 'category' => 'Entrée', 'price' => 'Gratuit', 'first' => 1, 'count' => 100], $this->json()['tickets']);
+    }
+
+    public function testADocumentValueLongerThanItsLimitIsRefusedNotCut(): void
+    {
+        $event = $this->evening('2026-11-14 20:00');
+        $this->board(['secretary@example.com' => Role::Secretary]);
+        $this->loginAs('secretary@example.com');
+
+        $this->request('PUT', $this->proceduresUri($event).'/billets', ['values' => ['category' => str_repeat('é', 2001)]]);
+        self::assertResponseStatusCodeSame(422);
+
+        $this->request('PUT', $this->proceduresUri($event).'/billets', ['values' => ['category' => "Entrée\u{202E} adulte\u{0000}"]]);
+        self::assertResponseIsSuccessful();
+        self::assertSame('Entrée adulte', $this->dig($this->json(), 'tickets', 'category'));
     }
 
     public function testTheTreasurerReadsThePresidencyEditsAndMembersSeeNothing(): void

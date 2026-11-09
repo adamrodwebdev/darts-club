@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Documents;
 
 /** Formulaire ou service officiel lié à une démarche (Cerfa, SACEM…). */

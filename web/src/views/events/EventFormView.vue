@@ -7,7 +7,12 @@ import BaseField from '@/components/BaseField.vue'
 import PosterField from '@/components/events/PosterField.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { localInputToIso, toLocalInput, type EventPoster } from '@/models/ClubEvent'
+import { orElse, parseNumber } from '@/models/input'
+import { TEXT_LIMITS } from '@/models/limits'
 import { useServices } from '@/services'
+
+/** De 1 à 1000 places, écrites en chiffres : « 12.5 » ou « 1e3 » ne deviennent pas 12 ou 1 */
+const CAPACITY = { min: 1, max: 1000, integer: true } as const
 
 const services = useServices()
 
@@ -22,6 +27,7 @@ const location = ref('')
 const startsAt = ref('')
 const endsAt = ref('')
 const capacity = ref('')
+const capacityError = ref<string>()
 const isPublic = ref(false)
 const city = ref('')
 /** Affiche déjà en ligne, nouveau fichier choisi, ou retrait demandé */
@@ -50,13 +56,16 @@ onMounted(async () => {
 })
 
 async function submit(): Promise<void> {
+  const places = capacity.value.trim() === '' ? null : orElse(() => parseNumber(capacity.value, CAPACITY, 'capacity'), undefined)
+  capacityError.value = places === undefined ? t('events.form.capacityInvalid') : undefined
+  if (places === undefined) return
   const draft = {
     title: title.value,
     description: description.value,
     location: location.value,
     startsAt: startsAt.value ? localInputToIso(startsAt.value) : '',
     endsAt: endsAt.value ? localInputToIso(endsAt.value) : '',
-    capacity: capacity.value ? Number.parseInt(capacity.value, 10) : null,
+    capacity: places,
     public: isPublic.value,
     city: city.value,
   }
@@ -88,7 +97,13 @@ async function submit(): Promise<void> {
         <BaseField v-model="startsAt" :label="t('events.form.startsAt')" type="datetime-local" required />
         <BaseField v-model="endsAt" :label="t('events.form.endsAt')" type="datetime-local" required />
       </div>
-      <BaseField v-model="capacity" :label="t('events.form.capacity')" type="number" />
+      <BaseField
+        v-model="capacity"
+        :label="t('events.form.capacity')"
+        inputmode="numeric"
+        :maxlength="TEXT_LIMITS.capacity"
+        :error="capacityError"
+      />
       <BaseField v-model="description" :label="t('events.form.description')" multiline :maxlength="5000" />
       <PosterField v-model:file="posterFile" v-model:remove="removePoster" :current="currentPoster" />
       <fieldset class="public">

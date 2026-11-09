@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\ClubEvent\GuestRequest;
@@ -34,6 +36,11 @@ use Symfony\Component\Uid\Uuid;
  */
 final class PublicEventController extends AbstractController
 {
+    /** Champ piège pour les robots : au-delà, la requête est refusée comme toute autre */
+    private const HONEYPOT_MAX = 500;
+    /** Jeton de réponse d'un invité, bien au-delà de sa longueur réelle */
+    private const TOKEN_MAX = 128;
+
     private const SLUG = '[a-z0-9-]{3,140}';
 
     public function __construct(
@@ -108,10 +115,11 @@ final class PublicEventController extends AbstractController
     ): JsonResponse {
         $event = $this->publicEvent($slug);
         $data = $request->toArray();
+        $fields = RequestFields::of($request);
         $accepted = $this->json(['status' => 'pending'], Response::HTTP_ACCEPTED);
 
         // Champ invisible rempli : robot, réponse identique mais rien n'est fait
-        if ('' !== self::text($data, 'website')) {
+        if ('' !== $fields->line('website', self::HONEYPOT_MAX)) {
             return $accepted;
         }
         if (true !== ($data['consent'] ?? null)) {
@@ -119,11 +127,11 @@ final class PublicEventController extends AbstractController
         }
 
         $this->requestThrottle->consume($guestResponseIpLimiter, 'ip-'.ClientNetwork::of($request));
-        $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower(trim(self::text($data, 'email'))));
+        $this->requestThrottle->consume($guestResponseEmailLimiter, 'email-'.mb_strtolower($fields->line('email', EmailAddress::MAX)));
 
         DomainCall::run(fn () => $this->guests->request($event, new GuestRequest(
-            name: DisplayName::fromString(self::text($data, 'name')),
-            email: EmailAddress::fromString(self::text($data, 'email')),
+            name: DisplayName::fromString($fields->line('name', DisplayName::MAX)),
+            email: EmailAddress::fromString($fields->line('email', EmailAddress::MAX)),
             answer: ClubEventController::attendance($data['answer'] ?? null),
             language: Language::fromLocale($request->getLocale()),
         )));
@@ -182,7 +190,7 @@ final class PublicEventController extends AbstractController
     private function response(Request $request, RateLimiterFactoryInterface $limiter): GuestResponse
     {
         $this->requestThrottle->consume($limiter, 'ip-'.ClientNetwork::of($request));
-        $response = $this->guests->find(self::text($request->toArray(), 'token'));
+        $response = $this->guests->find(RequestFields::of($request)->secret('token', self::TOKEN_MAX));
         if (null === $response || !$response->getEvent()->isPublic()) {
             throw new NotFoundHttpException();
         }
@@ -227,11 +235,5 @@ final class PublicEventController extends AbstractController
             'expired' => $response->isConfirmationExpired($this->clock->now()),
             'event' => $this->view($event) + ['location' => $response->isConfirmed() ? $event->getLocation() : null],
         ];
-    }
-
-    /** @param array<mixed> $data */
-    private static function text(array $data, string $key): string
-    {
-        return \is_string($data[$key] ?? null) ? $data[$key] : '';
     }
 }

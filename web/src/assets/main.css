@@ -121,6 +121,59 @@
 html {
   scrollbar-gutter: stable;
   scroll-padding-block-start: 4.5rem;
+  /* Le curseur dit ce qui se clique (règle du 2026-11-09) : la flèche sur tout le contenu
+     (jamais la barre de texte ni la main), la main sur les seuls éléments cliquables */
+  cursor: default;
+}
+
+a[href],
+area[href],
+button:not(:disabled),
+select:not(:disabled),
+summary,
+label[for],
+[role='button'],
+[role='link'],
+[role='tab'],
+[role='menuitem'],
+[role='option'],
+[role='switch'],
+input:is(
+    [type='checkbox'],
+    [type='radio'],
+    [type='submit'],
+    [type='button'],
+    [type='reset'],
+    [type='file'],
+    [type='color'],
+    [type='range']
+  ):not(:disabled) {
+  cursor: pointer;
+}
+
+/* Règle à part : un navigateur sans :has() n'abandonne qu'elle, pas la liste ci-dessus */
+label:has(> input:not(:disabled)) {
+  cursor: pointer;
+}
+
+input:is(
+    :not([type]),
+    [type='text'],
+    [type='email'],
+    [type='search'],
+    [type='password'],
+    [type='number'],
+    [type='tel'],
+    [type='url']
+  ):not(:disabled),
+textarea:not(:disabled),
+[contenteditable='true'] {
+  cursor: text;
+}
+
+:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
 }
 
 *,

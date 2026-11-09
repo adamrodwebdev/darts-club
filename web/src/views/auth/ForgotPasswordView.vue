@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -33,7 +34,7 @@ async function submit(): Promise<void> {
 
     <form v-else class="stack" novalidate @submit.prevent="submit">
       <p>{{ t('auth.forgot.intro') }}</p>
-      <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" required :error="fieldErrors.email" />
+      <BaseField :maxlength="TEXT_LIMITS.email" v-model="email" :label="t('common.email')" type="email" autocomplete="email" required :error="fieldErrors.email" />
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
       <BaseButton type="submit" :pending="pending">{{ t('auth.forgot.submit') }}</BaseButton>
     </form>

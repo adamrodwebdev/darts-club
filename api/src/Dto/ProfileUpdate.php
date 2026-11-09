@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
 use App\ValueObject\DisplayName;
@@ -14,6 +16,7 @@ final class ProfileUpdate
         public readonly ?string $displayName = null,
 
         #[PhoneNumber(defaultRegion: 'FR')]
+        #[Assert\Length(max: 30)]
         public readonly ?string $phone = null,
     ) {
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Vidéo d'essai de app:media:check : un format de téléphone, et ce que la galerie doit en faire. */

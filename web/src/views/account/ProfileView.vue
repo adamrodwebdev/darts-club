@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -80,7 +81,7 @@ async function removeAvatar(): Promise<void> {
           :error="form.fieldErrors.value.displayName"
           :hint="t('account.profile.displayNameHint')"
         />
-        <BaseField
+        <BaseField :maxlength="TEXT_LIMITS.phone"
           v-model="phone"
           :label="t('account.profile.phone')"
           type="tel"

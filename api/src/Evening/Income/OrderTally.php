@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Evening\Income;
 
 use App\Entity\EveningOrder;

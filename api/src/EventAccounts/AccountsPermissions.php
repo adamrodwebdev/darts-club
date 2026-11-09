@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventAccounts;
 
 /** Ce que la personne connectée peut faire du bilan (affichage des boutons ; l'API reste juge) */

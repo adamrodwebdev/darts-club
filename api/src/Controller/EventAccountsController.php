@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Dto\AccountsEntryInput;
@@ -250,10 +252,11 @@ final class EventAccountsController extends AbstractController
         if (!$file instanceof UploadedFile) {
             throw new AccountsException('Justificatif : une photo (JPEG, PNG ou WebP) ou un PDF.');
         }
-        $amount = trim($request->request->getString('amount'));
+        $fields = RequestFields::ofForm($request);
+        $amount = $fields->line('amount', Money::DECIMAL_TEXT_MAX);
 
         return new ReceiptUpload($file, new ReceiptDetails(
-            $request->request->getString('label'),
+            $fields->line('label', ReceiptDetails::LABEL_MAX),
             '' === $amount ? null : Money::fromDecimal($amount),
             $request->request->getBoolean('credit'),
         ));

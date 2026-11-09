@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -161,8 +162,8 @@ async function resendLink(): Promise<void> {
     </form>
 
     <form v-else class="stack" novalidate @submit.prevent="submit">
-      <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" required />
-      <BaseField v-model="password" :label="t('common.password')" type="password" autocomplete="current-password" required />
+      <BaseField :maxlength="TEXT_LIMITS.email" v-model="email" :label="t('common.email')" type="email" autocomplete="email" required />
+      <BaseField :maxlength="TEXT_LIMITS.password" v-model="password" :label="t('common.password')" type="password" autocomplete="current-password" required />
       <RouterLink class="forgot" to="/mot-de-passe-oublie">{{ t('auth.login.forgot') }}</RouterLink>
 
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>

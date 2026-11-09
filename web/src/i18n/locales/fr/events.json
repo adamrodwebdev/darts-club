@@ -60,6 +60,7 @@
       "startsAt": "Début",
       "endsAt": "Fin",
       "capacity": "Nombre de places (vide = illimité)",
+      "capacityInvalid": "Indique un nombre de places de 1 à 1000, en chiffres.",
       "description": "Présentation",
       "publish": "Publier l’événement",
       "locationHint": "Adresse complète : visible des adhérents, et des invités une fois leur réponse confirmée.",

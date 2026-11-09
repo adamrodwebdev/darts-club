@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -33,7 +34,7 @@ async function submit(): Promise<void> {
     <h1>{{ t('auth.reset.title') }}</h1>
 
     <form class="stack" novalidate @submit.prevent="submit">
-      <BaseField
+      <BaseField :maxlength="TEXT_LIMITS.password"
         v-model="password"
         :label="t('auth.reset.password')"
         type="password"

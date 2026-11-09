@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -46,8 +47,8 @@ async function submit(): Promise<void> {
 
     <template v-else>
       <form class="stack" novalidate @submit.prevent="submit">
-        <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" required :error="fieldErrors.email" />
-        <BaseField
+        <BaseField :maxlength="TEXT_LIMITS.email" v-model="email" :label="t('common.email')" type="email" autocomplete="email" required :error="fieldErrors.email" />
+        <BaseField :maxlength="TEXT_LIMITS.phone"
           v-model="phone"
           :label="t('auth.register.phone')"
           type="tel"
@@ -56,7 +57,7 @@ async function submit(): Promise<void> {
           :error="fieldErrors.phone"
         />
         <template v-if="stages >= 1">
-          <BaseField
+          <BaseField :maxlength="TEXT_LIMITS.password"
             v-model="password"
             :label="t('common.password')"
             type="password"

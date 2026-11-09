@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 /** Rôles de l'association ; la hiérarchie est définie dans security.yaml. */
