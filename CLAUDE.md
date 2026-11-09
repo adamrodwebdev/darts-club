@@ -20,6 +20,12 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - **Événements de domaine** pour les effets de bord (emails, push, journal) : le code métier publie, des listeners/handlers Messenger réagissent.
 - Autorisations dans des **Voters**, jamais en `if` dans les contrôleurs.
 - Organisation par domaine quand un domaine grossit : `src/Membership/`, `src/Event/`, `src/Messaging/`…
+- **La donnée est vérifiée à la porte** (règle du 2026-11-09, socle de sécurité ; détails dans la compétence `senior-web-developer`, `references/typed-input.md`) :
+  - `declare(strict_types=1)` dans chaque fichier (règle `declare_strict_types` de PHP-CS-Fixer) : un paramètre `int` ne reçoit qu'un entier.
+  - Un corps de requête remplit un DTO (`#[MapRequestPayload]`). Chaque texte y est nettoyé avant le DTO par `CleanTextDenormalizer` (contrôles, inversions bidirectionnelles et espaces invisibles retirés, NFC) : `#[Multiline]` garde les retours à la ligne, `#[Secret]` laisse un mot de passe intact.
+  - Chaque texte d'un DTO porte `Assert\Length(max: …)`, chaque liste `Assert\Count(max: …)` : `PayloadLimitsTest` échoue sinon.
+  - Un corps lu sans DTO passe par `RequestFields` (`line`, `lines`, `secret`, toujours avec un maximum, constante du domaine) : un texte trop long est refusé, jamais coupé.
+  - Un nombre est un entier JSON. Un montant est un texte strict converti par `Money::fromDecimal`. Jamais de `(int)`, `intval()` ni `is_numeric()` sur une saisie, ni de `float` venu d'un formulaire ou d'une requête (`Assert\Range` laisse passer NaN).
 
 ### Front (TypeScript / Vue)
 - **Couche services en classes** : un client HTTP (`ApiClient`) injecté dans des services par domaine (`AuthService`, `EventService`…) ; les composants n'appellent jamais `fetch` directement.
@@ -30,6 +36,12 @@ Nom officiel de l’association : **Skull Darts 71** (logo : `web/public/logo.sv
 - Logique réutilisable dans des **composables** ; état partagé dans des **stores Pinia** ; composants centrés sur l'affichage.
 - `strict` TypeScript, pas de `any`.
 - **Aucun texte en dur** : toute chaîne visible passe par `vue-i18n` (`src/i18n/locales/fr.json` + `en.json`, mêmes clés) ; dates, nombres et montants via `Intl` dans la langue courante. Couleurs uniquement via les jetons CSS (thèmes clair et sombre).
+- **La donnée est vérifiée à la porte** (règle du 2026-11-09) :
+  - les réponses de l'API par `models/guards.ts` ;
+  - le stockage, l'URL, les messages et les nombres saisis par `models/input.ts` (`parseNumber`, `readText`, `InputRecord`, `orElse`), copie de `.helpers/input-validation` ;
+  - jamais `parseInt`, `parseFloat`, `Number(x)` ni `v-model.number` sur une saisie, ni `<input type="number">` (Vue le convertit seul) : un champ texte `inputmode="numeric"` lu par `parseNumber` ;
+  - chaque champ texte porte `:maxlength="TEXT_LIMITS.…"` (`models/limits.ts`, mêmes valeurs que l'API). L'API reste la vérification qui protège.
+- **Le curseur dit ce qui se clique** (règle du 2026-11-09) : la flèche sur le contenu (titres, paragraphes, listes, images), la main seulement sur les liens, boutons et contrôles, la barre de texte dans les champs. C'est posé une fois dans `main.css` et vérifié par `e2e/landing.spec.ts`.
 
 ## Responsive design (obligatoire)
 - **Mobile-first** : styles de base pour ~360 px, puis des paliers `width >=` en `rem` (`40 / 48 / 64 / 80rem` = 640 / 768 / 1024 / 1280 px à 16 px), en syntaxe d'intervalle (`@media (width >= 48rem)`), placés là où le contenu casse. Jamais de requête en px : les paliers suivent la taille de texte de l'utilisateur.
