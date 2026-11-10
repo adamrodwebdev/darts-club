@@ -73,16 +73,18 @@ final class ClubEventView
      */
     public function detail(ClubEvent $event, User $viewer, bool $canManage): array
     {
+        // Masquées (demande de retrait) ou en cours de conversion : seulement pour la présidence et l'auteur
+        $photos = PressReview::of(array_values(array_filter($this->photos->forEvent($event), $this->viewable(...))));
+        $photo = static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)];
+
         return $this->summary($event, $viewer) + [
             'description' => $event->getDescription(),
             'organizer' => $event->getOrganizerName(),
             'summary' => $event->getSummary(),
             'canManage' => $canManage,
-            // Masquées (demande de retrait) ou en cours de conversion : seulement pour la présidence et l'auteur
-            'photos' => array_map(
-                static fn (EventPhoto $p): array => $p->toArray() + ['mine' => $p->isUploadedBy($viewer)],
-                array_values(array_filter($this->photos->forEvent($event), $this->viewable(...))),
-            ),
+            // Une coupure de presse est montrée dans « Dans la presse », au-dessus de la galerie, jamais deux fois
+            'photos' => array_map($photo, $photos->gallery),
+            'pressClippings' => array_map($photo, $photos->clippings),
             'videos' => array_map(
                 static fn (EventVideo $v): array => $v->toArray() + ['mine' => $v->isUploadedBy($viewer)],
                 array_values(array_filter($this->videos->forEvent($event), $this->viewable(...))),

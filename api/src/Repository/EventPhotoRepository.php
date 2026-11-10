@@ -19,10 +19,15 @@ class EventPhotoRepository extends ServiceEntityRepository
         parent::__construct($registry, EventPhoto::class);
     }
 
-    /** @return list<EventPhoto> */
+    /**
+     * Dans l'ordre d'arrivée. Les photos d'un même envoi ont la même heure : l'identifiant (UUID v7,
+     * croissant) les départage, toujours dans le même ordre.
+     *
+     * @return list<EventPhoto>
+     */
     public function forEvent(ClubEvent $event): array
     {
-        return $this->findBy(['event' => $event], ['uploadedAt' => 'ASC']);
+        return $this->findBy(['event' => $event], ['uploadedAt' => 'ASC', 'id' => 'ASC']);
     }
 
     public function countForEvent(ClubEvent $event): int
