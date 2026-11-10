@@ -305,6 +305,16 @@ jobs:
           node web/lighthouse/summary.mjs
           node web/lighthouse/calibrate.mjs >> "$GITHUB_ENV"
           rm -rf .lighthouseci
+      # Le premier passage de chaque page restait le plus lent, même après le préchauffage de l'accueil :
+      # 7 des 8 échecs du 4 au 6 novembre 2026 tombaient sur le premier des trois passages de /connexion
+      # (190 à 460 ms de blocage, puis 0 à 30 ms aux deux suivants), sur les trois types de machine. Chaque
+      # passage part d'un Chrome au profil vide : seuls la machine et les serveurs de la mesure ont déjà vu
+      # la page. Un passage non compté sur chaque page de lighthouserc.json, au ralentissement calé.
+      - name: Préchauffage de chaque page (non compté)
+        run: |
+          npx --yes @lhci/cli@0.15.x collect --numberOfRuns=1 --settings.throttling.cpuSlowdownMultiplier="$LIGHTHOUSE_CPU_SLOWDOWN"
+          node web/lighthouse/summary.mjs
+          rm -rf .lighthouseci
       # Le même téléphone simulé quelle que soit la machine tirée, jamais plus lent que la cible
       - run: npx --yes @lhci/cli@0.15.x autorun --collect.settings.throttling.cpuSlowdownMultiplier="$LIGHTHOUSE_CPU_SLOWDOWN"
       - name: Résumé de chaque passage

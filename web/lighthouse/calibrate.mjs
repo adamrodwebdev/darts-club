@@ -5,6 +5,7 @@
 // cpuSlowdown.ts). Lit les passages de préchauffage et écrit LIGHTHOUSE_CPU_SLOWDOWN=… (pour $GITHUB_ENV) ;
 // le détail des deux horloges va dans le journal, pour affiner leurs références.
 import { closeSync, existsSync, fstatSync, openSync, readdirSync, readSync } from 'node:fs'
+import { cpus } from 'node:os'
 import { join } from 'node:path'
 import { calibrate, MIN_SLOWDOWN, PROBE_REFERENCE_MS, WarmupPass } from './cpuSlowdown.ts'
 
@@ -41,6 +42,9 @@ const passes = (existsSync(DIR) ? readdirSync(DIR) : [])
 const { javascript, browser, slowdown, matchingProbeReference } = calibrate(passes)
 
 const times = (value) => `${value.toFixed(2)}×`
+// Le modèle de processeur dit quel type de machine a été tiré : les échecs ne s'y répartissent pas également
+const processors = cpus()
+const machine = processors.length ? `${processors[0].model.trim()}, ${processors.length} cœurs` : 'processeur inconnu'
 const ms = (value) => `${value.toFixed(1)} ms`
 
 console.error(
@@ -64,5 +68,5 @@ const reason =
       : known.length === 2
         ? 'le plus doux des deux'
         : 'la seule horloge connue'
-console.error(`Ralentissement : ${times(slowdown)} (${reason})`)
+console.error(`Ralentissement : ${times(slowdown)} (${reason}) — ${machine}`)
 console.log(`LIGHTHOUSE_CPU_SLOWDOWN=${slowdown.toFixed(2)}`)
