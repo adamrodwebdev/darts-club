@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security\Crypto;
 
 use App\Security\TokenGenerator;

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { useI18n } from 'vue-i18n'
 import { formatEuro, formatInputNumber } from '@/i18n/format'
 import TokenSwatch from '@/components/evening/TokenSwatch.vue'
@@ -70,7 +71,7 @@ function changeFloat(event: Event): void {
       <template v-if="accounts.menuEditable">
         <label for="cash-float" class="float__label">{{ t('events.accounts.cash.float') }}</label>
         <span class="float__control">
-          <input
+          <input :maxlength="TEXT_LIMITS.amount"
             id="cash-float"
             :value="formatInputNumber(Number(accounts.cash.cashFloat), 2)"
             inputmode="decimal"

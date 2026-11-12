@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
 use App\Messaging\Mailbox;
 use App\Messaging\MessageBody;
+use App\Text\Multiline;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -22,6 +25,7 @@ final class NewConversation
 
         #[Assert\NotBlank]
         #[Assert\Length(max: MessageBody::MAX)]
+        #[Multiline]
         public readonly string $body = '',
     ) {
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Image d'aperçu d'une vidéo : WebP pour tous, AVIF plus légère pour les navigateurs qui la lisent. */

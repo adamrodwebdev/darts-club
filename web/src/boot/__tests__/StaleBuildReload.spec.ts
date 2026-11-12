@@ -122,6 +122,16 @@ describe('SessionReloadMemory', () => {
     expect(memory.lastReload()).toBeNull()
   })
 
+  // Number() aurait lu « » comme 0 et « 0x10 » comme 16 : seul un entier écrit en chiffres compte
+  it.each(['', ' ', '0x10', '1e3', '-5', '12.5', 'Infinity', '1793786400000abc'])(
+    'reads the stored text %j as no reload at all',
+    (stored) => {
+      const memory = new SessionReloadMemory(() => ({ getItem: () => stored, setItem: () => undefined }))
+
+      expect(memory.lastReload()).toBeNull()
+    },
+  )
+
   it('has no memory when the browser blocks storage', () => {
     const memory = new SessionReloadMemory(() => {
       throw new DOMException('Stockage refusé', 'SecurityError')

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -141,7 +142,7 @@ async function reactivate(member: AdminMember): Promise<void> {
 
 <template>
   <div class="stack">
-    <BaseField v-model="search" :label="t('admin.members.search')" />
+    <BaseField :maxlength="TEXT_LIMITS.search" v-model="search" :label="t('admin.members.search')" />
     <p v-if="info" class="notice notice--success" role="status">{{ info }}</p>
     <p v-if="action.error.value && !editing && !suspending && !resetting && !linking" class="notice notice--error" role="alert">{{ action.error.value }}</p>
     <p v-if="load.error.value" class="notice notice--error" role="alert">{{ load.error.value }}</p>

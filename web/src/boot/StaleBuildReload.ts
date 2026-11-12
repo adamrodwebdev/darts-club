@@ -1,4 +1,8 @@
+import { orElse, parseNumber } from '@/models/input'
 import type { Clock } from '@/time/Clock'
+
+/** Instant du dernier rechargement, en millisecondes depuis 1970 : un entier positif, rien d'autre */
+const RELOAD_TIME = { min: 0, max: Number.MAX_SAFE_INTEGER, integer: true } as const
 
 /**
  * Un rechargement automatique au plus par minute et par onglet : un fichier vraiment absent
@@ -82,9 +86,8 @@ export class SessionReloadMemory implements ReloadMemory {
   lastReload(): number | null {
     try {
       const stored = this.storage().getItem(RELOAD_MEMORY_KEY)
-      if (stored === null) return null
-      const at = Number(stored)
-      return Number.isFinite(at) ? at : null
+      // Lu en entier : « 0x10 » ou « » ne deviennent pas des dates (Number() le ferait)
+      return orElse(() => parseNumber(stored, RELOAD_TIME, RELOAD_MEMORY_KEY), null)
     } catch {
       return null
     }

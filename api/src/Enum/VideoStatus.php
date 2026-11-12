@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 /** Étapes d'une vidéo de galerie : envoi par morceaux, conversion par le worker, puis lecture. */

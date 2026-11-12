@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
 use App\EventAccounts\EntryAmounts;
@@ -24,9 +26,11 @@ final class AccountsEntryInput
 
         #[Assert\NotBlank]
         #[Assert\Regex(self::MONEY, message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly string $planned = '',
 
         #[Assert\Regex(self::MONEY, message: 'Montant invalide.')]
+        #[Assert\Length(max: Money::DECIMAL_TEXT_MAX)]
         public readonly ?string $actual = null,
     ) {
     }

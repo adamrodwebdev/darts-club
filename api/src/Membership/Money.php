@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Membership;
 
 use App\Translation\InvalidValue;
@@ -26,6 +28,9 @@ final readonly class Money implements \Stringable
     }
 
     /** « 30 », « 30.5 », « 30,50 » → 3050 centimes */
+    /** « 999 999,99 » : le plus long montant écrit que fromDecimal() accepte, espaces compris */
+    public const DECIMAL_TEXT_MAX = 12;
+
     public static function fromDecimal(string $amount): self
     {
         $normalized = str_replace([' ', ','], ['', '.'], trim($amount));

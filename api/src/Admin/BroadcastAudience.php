@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Admin;
 
 /** Destinataires d'un message du président : tous les adhérents, ou une liste choisie */

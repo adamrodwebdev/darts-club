@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\ClubEvent;
 
 /** Photo de galerie enregistrée : ses deux fichiers (grand format, vignette) et ses dimensions. */

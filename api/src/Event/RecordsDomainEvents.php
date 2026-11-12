@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Event;
 
 /** Entité qui enregistre des événements de domaine, publiés après le flush. */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Security;
 
 /** Identité renvoyée par un fournisseur OAuth : compte chez lui, email s'il le communique et s'il l'a vérifié */

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Messaging;
 
 /** Boîte du bureau visée et sujet facultatif d'un nouveau fil */

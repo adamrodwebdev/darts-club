@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -104,7 +105,7 @@ async function submit(): Promise<void> {
         <BaseField v-model="email" :label="t('common.email')" type="email" autocomplete="email" :hint="t('publicEvent.emailHint')" required :maxlength="180" />
         <!-- Piège à robots : invisible et ignoré des lecteurs d'écran -->
         <div class="trap" aria-hidden="true">
-          <label>{{ t('publicEvent.trap') }} <input v-model="website" type="text" name="website" tabindex="-1" autocomplete="off"></label>
+          <label>{{ t('publicEvent.trap') }} <input :maxlength="TEXT_LIMITS.honeypot" v-model="website" type="text" name="website" tabindex="-1" autocomplete="off"></label>
         </div>
         <label class="consent">
           <input v-model="consent" type="checkbox" required>

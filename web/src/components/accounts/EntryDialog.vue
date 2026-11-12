@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { TEXT_LIMITS } from '@/models/limits'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '@/components/BaseButton.vue'
@@ -40,8 +41,8 @@ function save(): void {
     <form class="stack" novalidate @submit.prevent="save">
       <BaseField v-model="label" :label="t('events.accounts.fields.label')" required :maxlength="80" :error="fieldErrors.label" />
       <div class="grid">
-        <BaseField v-model="planned" :label="t('events.accounts.fields.entryPlanned')" required :error="fieldErrors.planned" />
-        <BaseField v-model="actual" :label="t('events.accounts.fields.entryActual')" :hint="t('events.accounts.fields.entryActualHint')" :error="fieldErrors.actual" />
+        <BaseField :maxlength="TEXT_LIMITS.amount" v-model="planned" :label="t('events.accounts.fields.entryPlanned')" required :error="fieldErrors.planned" />
+        <BaseField :maxlength="TEXT_LIMITS.amount" v-model="actual" :label="t('events.accounts.fields.entryActual')" :hint="t('events.accounts.fields.entryActualHint')" :error="fieldErrors.actual" />
       </div>
       <p v-if="error" class="notice notice--error" role="alert">{{ error }}</p>
       <div class="buttons">

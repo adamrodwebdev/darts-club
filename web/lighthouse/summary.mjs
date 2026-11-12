@@ -1,8 +1,9 @@
 // Résumé de chaque passage Lighthouse (lhr-*.json) dans le journal de la CI : tous les passages,
 // pas seulement le médian publié, pour voir d'un coup d'œil lequel a échoué et sur quelle mesure.
-// Un passage qui bloque plus de 50 ms détaille ses tâches longues, ses scripts et le travail du fil
-// principal ; l'indice de vitesse de la machine et le ralentissement appliqué suivent chaque passage.
-// La cause se lit dans le journal.
+// Un passage qui bloque plus de 50 ms détaille ses tâches longues, ses scripts, le travail du fil
+// principal et les tâches réellement observées, avant ralentissement (une attente de la machine en tête
+// du chargement s'y distingue d'un rendu trop long) ; l'indice de vitesse de la machine et le
+// ralentissement appliqué suivent chaque passage. La cause se lit dans le journal.
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -10,6 +11,8 @@ const DIR = process.argv[2] ?? '.lighthouseci'
 if (!existsSync(DIR)) process.exit(0)
 const METRICS = ['first-contentful-paint', 'largest-contentful-paint', 'total-blocking-time', 'cumulative-layout-shift', 'speed-index']
 const DETAIL_ABOVE_MS = 50
+// Tâches observées, avant le ralentissement simulé : 10 ms y deviennent 40 à 70 ms selon la machine
+const OBSERVED_FROM_MS = 10
 
 const ms = (value) => `${Math.round(value)} ms`
 // L'origine est toujours celle de l'aperçu : le chemin suffit
@@ -26,7 +29,12 @@ for (const file of readdirSync(DIR).filter((name) => /^lhr-.*\.json$/.test(name)
   const tasks = items(report, 'long-tasks').map((task) => `${ms(task.duration)} à ${ms(task.startTime)} (${withoutOrigin(task.url)})`)
   const scripts = items(report, 'bootup-time').slice(0, 4).map((script) => `${withoutOrigin(script.url)} ${ms(script.total)} (exécution ${ms(script.scripting)})`)
   const work = items(report, 'mainthread-work-breakdown').map((group) => `${group.group} ${ms(group.duration)}`)
+  const firstPaint = items(report, 'metrics')[0]?.observedFirstContentfulPaint
+  const observed = items(report, 'main-thread-tasks')
+    .filter((task) => task.duration >= OBSERVED_FROM_MS)
+    .map((task) => `${ms(task.duration)} à ${ms(task.startTime)}`)
   console.log(`    tâches longues : ${tasks.join(', ') || 'aucune'}`)
   console.log(`    scripts : ${scripts.join(', ')}`)
   console.log(`    fil principal : ${work.join(', ')}`)
+  console.log(`    observé : premier affichage à ${Number.isFinite(firstPaint) ? ms(firstPaint) : '?'}, tâches de ${OBSERVED_FROM_MS} ms ou plus : ${observed.join(', ') || 'aucune'}`)
 }

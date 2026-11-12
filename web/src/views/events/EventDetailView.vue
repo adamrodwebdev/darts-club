@@ -10,6 +10,7 @@ import RelativeTime from '@/components/RelativeTime.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import AudiencePanel from '@/components/events/AudiencePanel.vue'
 import EventGallery from '@/components/events/EventGallery.vue'
+import EventPress from '@/components/events/EventPress.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useViewBeacon } from '@/composables/useViewBeacon'
 import { ATTENDANCE_LABELS, formatEventDate, type Attendance, type EventDetail, type Guest } from '@/models/ClubEvent'
@@ -191,6 +192,16 @@ async function saveSummary(): Promise<void> {
         <p v-if="detail.report" class="text">{{ detail.report }}</p>
         <BaseButton v-if="detail.canManage" variant="ghost" @click="startSummary">{{ detail.report ? t('events.detail.editSummary') : t('events.detail.writeSummary') }}</BaseButton>
       </section>
+
+      <!-- Les coupures de presse, au-dessus de la galerie : le bureau les y a classées, elles n'y sont plus -->
+      <EventPress
+        v-if="!event.cancelled && detail.pressClippings.length"
+        :clippings="detail.pressClippings"
+        :event-title="event.title"
+        :rights="detail.gallery"
+        :can-manage="detail.canManage"
+        @changed="refresh"
+      />
 
       <!-- La présidence peut publier avant la soirée : la galerie s'affiche dès qu'il y a quelque chose à voir ou à ajouter -->
       <EventGallery

@@ -388,7 +388,9 @@
       "photo": {
         "delete": "Photo retirée (modération)",
         "hide": "Photo masquée (demande de retrait)",
-        "restore": "Photo remise en ligne"
+        "restore": "Photo remise en ligne",
+        "press": "Photo marquée comme coupure de presse",
+        "unpress": "Coupure de presse rendue à la galerie"
       },
       "video": {
         "delete": "Vidéo retirée (modération)",

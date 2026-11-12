@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
 use App\Documents\ProcedureContent;
+use App\Text\Multiline;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /** Document d'une démarche tel que le secrétariat l'a changé : champs, puis passages réécrits. */
@@ -14,9 +17,11 @@ final class ProcedureInput
      */
     public function __construct(
         #[Assert\Count(max: 40)]
+        #[Multiline]
         public readonly array $values = [],
 
         #[Assert\Count(max: ProcedureContent::REWRITES_MAX)]
+        #[Multiline]
         public readonly array $rewrites = [],
     ) {
     }

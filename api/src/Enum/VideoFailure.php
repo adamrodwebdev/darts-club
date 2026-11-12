@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enum;
 
 /** Raison d'une vidéo refusée à la conversion ; le front l'explique dans la langue de l'adhérent. */

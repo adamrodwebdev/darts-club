@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Dto;
 
+use App\Text\Secret;
 use App\Validator\PasswordPolicy;
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -16,9 +19,11 @@ final class Registration
 
         #[PasswordPolicy]
         #[\SensitiveParameter]
+        #[Secret]
         public readonly string $password = '',
 
         #[PhoneNumber(defaultRegion: 'FR')]
+        #[Assert\Length(max: 30)]
         public readonly ?string $phone = null,
     ) {
     }

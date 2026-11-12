@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Admin;
 
 /** Ligne du journal d'administration : action (« member.roles »…), cible lisible et détails */

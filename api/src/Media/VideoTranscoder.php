@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Media;
 
 /** Conversion des vidéos de galerie (ffmpeg en production, un double dans les tests). */
